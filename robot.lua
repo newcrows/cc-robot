@@ -326,14 +326,11 @@ local function createEquipProxy(name)
     }
 
     function proxy.use(wrapOnly)
-        -- NOTE [JM] moved below proxy.target check for performance reasons
-        -- sync()
+        sync()
 
         if proxy.target then
             return true
         end
-
-        sync()
 
         if name == getName(SIDES.right) then
             proxy.side = SIDES.right
@@ -373,14 +370,11 @@ local function createEquipProxy(name)
     end
 
     function proxy.unuse()
-        -- NOTE [JM] moved below proxy.target check for performance reasons
-        -- sync()
+        sync()
 
         if not proxy.target then
             return true
         end
-
-        sync()
 
         if proxy.target and canUnequip(proxy) then
             return unequip(proxy)
@@ -544,6 +538,39 @@ local function equipHelper(name, pinned)
     end
 
     return proxy
+end
+
+local function unequipHelper(name)
+    if not name then
+        error("name must not be nil")
+    end
+
+    local proxy = meta.equipProxies[name]
+
+    if proxy then
+        local pinned = proxy.pinned
+
+        if pinned then
+            proxy.unpin()
+        end
+
+        local ok, err = proxy.unuse()
+
+        if pinned and not ok then
+            proxy.pin(true)
+        end
+
+        if not ok then
+            return ok, err
+        end
+
+        proxy.use = nil
+        meta.equipProxies[name] = nil
+
+        return true
+    end
+
+    return true
 end
 
 function meta.listSlots(filter, limit, includeEquipment)
@@ -1055,42 +1082,17 @@ function robot.unequip(nameOrProxy)
         error("name must not be nil")
     end
 
-    local proxy = meta.equipProxies[nameOrProxy]
-
-    if proxy then
-        local pinned = proxy.pinned
-
-        if pinned then
-            proxy.unpin()
-        end
-
-        local ok, err = proxy.unuse()
-
-        if pinned and not ok then
-            proxy.pin(true)
-        end
-
-        if not ok then
-            return ok, err
-        end
-
-        proxy.use = nil
-        meta.equipProxies[nameOrProxy] = nil
-
-        return true
-    end
-
-    return true
+    return unequipHelper(nameOrProxy)
 end
 
 function robot.listEquipment()
-    local equipmentArr = {}
+    local proxyArr = {}
 
-    for _, equipment in pairs(meta.equipProxies) do
-        table.insert(equipmentArr, equipment)
+    for _, proxy in pairs(meta.equipProxies) do
+        table.insert(proxyArr, proxy)
     end
 
-    return equipmentArr
+    return proxyArr
 end
 
 function robot.inspect()
@@ -1105,7 +1107,7 @@ function robot.inspectDown()
     return turtle.inspectDown()
 end
 
-function robot.getItemDetail(name, detailed)
+function robot.getItemDetail(name)
     name = name or meta.selectedName
 
     local count = robot.getItemCount(name)
@@ -1120,7 +1122,7 @@ function robot.getItemDetail(name, detailed)
     return nil
 end
 
-function robot.listItems(detailed)
+function robot.listItems()
     local slots = meta.listSlots()
     local items = {}
 

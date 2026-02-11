@@ -452,7 +452,7 @@ equivalent to `turtle.getFuelLevel()`.
 attempts to refuel the turtle with `count` items of `name`.
 returns the `amount` consumed.
 
-if no `count` is passed, `count` is set to `9999`.
+if no `count` is passed, tries to consume all available items with `name`.
 
 omits `equipment`.
 
