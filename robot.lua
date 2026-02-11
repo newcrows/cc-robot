@@ -958,7 +958,6 @@ function meta.compact()
 end
 
 function meta.setSlot(slotId, name, count, blacklist)
-    -- gather information about the target slot
     local detail = turtle.getItemDetail(slotId)
     local slot = {
         name = detail and detail.name or nil,
@@ -966,8 +965,6 @@ function meta.setSlot(slotId, name, count, blacklist)
         space = turtle.getItemSpace(slotId)
     }
 
-    -- find slots containing the same item as target slot, if there are any
-    -- apply blacklist
     local sameSlots = {}
     local candidateSlots = meta.listSlots(name, 16, true)
 
@@ -979,8 +976,6 @@ function meta.setSlot(slotId, name, count, blacklist)
         end
     end
 
-    -- if the target slot contains more target items than requested, try to move some of them elsewhere
-    -- do this until the slot either contains the requested count or return {false, error message}
     if slot.name == name and slot.count > count then
         turtle.select(slotId)
 
@@ -1026,10 +1021,7 @@ function meta.setSlot(slotId, name, count, blacklist)
         return true
     end
 
-    -- if the target slot contains less target items than requested or no items at all,
-    -- try to get some of them from elsewhere
     if (slot.name == name or not slot.name) and slot.count < count then
-        -- if the item is not in other inventory slots, don't even try
         if name and #candidateSlots == 0 then
             return turtle.getItemCount(slotId), err
         end
@@ -1057,22 +1049,17 @@ function meta.setSlot(slotId, name, count, blacklist)
         return turtle.getItemCount(slotId), "not enough items in inventory to move deficit from elsewhere"
     end
 
-    -- if the target slot contains items other than target item, try to move the other items elsewhere
-    -- uses recursive calls to setSlot() to achieve this
     if slot.name ~= name then
-        -- if the item is not in other inventory slots, don't even try
         if name and #candidateSlots == 0 then
             return turtle.getItemCount(slotId), err
         end
 
-        -- try to move the other items elsewhere via setSlot(count = 0)
         local _, err = meta.setSlot(slotId, slot.name, 0, blacklist)
 
         if err then
             return turtle.getItemCount(slotId), "could not move other items elsewhere because there was not enough space in inventory"
         end
 
-        -- try the original setSlot() again
         _, err = meta.setSlot(slotId, name, count, blacklist)
 
         if err then
