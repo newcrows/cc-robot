@@ -83,7 +83,7 @@ NOTE: custom `peripherals` for `minecraft:diamond_pickaxe`,
 `minecraft:diamond_axe`, `minecraft:diamond_shovel` and `minecraft:diamond_sword`
 are bundled with `robot`, you don't need to manually register those.
 
-you DONT NEED to create custom `peripherals`, this is completely optional and regular `peripherals` work as-is.
+you DO NOT need to create custom `peripherals`, this is completely optional and regular `peripherals` work as-is.
 
 EXAMPLE:
 ```lua
