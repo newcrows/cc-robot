@@ -812,8 +812,6 @@ function meta.compact()
 end
 
 function meta.setSlot(slotId, name, count, blacklist)
-    print("setSlot(" .. tostring(slotId) .. ", " .. name .. ", " .. tostring(count))
-
     -- gather information about the target slot
     local detail = turtle.getItemDetail(slotId)
     local slot = {
