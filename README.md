@@ -57,4 +57,4 @@ end
 -- yes, we have four tools equipped at once. so what?
 ```
 
-see DOCS.md for documentation.
+see [DOCS.md](/DOCS.md) for documentation.
