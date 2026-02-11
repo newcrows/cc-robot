@@ -42,10 +42,6 @@ axe.digUp()
 shovel.digDown()
 sword.attack()
 
-for _, item in ipairs(robot.listItems()) do
-    print(item.name .. " = " .. tostring(item.count))
-end
-
 -- yes, we have four tools equipped at once. so what?
 ```
 
