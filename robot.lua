@@ -197,6 +197,8 @@ meta.peripheralConstructors["minecraft:crafting_table"] = function(opts)
                 error("recipe must not be nil")
             end
 
+            local unlimited = limit == nil
+
             limit = limit or 64
             local ok, err = moveEquipmentOutOfTheWay()
 
@@ -210,7 +212,7 @@ meta.peripheralConstructors["minecraft:crafting_table"] = function(opts)
             for ingredientSlot, ingredientName in pairs(parsed.layout) do
                 local count = meta.countItems(ingredientName)
 
-                if count < parsed.counts[ingredientName] * limit then
+                if count < parsed.counts[ingredientName] * limit and not unlimited then
                     return false, "missing " .. tostring(parsed.counts[ingredientName] * limit - count) .. " " .. ingredientName
                 end
 
