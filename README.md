@@ -1,6 +1,6 @@
-# robot api
+# cc-robot
 
-## robot
+## what is this?
 
 `robot` enhances how `turtles` work.
 
