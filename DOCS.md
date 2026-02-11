@@ -13,6 +13,26 @@ get a `robot` instance using `require()`
 local robot = require("robot")
 ```
 
+## important changes vs vanilla turtles
+
+`robot` has an api very closely aligned to that of `turtle`, but:
+
+there is no `robot.dig()|digUp()|digDown()`, instead you should `equip` a tool.
+```lua
+local pickaxe = robot.equip("minecraft:diamond_pickaxe")
+
+-- dig in front of the turtle
+pickaxe.dig()
+```
+
+there is no `robot.attack()|attackUp()|attackDown()`, you should `equip` a sword.
+```lua
+local pickaxe = robot.equip("minecraft:diamond_sword")
+
+-- attack in front of the turtle
+sword.attack()
+```
+
 ## table of contents
 
 - [insertCustomPeripheral(name, constructor)](#insertCustomPeripheralname-constructor)
