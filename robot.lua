@@ -768,6 +768,8 @@ local function equipHelper(name, pinned)
     local proxy = meta.equipProxies[name]
 
     if not proxy then
+        meta.dispatchEvent("beforeEquip", nameOrPinned)
+
         proxy = createEquipProxy(name)
         meta.equipProxies[name] = proxy
 
@@ -808,6 +810,7 @@ local function unequipHelper(name)
         proxy.use = nil
         meta.equipProxies[name] = nil
 
+        meta.dispatchEvent("afterUnequip", name)
         return true
     end
 
@@ -1519,7 +1522,6 @@ function robot.equip(nameOrPinned, pinned)
         nameOrPinned = meta.selectedName
     end
 
-    meta.dispatchEvent("beforeEquip", nameOrPinned)
     return equipHelper(nameOrPinned, pinned)
 end
 
@@ -1534,13 +1536,7 @@ function robot.unequip(nameOrProxy)
         error("name must not be nil")
     end
 
-    local ok, err = unequipHelper(nameOrProxy)
-
-    if ok then
-        meta.dispatchEvent("afterUnequip", nameOrProxy)
-    end
-
-    return ok, err
+    return unequipHelper(nameOrProxy)
 end
 
 function robot.listEquipment()
