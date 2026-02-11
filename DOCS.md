@@ -452,7 +452,7 @@ returns the `amount` of items sucked.
 
 if no `count` is passed, `count` is set to `9999`.
 
-NOTE: in `CC:Tweaked 1.116.0`, `turtle.suck()|suckUp()|suckDown()` are bugged. `robot.suck()|suckUp()|suckDown()` inherits the bugged behavior.
+NOTE: in `CC:Tweaked 1.116.0`, the functions `turtle.suck()|suckUp()|suckDown()` are bugged. `robot.suck()|suckUp()|suckDown()` inherits the bugged behavior.
 
 EXAMPLE:
 ```lua
