@@ -11,6 +11,8 @@ main features:
 - wrap your peripherals however you like
 - pure lua, this is not a minecraft mod
 
+see DOCS.md for documentation.
+
 mandatory example:
 ```lua
 -- this snippet assumes you have a pickaxe, an axe, a shovel
@@ -54,3 +56,5 @@ end
 
 -- yes, we have four tools equipped at once. so what?
 ```
+
+see DOCS.md for documentation.
