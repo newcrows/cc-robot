@@ -3,7 +3,7 @@
 ## table of contents
 
 - [usage](#usage)
-- [important changes vs vanilla turtles](#importantchangesvsvanillaturtles)
+- [important differences to vanilla turtles](#important-differences-to-vanilla-turtles)
 - [robot api](#robotapi)
     - [insertCustomPeripheral(name, constructor)](#insertCustomPeripheralname-constructor)
     - [removeCustomPeripheral(name)](#removeCustomPeripheralname)
@@ -47,7 +47,7 @@ get a `robot` instance using `require()`
 local robot = require("robot")
 ```
 
-## important changes vs vanilla turtles
+## important differences to vanilla turtles
 
 `robot` has an api very closely aligned to that of `turtle`, but:
 
