@@ -15,7 +15,7 @@ see [DOCS.md](./DOCS.md) for documentation.
 
 ## usage
 
-requires CC:Tweaked 1.116.0 or higher.
+requires `CC:Tweaked 1.116.0` or higher.
 
 download from [pastebin](https://pastebin.com/T9CrYfSE)
 

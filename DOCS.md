@@ -37,7 +37,7 @@
 
 ## usage
 
-requires CC:Tweaked 1.116.0 or higher.
+requires `CC:Tweaked 1.116.0` or higher.
 
 download from [pastebin](https://pastebin.com/T9CrYfSE)
 
@@ -67,6 +67,24 @@ local sword = robot.equip("minecraft:diamond_sword")
 -- attack in front of the turtle
 sword.attack()
 ```
+
+there is no `robot.craft()`, instead you should `equip` a crafting table.
+```lua
+local craftingTable = robot.equip("minecraft:crafting_table")
+local coalBlockRecipe = {
+  c = "minecraft:coal",
+  pattern = [[
+    c c c
+    c c c
+    c c c
+  ]]
+}
+
+-- craft one block of coal
+craftingTable.craft(coalBlockRecipe, 1)
+```
+
+NOTE: `turtle.craft()` no longer exists in `CC:Tweaked 1.116.0` either.
 
 ## from relative to absolute position
 
