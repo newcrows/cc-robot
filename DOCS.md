@@ -6,9 +6,9 @@
 - [removeCustomPeripheral(name)](#removeCustomPeripheralname)
 - [listCustomPeripherals()](#listCustomPeripherals)
 - [wrap(side) | wrapUp() | wrapDown()](#wrapside--wrapUp--wrapDown)
-- [ ]()
-- [ ]()
-- [ ]()
+- [up() | down() | forward() | back()](#up--down--forward--back)
+- [turnLeft() | turnRight()](#turnLeft--turnRight)
+- [place(name) | placeUp(name) | placeDown(name)](#placename--placeUpname--placeDownname)
 - [ ]()
 
 ## robot api
