@@ -5,7 +5,7 @@
 - [usage](#usage)
 - [important differences to vanilla turtles](#important-differences-to-vanilla-turtles)
 - [from relative to absolute position](#from-relative-to-absolute-position)
-- [robot api](#robotapi)
+- [robot api](#robot-api)
     - [insertPeripheralConstructor(name, constructor)](#insertPeripheralConstructorname-constructor)
     - [removePeripheralConstructor(name)](#removePeripheralConstructorname)
     - [listPeripheralConstructors()](#listPeripheralConstructors)
