@@ -883,6 +883,11 @@ function meta.setSlot(slotId, name, count, blacklist)
     -- if the target slot contains less target items than requested or no items at all,
     -- try to get some of them from elsewhere
     if (slot.name == name or not slot.name) and slot.count < count then
+        -- if the item is not in other inventory slots, don't even try
+        if name and #candidateSlots == 0 then
+            return turtle.getItemCount(slotId), err
+        end
+
         local amount = 0
         local deficitAmount = count - slot.count
 
@@ -909,6 +914,11 @@ function meta.setSlot(slotId, name, count, blacklist)
     -- if the target slot contains items other than target item, try to move the other items elsewhere
     -- uses recursive calls to setSlot() to achieve this
     if slot.name ~= name then
+        -- if the item is not in other inventory slots, don't even try
+        if name and #candidateSlots == 0 then
+            return turtle.getItemCount(slotId), err
+        end
+
         -- try to move the other items elsewhere via setSlot(count = 0)
         local _, err = meta.setSlot(slotId, slot.name, 0, blacklist)
 
