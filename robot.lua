@@ -1,18 +1,32 @@
+local DELTAS = {
+    north = { x = 0, y = 0, z = -1 },
+    east = { x = 1, y = 0, z = 0 },
+    south = { x = 0, y = 0, z = 1 },
+    west = { x = -1, y = 0, z = 0 },
+    up = { x = 0, y = 1, z = 0 },
+    down = { x = 0, y = -1, z = 0 }
+}
 local FACINGS = {
     [0] = "north",
     [1] = "east",
     [2] = "south",
     [3] = "west",
+    [4] = "up",
+    [5] = "down",
     north = 0,
     east = 1,
     south = 2,
-    west = 3
+    west = 3,
+    up = 4,
+    down = 5
 }
-local DELTAS = {
-    north = { x = 0, z = -1 },
-    east = { x = 1, z = 0 },
-    south = { x = 0, z = 1 },
-    west = { x = -1, z = 0 }
+local OPPOSITE_FACINGS = {
+    north = "south",
+    east = "west",
+    south = "north",
+    west = "east",
+    up = "down",
+    down = "up"
 }
 local SIDES = {
     front = "front",
@@ -81,6 +95,75 @@ meta.peripheralConstructors["minecraft:diamond_sword"] = function()
         attack = turtle.attack,
         attackUp = turtle.attackUp,
         attackDown = turtle.attackDown
+    }
+end
+meta.peripheralConstructors["advancedperipherals:me_bridge"] = function(opts)
+    local side = opts.side
+    local target = opts.target
+
+    local facing
+
+    if side == "front" then
+        facing = robot.facing
+    elseif side == "top" then
+        facing = FACINGS.up
+    elseif side == "bottom" then
+        facing = FACINGS.down
+    else
+        error("invalid side " .. side)
+    end
+
+    local oppFacing = OPPOSITE_FACINGS[facing]
+
+    return {
+        import = function(name, count)
+            if not name then
+                error("name must not be nil")
+            end
+
+            local rCount = robot.getItemCount(name)
+
+            if not count or rCount < count then
+                count = rCount
+            end
+
+            if count == 0 then
+                return 0, name .. " not found in turtle inventory"
+            end
+
+            return target.importItem({ name = name, count = count }, oppFacing)
+        end,
+        export = function(name, count)
+            if not name then
+                error("name must not be nil")
+            end
+
+            if not count then
+                local item = target.getItem({ name = name })
+
+                if item then
+                    count = item.count
+                else
+                    return 0, name .. " not found in me_network"
+                end
+            end
+
+            if robot.getItemSpace(name) < count then
+                meta.compact()
+            end
+
+            return target.exportItem({ name = name, count = count }, oppFacing)
+        end,
+        getItemDetail = function(name)
+            if not name then
+                error("name must not be nil")
+            end
+
+            return target.getItem({ name = name })
+        end,
+        listItems = function()
+            return target.getItems()
+        end
     }
 end
 
@@ -792,7 +875,7 @@ function robot.up()
     local ok, err = turtle.up()
 
     if ok then
-        robot.y = robot.y + 1
+        robot.y = robot.y + DELTAS.up.y
     end
 
     return ok, err
@@ -802,7 +885,7 @@ function robot.down()
     local ok, err = turtle.down()
 
     if ok then
-        robot.y = robot.y - 1
+        robot.y = robot.y + DELTAS.down.y
     end
 
     return ok, err
