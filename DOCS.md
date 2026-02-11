@@ -84,7 +84,7 @@ local coalBlockRecipe = {
 craftingTable.craft(coalBlockRecipe, 1)
 ```
 
-NOTE: `turtle.craft()` no longer exists in `CC:Tweaked 1.116.0` either.
+NOTE: `turtle.craft()` is bugged in `CC:Tweaked 1.116.0`. you need to equip a crafting table and reboot the `turtle`, which is stupid.
 
 ## from relative to absolute position
 
