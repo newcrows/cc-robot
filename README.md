@@ -41,28 +41,11 @@ local axe = robot.equip("minecraft:diamond_axe")
 local shovel = robot.equip("minecraft:diamond_shovel")
 local sword = robot.equip("minecraft:diamond_sword")
 
--- prints:
--- "minecraft:diamond_pickaxe"
--- "minecraft:diamond_axe"
--- "minecraft:diamond_shovel"
--- "minecraft:diamond_sword"
-for _, equipment in ipairs(robot.listEquipment()) do
-    print(equipment.name)
-end
-
--- dig with the pickaxe
--- then "dig up" with the axe
--- then dig down with the shovel
--- then attack with the sword
 pickaxe.dig()
 axe.digUp()
 shovel.digDown()
 sword.attack()
 
--- prints:
--- "minecraft:cobblestone = 1"
--- "minecraft:oak_log = 1"
--- "minecraft:dirt = 1"
 for _, item in ipairs(robot.listItems()) do
     print(item.name .. " = " .. tostring(item.count))
 end
