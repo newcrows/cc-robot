@@ -61,7 +61,7 @@ pickaxe.dig()
 
 there is no `robot.attack()|attackUp()|attackDown()`, you should `equip` a sword.
 ```lua
-local pickaxe = robot.equip("minecraft:diamond_sword")
+local sword = robot.equip("minecraft:diamond_sword")
 
 -- attack in front of the turtle
 sword.attack()
