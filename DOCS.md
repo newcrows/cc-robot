@@ -3,6 +3,13 @@
 ## table of contents
 
 [insertCustomPeripheral(name, constructor)](#insertCustomPeripheral(name,-constructor))
+[removeCustomPeripheral(name)](#removeCustomPeripheral(name))
+[listCustomPeripherals()](#listCustomPeripherals())
+[wrap(side) | wrapUp() | wrapDown()](#wrap(side)-|-wrapUp()-|-wrapDown())
+[ ]()
+[ ]()
+[ ]()
+[ ]()
 
 ## robot api
 
