@@ -301,8 +301,7 @@ local function unequip(proxy)
 
     turtle.select(slot.id)
 
-    local equipFunc = proxy.side == SIDES.right and turtle.equipRight or turtle.equipLeft
-    local ok, err = equipFunc()
+    local ok, err = proxy.side == SIDES.right and turtle.equipRight() or turtle.equipLeft()
 
     if not ok then
         return false, err
@@ -391,7 +390,7 @@ local function createEquipProxy(name)
     end
 
     function proxy.pin(virtualOnly)
-        if not virtualOnly and not proxy.target then
+        if not virtualOnly then
             local ok, err = proxy.use()
 
             if not ok then
@@ -415,6 +414,7 @@ local function createEquipProxy(name)
             end
 
             return function(...)
+                -- NOTE [JM] proxy.target check for performance reasons
                 if not proxy.target then
                     local ok, err = proxy.use()
 
@@ -572,7 +572,7 @@ function meta.listSlots(filter, limit, includeEquipment)
 
             local adjustedCount = turtle.getItemCount(i) + countOffset
 
-            if adjustedCount > 0 or not detail and not filter then
+            if adjustedCount > 0 then
                 table.insert(slots, {
                     id = i,
                     name = detail.name,
@@ -660,7 +660,7 @@ function meta.selectFirstEmptySlot()
     if slot then
         return turtle.select(slot.id)
     else
-        return false, "no empty slots found in inventory"
+        return false, "no empty slot found in inventory"
     end
 end
 
@@ -744,7 +744,12 @@ function robot.listPeripheralConstructors()
 end
 
 function robot.wrap(side)
-    side = side or SIDES.front
+    side = side or robot.facing
+
+    if not side then
+        error("side must not be nil")
+    end
+
     return wrap(getName(side), side)
 end
 
@@ -906,6 +911,10 @@ function robot.dropDown(nameOrCount, count)
 end
 
 function robot.select(name)
+    if not name then
+        error("name must not be nil")
+    end
+
     meta.selectedName = name
 end
 
@@ -941,19 +950,18 @@ function robot.getItemSpace(nameOrStackCount, stackCount)
 end
 
 function robot.getItemSpaceForUnknown()
-    meta.compact()
     return #meta.listEmptySlots()
 end
 
-function robot.hasCount(name)
+function robot.hasItemCount(name)
     return robot.getItemCount(name) > 0
 end
 
-function robot.hasSpace(nameOrStackCount, stackCount)
+function robot.hasItemSpace(nameOrStackCount, stackCount)
     return robot.getItemSpace(nameOrStackCount, stackCount) > 0
 end
 
-function robot.hasSpaceForUnknown()
+function robot.hasItemSpaceForUnknown()
     local slot = meta.getFirstEmptySlot()
 
     if slot then

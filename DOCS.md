@@ -18,9 +18,9 @@
     - [getItemCount(name)](#getItemCountname)
     - [getItemSpace(name, stackCount)](#getItemSpacename-stackCount)
     - [getItemSpaceForUnknown()](#getItemSpaceForUnknown)
-    - [hasCount(name)](#hasCountname)
-    - [hasSpace(name, stackCount)](#hasSpacename-stackCount)
-    - [hasSpaceForUnknown()](#hasSpaceForUnknown)
+    - [hasItemCount(name)](#hasItemCountname)
+    - [hasItemSpace(name, stackCount)](#hasItemSpacename-stackCount)
+    - [hasItemSpaceForUnknown()](#hasItemSpaceForUnknown)
     - [detect() | detectUp() | detectDown()](#detect--detectUp--detectDown)
     - [compare(name) | compareUp(name) | compareDown(name)](#comparename--compareUpname--compareDownname)
     - [suck(count) | suckUp(count) | suckDown(count)](#suckcount--suckUpcount--suckDowncount)
@@ -338,6 +338,8 @@ i.E. "how many more items for one whole stack".
 
 DOES NOT omit `equipment`.
 
+NOTE: if there are currently no empty slots, this will try to compact inventory and count space again.
+
 EXAMPLE:
 ```lua
 -- this snippet assumes you have exactly 16 dirt and one pickaxe in the turtle inventory
@@ -357,44 +359,46 @@ robot.select("minecraft:dirt")
 -- add them together to get 944 -> 55 + 0 + 57 + 13 * 64 = 944
 print(robot.getItemSpace())
 
--- prints "14"
--- slot_1 and slot_16 can be compacted together into slot_1
--- slot_1 now holds 16 dirt
+-- prints "13"
+-- slot_1 holds dirt, can't hold a pickaxe
 -- slot_5 holds a pickaxe and can hold no more, pickaxes don't stack
--- there are now 14 empty slots and each can hold one more pickaxe
+-- slot_16 holds dirt, can't hold a pickaxe
+-- there are now 13 empty slots and each can hold one pickaxe
 print(robot.getItemSpace("minecraft:diamond_pickaxe"))
 
 -- show that equipment IS NOT omitted
 robot.equip("minecraft:diamond_pickaxe")
 
--- still prints "14"
+-- still prints "13"
 -- robot.equip just declares equipment, it does not actually equip it until needed
--- this means the slots are still occupied by 16 dirt and one pickaxe
--- hence there are still 14 empty slots to hold one more pickaxe each
+-- this means three slots are still occupied by 9 dirt, a pickaxe and 7 dirt respectively
+-- hence there are still 13 empty slots to hold one more pickaxe each
 print(robot.getItemSpace("minecraft:diamond_pickaxe"))
 ```
 
 ### getItemSpaceForUnknown()
 
-returns the number of empty slots.
+returns the minimum number of empty slots.
 
 DOES NOT omit `equipment`.
 
-### hasCount(name)
+NOTE: if there are currently no empty slots, this will try to compact inventory and count empty space again.
+
+### hasItemCount(name)
 
 returns `robot.getItemCount(name) > 0`.
 
 omits `equipment`.
 
-### hasSpace(name, stackCount)
+### hasItemSpace(name, stackCount)
 
 returns `robot.getItemSpace(name, stackCount) > 0`.
 
 DOES NOT omit `equipment`.
 
-### hasSpaceForUnknown()
+### hasItemSpaceForUnknown()
 
-returns `true` if there are empty slots and `false` otherwise.
+returns `true` if there is at least one empty slots and `false` otherwise.
 
 DOES NOT omit `equipment`.
 
