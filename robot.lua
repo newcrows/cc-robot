@@ -254,7 +254,7 @@ local function canUnequip(proxy)
     end
 
     if not proxy.target then
-        return false, proxy.name .. " can not be unequipped because it is already unequipped"
+        return true
     end
 
     if proxy.pinned then
@@ -378,7 +378,7 @@ local function createEquipProxy(name)
 
         sync()
 
-        if canUnequip(proxy) then
+        if proxy.target and canUnequip(proxy) then
             return unequip(proxy)
         end
 
