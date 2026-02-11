@@ -6,9 +6,9 @@
 - [important differences to vanilla turtles](#important-differences-to-vanilla-turtles)
 - [from relative to absolute position](#from-relative-to-absolute-position)
 - [robot api](#robotapi)
-    - [insertCustomPeripheral(name, constructor)](#insertCustomPeripheralname-constructor)
-    - [removeCustomPeripheral(name)](#removeCustomPeripheralname)
-    - [listCustomPeripherals()](#listCustomPeripherals)
+    - [insertPeripheralConstructor(name, constructor)](#insertPeripheralConstructorname-constructor)
+    - [removePeripheralConstructor(name)](#removePeripheralConstructorname)
+    - [listPeripheralConstructors()](#listPeripheralConstructors)
     - [wrap(side) | wrapUp() | wrapDown()](#wrapside--wrapUp--wrapDown)
     - [up() | down() | forward() | back()](#up--down--forward--back)
     - [turnLeft() | turnRight()](#turnLeft--turnRight)
@@ -83,7 +83,7 @@ robot.facing = compass.getFacing()
 
 ## robot api
 
-### insertCustomPeripheral(name, constructor)
+### insertPeripheralConstructor(name, constructor)
 
 registers a `constructor` for `peripherals` with a given `name`.
 
@@ -101,9 +101,9 @@ you DO NOT need to create custom `peripherals`, this is completely optional and 
 
 EXAMPLE:
 ```lua
--- register pickaxe as custom peripheral
+-- register peripheral constructor for pickaxe
 -- this basically wraps the turtle dig* commands
-robot.insertCustomPeripheral("minecraft:diamond_pickaxe", function(opts) 
+robot.insertPeripheralConstructor("minecraft:diamond_pickaxe", function(opts) 
     return {
         dig = turtle.dig,
         digUp = turtle.digUp,
@@ -119,14 +119,14 @@ pickaxe.dig()
 
 ```
 
-### removeCustomPeripheral(name)
+### removePeripheralConstructor(name)
 
 removes the `constructor` registered for `name`, if it exists.
 
 EXAMPLE:
 ```lua
--- remove the automatically registered pickaxe peripheral
-robot.removeCustomPeripheral("minecraft:diamond_pickaxe")
+-- remove the automatically registered pickaxe constructor
+robot.removePeripheralConstructor("minecraft:diamond_pickaxe")
 
 local pickaxe = robot.equip("minecraft:diamond_pickaxe")
 
@@ -134,14 +134,14 @@ local pickaxe = robot.equip("minecraft:diamond_pickaxe")
 pickaxe.dig()
 ```
 
-### listCustomPeripherals()
+### listPeripheralConstructors()
 
 returns a list of all registered `constructors`.
 
 EXAMPLE:
 ```lua
 -- returns a list of {name = string, constructor = function} entries
-local customPeripherals = robot.listCustomPeripherals()
+local peripheralConstructors = robot.listPeripheralConstructors()
 ```
 
 ### wrap(side) | wrapUp() | wrapDown()

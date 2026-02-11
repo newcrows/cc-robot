@@ -52,31 +52,31 @@ local meta = {
     selectedName = nil,
     equipProxies = {},
     equipSide = SIDES.right,
-    customPeripherals = {}
+    peripheralConstructors = {}
 }
 
-meta.customPeripherals["minecraft:diamond_pickaxe"] = function()
+meta.peripheralConstructors["minecraft:diamond_pickaxe"] = function()
     return {
         dig = turtle.dig,
         digUp = turtle.digUp,
         digDown = turtle.digDown
     }
 end
-meta.customPeripherals["minecraft:diamond_axe"] = function()
+meta.peripheralConstructors["minecraft:diamond_axe"] = function()
     return {
         dig = turtle.dig,
         digUp = turtle.digUp,
         digDown = turtle.digDown
     }
 end
-meta.customPeripherals["minecraft:diamond_shovel"] = function()
+meta.peripheralConstructors["minecraft:diamond_shovel"] = function()
     return {
         dig = turtle.dig,
         digUp = turtle.digUp,
         digDown = turtle.digDown
     }
 end
-meta.customPeripherals["minecraft:diamond_sword"] = function()
+meta.peripheralConstructors["minecraft:diamond_sword"] = function()
     return {
         attack = turtle.attack,
         attackUp = turtle.attackUp,
@@ -137,9 +137,10 @@ local function wrap(name, side)
         error("side must not be nil")
     end
 
+    local constructor = meta.peripheralConstructors[name]
     local target = peripheral.wrap(side)
 
-    if meta.customPeripherals[name] then
+    if constructor then
         local opts = {
             robot = robot,
             meta = meta,
@@ -148,7 +149,7 @@ local function wrap(name, side)
             target = target
         }
 
-        return meta.customPeripherals[name](opts)
+        return constructor(opts)
     end
 
     return target
@@ -700,7 +701,7 @@ function meta.compact()
     end
 end
 
-function robot.insertCustomPeripheral(nameOrConstructor, constructor)
+function robot.insertPeripheralConstructor(nameOrConstructor, constructor)
     if nameOrConstructor == nil then
         nameOrConstructor = meta.selectedName
     elseif type(nameOrConstructor) == "function" then
@@ -716,23 +717,23 @@ function robot.insertCustomPeripheral(nameOrConstructor, constructor)
         error("constructor must not be nil")
     end
 
-    meta.customPeripherals[nameOrConstructor] = constructor
+    meta.peripheralConstructors[nameOrConstructor] = constructor
 end
 
-function robot.removeCustomPeripheral(name)
+function robot.removePeripheralConstructor(name)
     name = name or meta.selectedName
 
     if not name then
         error("name must not be nil")
     end
 
-    meta.customPeripherals[name] = nil
+    meta.peripheralConstructors[name] = nil
 end
 
-function robot.listCustomPeripherals()
+function robot.listPeripheralConstructors()
     local customPeripheralArr = {}
 
-    for name, constructor in pairs(meta.customPeripherals) do
+    for name, constructor in pairs(meta.peripheralConstructors) do
         table.insert(customPeripheralArr, {
             name = name,
             constructor = constructor
