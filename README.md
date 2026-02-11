@@ -17,7 +17,7 @@ see [DOCS.md](/DOCS.md) for documentation.
 
 requires CC:Tweaked 1.116.0 or higher.
 
-download from [pastebin](https://pastebin.com/2yQmZrYy)
+download from [pastebin](https://pastebin.com/CF0E2jUE)
 
 `pastebin get 2yQmZrYy robot.lua`
 
