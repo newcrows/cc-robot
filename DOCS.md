@@ -4,6 +4,7 @@
 
 - [usage](#usage)
 - [important differences to vanilla turtles](#important-differences-to-vanilla-turtles)
+- [from relative to absolute position](#from-relative-to-absolute-position)
 - [robot api](#robotapi)
     - [insertCustomPeripheral(name, constructor)](#insertCustomPeripheralname-constructor)
     - [removeCustomPeripheral(name)](#removeCustomPeripheralname)
@@ -65,6 +66,19 @@ local sword = robot.equip("minecraft:diamond_sword")
 
 -- attack in front of the turtle
 sword.attack()
+```
+
+## from relative to absolute position
+
+if the turtle has a `modem` and a `compass`, you can trivially set the `robot` position to absolute coordinates (assuming gps is in range).
+
+```lua
+local modem = robot.equip("computercraft:wireless_modem_normal")
+local compass = robot.equip("minecraft:compass")
+
+modem.use()
+robot.x, robot.y, robot.z = gps.locate()
+robot.facing = compass.getFacing()
 ```
 
 ## robot api
