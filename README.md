@@ -26,14 +26,10 @@ get a `robot` instance using `require()`
 local robot = require("robot")
 ```
 
-## example
+## multiple tools example
 ```lua
 -- this snippet assumes you have a pickaxe, an axe, a shovel
 -- and a sword somewhere in the turtle's inventory (and nothing else)
-
--- also assumes in front is a cobblestone block, on top is an oak log block
--- and below is a dirt block
-
 local robot = require("robot")
 
 local pickaxe = robot.equip("minecraft:diamond_pickaxe")
@@ -51,6 +47,28 @@ for _, item in ipairs(robot.listItems()) do
 end
 
 -- yes, we have four tools equipped at once. so what?
+```
+
+## crafting example
+```lua
+-- snippet assumes the inventory only contains items required to craft pistons
+local robot = require("robot")
+local craftingTable = robot.equip("minecraft:crafting_table")
+
+local pistonRecipe = {
+    p = "minecraft:oak_planks",
+    c = "minecraft:cobblestone",
+    i = "minecraft:iron_ingot",
+    r = "minecraft:redstone",
+    pattern = [[
+        p p p
+        c i c
+        c r c
+    ]]
+}
+
+-- craft one piston
+craftingTable.craft(pistonRecipe, 1)
 ```
 
 see [DOCS.md](./DOCS.md) for documentation.
