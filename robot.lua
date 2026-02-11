@@ -854,7 +854,7 @@ function robot.listPeripheralConstructors()
 end
 
 function robot.wrap(side)
-    side = side or robot.facing
+    side = side or SIDES.front
 
     if not side then
         error("side must not be nil")
