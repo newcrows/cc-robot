@@ -910,12 +910,18 @@ function meta.setSlot(slotId, name, count, blacklist)
     -- uses recursive calls to setSlot() to achieve this
     if slot.name ~= name then
         -- try to move the other items elsewhere via setSlot(count = 0)
-        if not meta.setSlot(slotId, slot.name, 0, blacklist) then
+        local _, err = meta.setSlot(slotId, slot.name, 0, blacklist)
+
+        if err then
             return turtle.getItemCount(slotId), "could not move other items elsewhere because there was not enough space in inventory"
         end
 
-        -- call setSlot() again with original args
-        return meta.setSlot(slotId, name, count, blacklist)
+        -- try the original setSlot() again
+        _, err = meta.setSlot(slotId, name, count, blacklist)
+
+        if err then
+            return turtle.getItemCount(slotId), err
+        end
     end
 
     return turtle.getItemCount(slotId)
