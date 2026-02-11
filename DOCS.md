@@ -4,7 +4,7 @@
 
 requires CC:Tweaked 1.116.0 or higher.
 
-download from (pastebin)[https://pastebin.com/2yQmZrYy]
+download from [pastebin](https://pastebin.com/2yQmZrYy)
 
 `pastebin get 2yQmZrYy robot.lua`
 
