@@ -2,6 +2,9 @@
 
 ## usage
 
+requires CC:Tweaked 1.116.0 or higher.
+
+get a robot instance using require()
 ```lua
 local robot = require("robot")
 ```
@@ -21,7 +24,21 @@ local robot = require("robot")
 - [getItemSpace(name, stackCount)](#getItemSpacename-stackCount)
 - [getItemSpaceForUnknown()](#getItemSpaceForUnknown)
 - [hasCount(name)](#hasCountname)
-- [ ]()
+- [hasSpace(name, stackCount)](#hasSpacename-stackCount)
+- [hasSpaceForUnknown()](#hasSpaceForUnknown)
+- [detect() | detectUp() | detectDown()](#detect--detectUp--detectDown)
+- [compare(name) | compareUp(name) | compareDown(name)](#comparename--compareUpname--compareDownname)
+- [suck(count) | suckUp(count) | suckDown(count)](#suckcount--suckUpcount--suckDowncount)
+- [getFuelLevel()](#getFuelLevel)
+- [refuel()](#refuel)
+- [getSelectedName()](#getSelectedName)
+- [getFuelLimit()](#getFuelLimit)
+- [equip(name, pinned)](#equipname-pinned)
+- [unequip(nameOrProxy)](#unequipnameOrProxy)
+- [listEquipment()](#listEquipment)
+- [inspect() | inspectUp() | inspectDown()](#inspect--inspectUp--inspectDown)
+- [getItemDetail(name)](#getItemDetailname)
+- [listItems()](#listItems)
 
 ## robot api
 
