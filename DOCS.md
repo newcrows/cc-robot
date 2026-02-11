@@ -49,7 +49,7 @@ local robot = require("robot")
 
 ## important differences to vanilla turtles
 
-`robot` has an api very closely aligned to that of `turtle`, but:
+the `robot api` is very closely aligned to the `turtle api`, but:
 
 there is no `robot.dig()|digUp()|digDown()`, instead you should `equip` a tool.
 ```lua
