@@ -51,7 +51,7 @@ end
 
 ## crafting example
 ```lua
--- snippet assumes the inventory only contains items required to craft pistons
+-- this snippet assumes the inventory only contains items required to craft pistons
 local robot = require("robot")
 local craftingTable = robot.equip("minecraft:crafting_table")
 
