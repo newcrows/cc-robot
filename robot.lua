@@ -174,6 +174,10 @@ local function canEquip(name, side)
 
     local proxy = meta.equipProxies[name]
 
+    if not proxy then
+        error("proxy must not be nil")
+    end
+
     if proxy and proxy.target then
         return true
     end
