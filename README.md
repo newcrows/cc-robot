@@ -8,7 +8,7 @@ download from [pastebin](https://pastebin.com/2yQmZrYy)
 
 `pastebin get 2yQmZrYy robot.lua`
 
-get a robot instance using require()
+get a `robot` instance using `require()`
 ```lua
 local robot = require("robot")
 ```
