@@ -29,7 +29,7 @@ local robot = require("robot")
 ## multiple tools example
 ```lua
 -- this snippet assumes you have a pickaxe, an axe, a shovel
--- and a sword somewhere in the turtle's inventory (and nothing else)
+-- and a sword somewhere in the turtle's inventory
 local robot = require("robot")
 
 local pickaxe = robot.equip("minecraft:diamond_pickaxe")
