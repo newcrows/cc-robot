@@ -963,6 +963,16 @@ function meta.compact()
 end
 
 function meta.setSlot(slotId, name, count, blacklist)
+    if not slotId then
+        error("slotId must not be nil")
+    end
+
+    if count == nil then
+        error("count must not be nil")
+    end
+
+    blacklist = blacklist or {}
+
     local detail = turtle.getItemDetail(slotId)
     local slot = {
         name = detail and detail.name or nil,
