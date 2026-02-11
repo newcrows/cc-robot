@@ -2,7 +2,7 @@
 
 ## table of contents
 
-[insertCustomPeripheral(name, constructor)](#insertCustomPeripheral(name, constructor))
+[insertCustomPeripheral(name, constructor)](#insertCustomPeripheral(name,-constructor))
 
 ## robot api
 
