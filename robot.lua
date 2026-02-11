@@ -1009,7 +1009,7 @@ function meta.setSlot(slotId, name, count, blacklist)
             end
 
             if amount == surplusAmount then
-                return turtle.getItemCount(slotId)
+                return true
             end
         end
 
@@ -1026,11 +1026,11 @@ function meta.setSlot(slotId, name, count, blacklist)
         end
 
         if not emptySlot then
-            return turtle.getItemCount(slotId), "no space in inventory to move surplus elsewhere"
+            return false, "no space in inventory to move surplus elsewhere"
         end
 
         if not turtle.transferTo(emptySlot.id, surplusAmount - amount) then
-            return turtle.getItemCount(slotId), "moving surplus to empty slot failed"
+            return false, "moving surplus to empty slot failed"
         end
 
         return true
@@ -1038,7 +1038,7 @@ function meta.setSlot(slotId, name, count, blacklist)
 
     if (slot.name == name or not slot.name) and slot.count < count then
         if name and #candidateSlots == 0 then
-            return turtle.getItemCount(slotId), err
+            return false, "no items found in inventory to move deficit from elsewhere"
         end
 
         local amount = 0
@@ -1057,32 +1057,32 @@ function meta.setSlot(slotId, name, count, blacklist)
             end
 
             if amount == deficitAmount then
-                return turtle.getItemCount(slotId)
+                return true
             end
         end
 
-        return turtle.getItemCount(slotId), "not enough items in inventory to move deficit from elsewhere"
+        return false, "not enough items in inventory to move deficit from elsewhere"
     end
 
     if slot.name ~= name then
         if name and #candidateSlots == 0 then
-            return turtle.getItemCount(slotId), err
+            return false, "item not found in inventory"
         end
 
         local _, err = meta.setSlot(slotId, slot.name, 0, blacklist)
 
         if err then
-            return turtle.getItemCount(slotId), "could not move other items elsewhere because there was not enough space in inventory"
+            return false, "could not move other items elsewhere because there was not enough space in inventory"
         end
 
         _, err = meta.setSlot(slotId, name, count, blacklist)
 
         if err then
-            return turtle.getItemCount(slotId), err
+            return false, err
         end
     end
 
-    return turtle.getItemCount(slotId)
+    return true
 end
 
 function robot.insertPeripheralConstructor(nameOrConstructor, constructor)
