@@ -59,7 +59,7 @@ local pickaxe = robot.equip("minecraft:diamond_pickaxe")
 pickaxe.dig()
 ```
 
-there is no `robot.attack()|attackUp()|attackDown()`, you should `equip` a sword.
+there is no `robot.attack()|attackUp()|attackDown()`, instead you should `equip` a sword.
 ```lua
 local sword = robot.equip("minecraft:diamond_sword")
 
