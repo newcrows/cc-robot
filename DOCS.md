@@ -1,5 +1,11 @@
 # robot docs
 
+## usage
+
+```lua
+local robot = require("robot")
+```
+
 ## table of contents
 
 - [insertCustomPeripheral(name, constructor)](#insertCustomPeripheralname-constructor)
@@ -9,6 +15,12 @@
 - [up() | down() | forward() | back()](#up--down--forward--back)
 - [turnLeft() | turnRight()](#turnLeft--turnRight)
 - [place(name) | placeUp(name) | placeDown(name)](#placename--placeUpname--placeDownname)
+- [drop(name, count) | dropUp(name, count) | dropDown(name, count)](#dropname-count--dropUpname-count--dropDownname-count)
+- [select(name)](#selectname)
+- [getItemCount(name)](#getItemCountname)
+- [getItemSpace(name, stackCount)](#getItemSpacename-stackCount)
+- [getItemSpaceForUnknown()](#getItemSpaceForUnknown)
+- [hasCount(name)](#hasCountname)
 - [ ]()
 
 ## robot api
