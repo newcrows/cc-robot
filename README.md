@@ -71,6 +71,8 @@ local torchCount = robot.getItemCount()
 robot.drop(torchCount - 64)
 ```
 
+see [DOCS.md](./DOCS.md) for documentation.
+
 ## crafting example
 ```lua
 -- this snippet assumes the inventory only contains items required to craft pistons
