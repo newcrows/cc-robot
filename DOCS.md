@@ -463,7 +463,7 @@ you can declare an arbitrary amount of equipment. it "just works".
 if no `name` is present, `robot.getSelectedName()` is used.
 
 if `pinned` is `true`, the equipment will actually be equipped
-and STAY unequipped until `handle.unpin()` is called.
+and STAY equipped until `handle.unpin()` is called.
 
 pinning is useful if you need to call something that uses equipment but does
 not do so via the `handle`, i.E. the `gps` and `rednet` apis.
