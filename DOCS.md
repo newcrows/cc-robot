@@ -94,7 +94,7 @@ it will call the registered `constructor` with `opts`.
 the `constructor` must return a new instance of the custom `peripheral` when called.
 
 NOTE: custom `peripherals` for `minecraft:diamond_pickaxe`,
-`minecraft:diamond_axe`, `minecraft:diamond_shovel` and `minecraft:diamond_sword`
+`minecraft:diamond_axe`, `minecraft:diamond_shovel`, `minecraft:diamond_sword` and `minecraft:crafting_table`
 are bundled with `robot`, you don't need to manually register those.
 
 you DO NOT need to create custom `peripherals`, this is completely optional and regular `peripherals` work as-is.
