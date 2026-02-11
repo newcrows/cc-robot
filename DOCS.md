@@ -2,14 +2,14 @@
 
 ## table of contents
 
-[insertCustomPeripheral(name, constructor)](#insertCustomPeripheral(name,-constructor))
-[removeCustomPeripheral(name)](#removeCustomPeripheral(name))
-[listCustomPeripherals()](#listCustomPeripherals())
-[wrap(side) | wrapUp() | wrapDown()](#wrap(side)-|-wrapUp()-|-wrapDown())
-[ ]()
-[ ]()
-[ ]()
-[ ]()
+- [insertCustomPeripheral(name, constructor)](#insertCustomPeripheralname-constructor)
+- [removeCustomPeripheral(name)](#removeCustomPeripheralname)
+- [listCustomPeripherals()](#listCustomPeripherals)
+- [wrap(side) | wrapUp() | wrapDown()](#wrapside--wrapUp--wrapDown)
+- [ ]()
+- [ ]()
+- [ ]()
+- [ ]()
 
 ## robot api
 
