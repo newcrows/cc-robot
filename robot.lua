@@ -768,7 +768,7 @@ local function equipHelper(name, pinned)
     local proxy = meta.equipProxies[name]
 
     if not proxy then
-        meta.dispatchEvent("beforeEquip", nameOrPinned)
+        meta.dispatchEvent("beforeEquip", name)
 
         proxy = createEquipProxy(name)
         meta.equipProxies[name] = proxy
