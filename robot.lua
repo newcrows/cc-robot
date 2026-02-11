@@ -811,6 +811,118 @@ function meta.compact()
     end
 end
 
+function meta.setSlot(slotId, name, count, blacklist)
+    print("setSlot(" .. tostring(slotId) .. ", " .. name .. ", " .. tostring(count))
+
+    -- gather information about the target slot
+    local detail = turtle.getItemDetail(slotId)
+    local slot = {
+        name = detail and detail.name or nil,
+        count = turtle.getItemCount(slotId),
+        space = turtle.getItemSpace(slotId)
+    }
+
+    -- find slots containing the same item as target slot, if there are any
+    -- apply blacklist
+    local sameSlots = {}
+    local candidateSlots = meta.listSlots(name, 16, true)
+
+    for i = 1, #candidateSlots do
+        local candidateSlot = candidateSlots[i]
+
+        if slotId ~= candidateSlot.id and not blacklist[candidateSlot.id] then
+            table.insert(sameSlots, candidateSlot)
+        end
+    end
+
+    -- if the target slot contains more target items than requested, try to move some of them elsewhere
+    -- do this until the slot either contains the requested count or return {false, error message}
+    if slot.name == name and slot.count > count then
+        turtle.select(slotId)
+
+        -- try to move surplus to slots holding the same item
+        local amount = 0
+        local surplusAmount = slot.count - count
+
+        for _, sameSlot in ipairs(sameSlots) do
+            local sameSpace = sameSlot.space
+            local movableAmount = math.min(surplusAmount - amount, sameSpace)
+
+            if movableAmount > 0 then
+                if turtle.transferTo(sameSlot.id, movableAmount) then
+                    amount = amount + movableAmount
+                end
+            end
+
+            if amount == surplusAmount then
+                return turtle.getItemCount(slotId)
+            end
+        end
+
+        -- try to move remaining surplus to the first non-blacklisted empty slot
+        -- DO NOT compact, this would ignore blacklist and could re-arrange the inventory in an unwanted way
+        local emptySlots = meta.listEmptySlots(16, true)
+        local emptySlot = nil
+
+        for _, candidateSlot in ipairs(emptySlots) do
+            if not blacklist[candidateSlot.id] then
+                emptySlot = candidateSlot
+                break
+            end
+        end
+
+        if not emptySlot then
+            return turtle.getItemCount(slotId), "no space in inventory to move surplus elsewhere"
+        end
+
+        if not turtle.transferTo(emptySlot.id, surplusAmount - amount) then
+            return turtle.getItemCount(slotId), "moving surplus to empty slot failed"
+        end
+
+        return true
+    end
+
+    -- if the target slot contains less target items than requested or no items at all,
+    -- try to get some of them from elsewhere
+    if (slot.name == name or not slot.name) and slot.count < count then
+        local amount = 0
+        local deficitAmount = count - slot.count
+
+        for _, sameSlot in ipairs(sameSlots) do
+            local sameCount = sameSlot.count
+            local movableAmount = math.min(deficitAmount - amount, sameCount)
+
+            if movableAmount > 0 then
+                turtle.select(sameSlot.id)
+
+                if turtle.transferTo(slotId, movableAmount) then
+                    amount = amount + movableAmount
+                end
+            end
+
+            if amount == deficitAmount then
+                return turtle.getItemCount(slotId)
+            end
+        end
+
+        return turtle.getItemCount(slotId), "not enough items in inventory to move deficit from elsewhere"
+    end
+
+    -- if the target slot contains items other than target item, try to move the other items elsewhere
+    -- uses recursive calls to setSlot() to achieve this
+    if slot.name ~= name then
+        -- try to move the other items elsewhere via setSlot(count = 0)
+        if not meta.setSlot(slotId, slot.name, 0, blacklist) then
+            return turtle.getItemCount(slotId), "could not move other items elsewhere because there was not enough space in inventory"
+        end
+
+        -- call setSlot() again with original args
+        return meta.setSlot(slotId, name, count, blacklist)
+    end
+
+    return turtle.getItemCount(slotId)
+end
+
 function robot.insertPeripheralConstructor(nameOrConstructor, constructor)
     if nameOrConstructor == nil then
         nameOrConstructor = meta.selectedName
