@@ -11,7 +11,7 @@ main features:
 - wrap your peripherals however you like
 - pure lua, this is not a minecraft mod
 
-see DOCS.md for documentation.
+see [DOCS.md](/DOCS.md) for documentation.
 
 mandatory example:
 ```lua
