@@ -62,177 +62,25 @@ meta.customPeripherals["minecraft:diamond_pickaxe"] = function()
         digDown = turtle.digDown
     }
 end
+meta.customPeripherals["minecraft:diamond_axe"] = function()
+    return {
+        dig = turtle.dig,
+        digUp = turtle.digUp,
+        digDown = turtle.digDown
+    }
+end
+meta.customPeripherals["minecraft:diamond_shovel"] = function()
+    return {
+        dig = turtle.dig,
+        digUp = turtle.digUp,
+        digDown = turtle.digDown
+    }
+end
 meta.customPeripherals["minecraft:diamond_sword"] = function()
     return {
         attack = turtle.attack,
         attackUp = turtle.attackUp,
         attackDown = turtle.attackDown
-    }
-end
-meta.customPeripherals["minecraft:crafting_table"] = function(opts)
-    local meta = opts.meta
-    local target = opts.target
-
-    local function moveEquipmentOutOfTheWay()
-        local lastEProxy = nil
-        local eCount = 0
-
-        for eName, eProxy in pairs(meta.equipProxies) do
-            if not eProxy.target then
-                local eSlot = meta.getFirstSlot(eName, true)
-
-                if eSlot then
-                    lastEProxy = eProxy
-                    eCount = eCount + 1
-                end
-            else
-                eCount = eCount + 1
-            end
-        end
-
-        if eCount > 2 then
-            return false, "can't clear inventory"
-        end
-
-        if lastEProxy then
-            local ok, err = lastEProxy.use()
-
-            if not ok then
-                return ok, err
-            end
-        end
-
-        return true
-    end
-
-    local function trim(recipe)
-        return recipe:gsub("^%s*(.-)%s*$", "%1")
-    end
-
-    local function splitLinesAndTrimEach(trimmedRecipe)
-        local lines = {}
-
-        for line in trimmedRecipe:gmatch("[^\r\n]+") do
-            line = trim(line)
-            table.insert(lines, line)
-        end
-
-        return lines
-    end
-
-    local function splitAndReplaceCells(line, recipe)
-        local cells = {}
-
-        for cell in line:gmatch("%S+") do
-            if recipe[cell] then
-                cell = recipe[cell]
-            end
-
-            if cell == "_" then
-                cell = "air"
-            end
-
-            table.insert(cells, { name = cell, amount = 1 })
-        end
-
-        return cells
-    end
-
-    local function parse(recipe)
-        local trimmed = trim(recipe.pattern)
-        local lines = splitLinesAndTrimEach(trimmed)
-        local parsed = {}
-
-        for i = 1, #lines do
-            local cells = splitAndReplaceCells(lines[i], recipe)
-            parsed[i] = cells
-        end
-
-        return parsed
-    end
-
-    return {
-        craft = function(recipe, limit)
-            local ok, err = moveEquipmentOutOfTheWay()
-
-            if not ok then
-                return 0, err
-            end
-
-            local parsed = parse(recipe)
-
-            -- arrange physical slots such that every slot for recipe contains at least (cell.amount * limit) items
-            -- and all other slots are empty
-            -- then return target.craft
-
-            return target.craft(limit)
-        end
-    }
-end
-meta.customPeripherals["advancedperipherals:me_bridge"] = function(opts)
-    local OPPOSITE_SIDES = {
-        north = "south",
-        east = "west",
-        south = "north",
-        west = "east",
-        up = "down",
-        down = "up"
-    }
-
-    local robot = opts.robot
-    local meta = opts.robot
-    local side = opts.side
-    local target = opts.target
-
-    if side == "front" then
-        side = robot.facing
-    end
-
-    local oppSide = OPPOSITE_SIDES[side]
-
-    return {
-        import = function(name, count)
-            if not name then
-                error("name must not be nil")
-            end
-
-            local rCount = robot.getItemCount(name)
-
-            if not count or rCount < count then
-                count = rCount
-            end
-
-            return target.importItem({ name = name, count = count }, oppSide)
-        end,
-        export = function(name, count)
-            if not name then
-                error("name must not be nil")
-            end
-
-            if not count then
-                local item = target.getItem({ name = name })
-
-                if item then
-                    count = item.count
-                end
-            end
-
-            if robot.getItemSpace(name) < count then
-                meta.compact()
-            end
-
-            return target.exportItem({ name = name, count = count }, oppSide)
-        end,
-        getItemDetail = function(name)
-            if not name then
-                error("name must not be nil")
-            end
-
-            return target.getItem({ name = name })
-        end,
-        listItems = function()
-            return target.getItems()
-        end
     }
 end
 
