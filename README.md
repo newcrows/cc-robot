@@ -11,7 +11,7 @@ main features:
 - wrap your peripherals however you like
 - pure lua, this is not a minecraft mod
 
-see [DOCS.md](/DOCS.md) for documentation.
+see [DOCS.md](./DOCS.md) for documentation.
 
 ## usage
 
@@ -53,4 +53,4 @@ end
 -- yes, we have four tools equipped at once. so what?
 ```
 
-see [DOCS.md](/DOCS.md) for documentation.
+see [DOCS.md](./DOCS.md) for documentation.
