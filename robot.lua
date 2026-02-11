@@ -731,16 +731,16 @@ function robot.removePeripheralConstructor(name)
 end
 
 function robot.listPeripheralConstructors()
-    local customPeripheralArr = {}
+    local constructorArr = {}
 
     for name, constructor in pairs(meta.peripheralConstructors) do
-        table.insert(customPeripheralArr, {
+        table.insert(constructorArr, {
             name = name,
             constructor = constructor
         })
     end
 
-    return customPeripheralArr
+    return constructorArr
 end
 
 function robot.wrap(side)
