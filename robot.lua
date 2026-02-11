@@ -193,6 +193,11 @@ meta.peripheralConstructors["minecraft:crafting_table"] = function(opts)
 
     return {
         craft = function(recipe, limit)
+            if not recipe then
+                error("recipe must not be nil")
+            end
+
+            limit = limit or 64
             local ok, err = moveEquipmentOutOfTheWay()
 
             if not ok then
