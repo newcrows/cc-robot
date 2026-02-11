@@ -66,7 +66,8 @@ local meta = {
     selectedName = nil,
     equipProxies = {},
     equipSide = SIDES.right,
-    peripheralConstructors = {}
+    peripheralConstructors = {},
+    invisibleItems = {}
 }
 
 meta.peripheralConstructors["minecraft:diamond_pickaxe"] = function()
@@ -814,6 +815,7 @@ function meta.listSlots(filter, limit, includeEquipment)
 
     local slots = {}
     local seenEquipment = {}
+    local seenInvisibleItems = {}
 
     -- NOTE [JM] skipped for performance reasons
     -- sync()
@@ -831,6 +833,16 @@ function meta.listSlots(filter, limit, includeEquipment)
                     countOffset = -1
                     seenEquipment[detail.name] = true
                 end
+            end
+
+            local invisibleCount = meta.invisibleItems[detail.name]
+            local seenInvisibleCount = seenInvisibleItems[detail.name] or 0
+
+            if invisibleCount and seenInvisibleCount < invisibleCount then
+                local invisibleCountOffset = -math.min(detail.count + countOffset, invisibleCount - seenInvisibleCount)
+
+                countOffset = countOffset + invisibleCountOffset
+                seenInvisibleItems[detail.name] = seenInvisibleCount - invisibleCountOffset
             end
 
             local adjustedCount = turtle.getItemCount(i) + countOffset
@@ -1084,6 +1096,39 @@ function meta.setSlot(slotId, name, count, blacklist)
         end
     end
 
+    return true
+end
+
+function meta.makeItemVisible(name, count)
+    if not name then
+        error("name must not be nil")
+    end
+
+    if not count then
+        error("count must not be nil")
+    end
+
+    if meta.invisibleItems[name] then
+        meta.invisibleItems[name] = meta.invisibleItems[name] - count
+    end
+
+    return true
+end
+
+function meta.makeItemInvisible(name, count)
+    if not name then
+        error("name must not be nil")
+    end
+
+    if not count then
+        error("count must not be nil")
+    end
+
+    if not meta.invisibleItems[name] then
+        meta.invisibleItems[name] = 0
+    end
+
+    meta.invisibleItems[name] = meta.invisibleItems[name] + count
     return true
 end
 
