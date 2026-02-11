@@ -72,6 +72,8 @@ local meta = {
     nextEventListenerId = 1
 }
 
+robot.meta = meta
+
 meta.peripheralConstructors["minecraft:diamond_pickaxe"] = function()
     return {
         dig = turtle.dig,
