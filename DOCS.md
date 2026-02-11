@@ -4,6 +4,9 @@
 
 requires CC:Tweaked 1.116.0 or higher.
 
+download from pastebin
+`pastebin get 2yQmZrYy robot.lua`
+
 get a robot instance using require()
 ```lua
 local robot = require("robot")
