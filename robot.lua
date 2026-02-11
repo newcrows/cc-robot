@@ -67,7 +67,9 @@ local meta = {
     equipProxies = {},
     equipSide = SIDES.right,
     peripheralConstructors = {},
-    invisibleItems = {}
+    invisibleItemCounts = {},
+    eventListeners = {},
+    nextEventListenerId = 1
 }
 
 meta.peripheralConstructors["minecraft:diamond_pickaxe"] = function()
@@ -835,7 +837,7 @@ function meta.listSlots(filter, limit, includeEquipment)
                 end
             end
 
-            local invisibleCount = meta.invisibleItems[detail.name]
+            local invisibleCount = meta.invisibleItemCounts[detail.name]
             local seenInvisibleCount = seenInvisibleItems[detail.name] or 0
 
             if invisibleCount and seenInvisibleCount < invisibleCount then
@@ -1099,7 +1101,7 @@ function meta.setSlot(slotId, name, count, blacklist)
     return true
 end
 
-function meta.makeItemVisible(name, count)
+function meta.makeItemCountVisible(name, count)
     if not name then
         error("name must not be nil")
     end
@@ -1108,14 +1110,14 @@ function meta.makeItemVisible(name, count)
         error("count must not be nil")
     end
 
-    if meta.invisibleItems[name] then
-        meta.invisibleItems[name] = meta.invisibleItems[name] - count
+    if meta.invisibleItemCounts[name] then
+        meta.invisibleItemCounts[name] = meta.invisibleItemCounts[name] - count
     end
 
     return true
 end
 
-function meta.makeItemInvisible(name, count)
+function meta.makeItemCountInvisible(name, count)
     if not name then
         error("name must not be nil")
     end
@@ -1124,12 +1126,55 @@ function meta.makeItemInvisible(name, count)
         error("count must not be nil")
     end
 
-    if not meta.invisibleItems[name] then
-        meta.invisibleItems[name] = 0
+    if not meta.invisibleItemCounts[name] then
+        meta.invisibleItemCounts[name] = 0
     end
 
-    meta.invisibleItems[name] = meta.invisibleItems[name] + count
+    meta.invisibleItemCounts[name] = meta.invisibleItemCounts[name] + count
     return true
+end
+
+function meta.dispatchEvent(name, ...)
+    for _, listener in pairs(meta.eventListeners) do
+        local func = listener[name]
+
+        if func then
+            func(...)
+        end
+    end
+end
+
+function robot.insertEventListener(listener)
+    if not listener then
+        error("listener must not be nil")
+    end
+
+    local id = meta.nextEventListenerId
+
+    meta.eventListeners[id] = listener
+    listener.id = id
+
+    meta.nextEventListenerId = id + 1
+    return true
+end
+
+function robot.removeEventListener(listener)
+    if not listener then
+        error("listener must not be nil")
+    end
+
+    meta.eventListeners[listener.id] = nil
+    return true
+end
+
+function robot.listEventListeners()
+    local listenerArr = {}
+
+    for _, listener in pairs(meta.eventListeners) do
+        table.insert(listenerArr, listener)
+    end
+
+    return listenerArr
 end
 
 function robot.insertPeripheralConstructor(nameOrConstructor, constructor)
@@ -1472,6 +1517,7 @@ function robot.equip(nameOrPinned, pinned)
         nameOrPinned = meta.selectedName
     end
 
+    meta.dispatchEvent("beforeEquip", nameOrPinned)
     return equipHelper(nameOrPinned, pinned)
 end
 
@@ -1486,7 +1532,13 @@ function robot.unequip(nameOrProxy)
         error("name must not be nil")
     end
 
-    return unequipHelper(nameOrProxy)
+    local ok, err = unequipHelper(nameOrProxy)
+
+    if ok then
+        meta.dispatchEvent("afterUnequip", nameOrProxy)
+    end
+
+    return ok, err
 end
 
 function robot.listEquipment()
