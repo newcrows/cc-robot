@@ -17,9 +17,9 @@ see [DOCS.md](./DOCS.md) for documentation.
 
 requires `CC:Tweaked 1.116.0` or higher.
 
-download from [pastebin](https://pastebin.com/T9CrYfSE)
+download from [pastebin](https://pastebin.com/aHyLYPrm)
 
-`pastebin get T9CrYfSE robot.lua`
+`pastebin get aHyLYPrm robot.lua`
 
 get a `robot` instance using `require()`
 ```lua
