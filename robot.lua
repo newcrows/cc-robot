@@ -872,8 +872,13 @@ function meta.listSlots(filter, limit, includeEquipment)
     local seenEquipment = {}
     local seenInvisibleItems = {}
 
+    -- programs can do some weird stuff with slotted equipment, like temporarily removing it
+    -- which would change (visible) inventory contents
+    -- so we should make sure we sync() before we access the inventory
     sync()
 
+    -- programs can do some weird stuff inside event listeners that may change inventory contents,
+    -- so we should make sure afterUnwrap is dispatched before we access the inventory
     unwrapNotPresentWrappedNames()
 
     for i = 1, 16 do
