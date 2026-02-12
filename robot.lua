@@ -417,7 +417,8 @@ local function wrap(name, side, isNotEquipment)
             meta = meta,
             name = name,
             side = side,
-            target = target
+            target = target,
+            wrappedAsEquipment = not isNotEquipment
         }
 
         -- most constructors should return nil if opts.target is nil
