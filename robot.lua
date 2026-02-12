@@ -1287,7 +1287,7 @@ end
 function robot.wrap(side, wrapAs)
     if (side == SIDES.front or side == SIDES.top or side == SIDES.bottom) and not wrapAs then
         return wrap(getName(side), side, true)
-    elseif side == SIDES.front or side == SIDES.top or side == SIDES.bottom then
+    elseif side == SIDES.front or side == SIDES.back or side == SIDES.top or side == SIDES.bottom then
         return wrap(wrapAs, side, true)
     elseif (side == SIDES.right or side == SIDES.left) and wrapAs then
         local detail = side == SIDES.right and turtle.getEquippedRight() or turtle.getEquippedLeft()
