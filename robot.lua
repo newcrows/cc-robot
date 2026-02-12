@@ -872,8 +872,7 @@ function meta.listSlots(filter, limit, includeEquipment)
     local seenEquipment = {}
     local seenInvisibleItems = {}
 
-    -- NOTE [JM] skipped for performance reasons
-    -- sync()
+    sync()
 
     for i = 1, 16 do
         local detail = turtle.getItemDetail(i)
