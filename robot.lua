@@ -425,11 +425,11 @@ local function wrap(name, side, isNotEquipment)
     end
 
     if target then
-        meta.dispatchEvent("wrapped", name, side, not isNotEquipment)
-
         if isNotEquipment then
             meta.wrappedNames[side] = name
         end
+
+        meta.dispatchEvent("wrapped", name, side, not isNotEquipment)
     end
 
     return target
