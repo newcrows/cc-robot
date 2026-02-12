@@ -399,7 +399,7 @@ local function sync()
     end
 end
 
-local function wrap(name, side, isNotEquipment)
+local function wrap(name, side, isEquipment)
     if not name then
         error("name must not be nil")
     end
@@ -418,7 +418,7 @@ local function wrap(name, side, isNotEquipment)
             name = name,
             side = side,
             target = target,
-            wrappedAsEquipment = not isNotEquipment
+            wrappedAsEquipment = isEquipment
         }
 
         -- most constructors should return nil if opts.target is nil
@@ -427,11 +427,11 @@ local function wrap(name, side, isNotEquipment)
     end
 
     if target then
-        if isNotEquipment then
+        if not isEquipment then
             meta.wrappedNames[side] = name
         end
 
-        meta.dispatchEvent("wrapped", name, side, not isNotEquipment)
+        meta.dispatchEvent("wrapped", name, side, isEquipment)
     end
 
     return target
@@ -538,7 +538,7 @@ local function equip(name, side)
     local proxy = meta.equipProxies[name]
 
     proxy.side = side
-    proxy.target = wrap(name, side)
+    proxy.target = wrap(name, side, true)
 
     meta.equipSide = OPPOSITE_SIDES[meta.equipSide]
     return true
@@ -635,14 +635,14 @@ local function createEquipProxy(name)
 
         if name == getName(SIDES.right) then
             proxy.side = SIDES.right
-            proxy.target = wrap(name, SIDES.right)
+            proxy.target = wrap(name, SIDES.right, true)
 
             meta.equipSide = SIDES.left
         end
 
         if name == getName(SIDES.left) then
             proxy.side = SIDES.left
-            proxy.target = wrap(name, SIDES.left)
+            proxy.target = wrap(name, SIDES.left, true)
 
             meta.equipSide = SIDES.right
         end
@@ -1306,9 +1306,9 @@ end
 
 function robot.wrap(side, wrapAs)
     if (side == SIDES.front or side == SIDES.top or side == SIDES.bottom) and not wrapAs then
-        return wrap(getName(side), side, true)
+        return wrap(getName(side), side)
     elseif side == SIDES.front or side == SIDES.back or side == SIDES.top or side == SIDES.bottom then
-        return wrap(wrapAs, side, true)
+        return wrap(wrapAs, side)
     elseif (side == SIDES.right or side == SIDES.left) and wrapAs then
         local detail = side == SIDES.right and turtle.getEquippedRight() or turtle.getEquippedLeft()
 
@@ -1331,23 +1331,23 @@ function robot.wrap(side, wrapAs)
             end
         end
 
-        return wrap(wrapAs, side, true)
+        return wrap(wrapAs, side)
     elseif side == SIDES.right or side == SIDES.left then
         error("must explicitly wrap " .. side)
     elseif not side and not wrapAs then
-        return wrap(getName(SIDES.front), SIDES.front, true)
+        return wrap(getName(SIDES.front), SIDES.front)
     else
         wrapAs = wrapAs or side
-        return wrap(wrapAs, SIDES.front, true)
+        return wrap(wrapAs, SIDES.front)
     end
 end
 
 function robot.wrapUp(wrapAs)
-    return wrap(wrapAs or getName(SIDES.top), SIDES.top, true)
+    return wrap(wrapAs or getName(SIDES.top), SIDES.top)
 end
 
 function robot.wrapDown(wrapAs)
-    return wrap(wrapAs or getName(SIDES.bottom), SIDES.bottom, true)
+    return wrap(wrapAs or getName(SIDES.bottom), SIDES.bottom)
 end
 
 function robot.forward()
