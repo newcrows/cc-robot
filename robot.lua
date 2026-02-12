@@ -56,6 +56,7 @@ local RAW_PROPERTIES = {
 }
 
 local robot = {
+    strict = true,
     version = "1.0.0",
     x = 0,
     y = 0,
@@ -615,7 +616,12 @@ local function createEquipProxy(name)
     }
 
     function proxy.use(wrapOnly)
-        sync()
+        if robot.strict then
+            -- programs can do some weird stuff with slotted equipment, like temporarily removing it
+            -- external forces (like the player) can also remove equipment at any time
+            -- so we should make sure we sync() before we access the inventory
+            sync()
+        end
 
         if proxy.target then
             return true
@@ -659,7 +665,12 @@ local function createEquipProxy(name)
     end
 
     function proxy.unuse()
-        sync()
+        if robot.strict then
+            -- programs can do some weird stuff with slotted equipment, like temporarily removing it
+            -- external forces (like the player) can also remove equipment at any time
+            -- so we should make sure we sync() before we access the inventory
+            sync()
+        end
 
         if not proxy.target then
             return true
@@ -874,14 +885,17 @@ function meta.listSlots(filter, limit, includeEquipment, includeInvisibleItems)
     local seenEquipment = {}
     local seenInvisibleItems = {}
 
-    -- programs can do some weird stuff with slotted equipment, like temporarily removing it
-    -- which would change (visible) inventory contents
-    -- so we should make sure we sync() before we access the inventory
-    sync()
+    if robot.strict then
+        -- programs can do some weird stuff with slotted equipment, like temporarily removing it
+        -- external forces (like the player) can also remove equipment at any time
+        -- so we should make sure we sync() before we access the inventory
+        sync()
 
-    -- programs can do some weird stuff inside event listeners that may change inventory contents,
-    -- so we should make sure afterUnwrap is dispatched before we access the inventory
-    unwrapNotPresentWrappedNames()
+        -- programs can do some weird stuff inside event listeners that may change inventory contents,
+        -- external forces (like the player) can also take or mine peripheral blocks at any time
+        -- so we should make sure we unwrapNotPresentWrappedNames() before we access the inventory
+        unwrapNotPresentWrappedNames()
+    end
 
     for i = 1, 16 do
         local detail = turtle.getItemDetail(i)
@@ -1303,7 +1317,12 @@ function robot.wrap(side, wrapAs)
                 error(err)
             end
 
-            sync()
+            if robot.strict then
+                -- programs can do some weird stuff with slotted equipment, like temporarily removing it
+                -- external forces (like the player) can also remove equipment at any time
+                -- so we should make sure we sync() before we access the inventory
+                sync()
+            end
         end
 
         return wrap(wrapAs, side, true)
