@@ -389,7 +389,7 @@ local function sync()
                 error("pinned " .. name .. " was removed illegally")
             end
 
-            meta.dispatchEvent("unwrapped", name, proxy.side)
+            meta.dispatchEvent("unwrapped", name, proxy.side, true)
 
             proxy.side = nil
             proxy.target = nil
@@ -424,7 +424,7 @@ local function wrap(name, side, isNotEquipment)
     end
 
     if target then
-        meta.dispatchEvent("wrapped", name, side)
+        meta.dispatchEvent("wrapped", name, side, not isNotEquipment)
 
         if isNotEquipment then
             meta.wrappedNames[side] = name
@@ -523,7 +523,7 @@ local function equip(name, side)
         local swapProxy = meta.equipProxies[swapName]
 
         if swapProxy then
-            meta.dispatchEvent("unwrapped", swapProxy.name, swapProxy.side)
+            meta.dispatchEvent("unwrapped", swapProxy.name, swapProxy.side, true)
 
             swapProxy.side = nil
             swapProxy.target = nil
@@ -594,7 +594,7 @@ local function unequip(proxy)
         return false, err
     end
 
-    meta.dispatchEvent("unwrapped", proxy.name, proxy.side)
+    meta.dispatchEvent("unwrapped", proxy.name, proxy.side, true)
 
     proxy.side = nil
     proxy.target = nil
