@@ -336,7 +336,7 @@ end
 
 local function unwrapAllWrappedNames()
     for wrappedSide, wrappedName in pairs(meta.wrappedNames) do
-        meta.dispatchEvent("afterUnwrap", wrappedName, wrappedSide)
+        meta.dispatchEvent("unwrapped", wrappedName, wrappedSide)
     end
 
     meta.wrappedNames = {}
@@ -346,7 +346,7 @@ local function unwrapNotPresentWrappedNames()
     for wrappedSide, wrappedName in pairs(meta.wrappedNames) do
         if not peripheral.isPresent(wrappedSide) then
             meta.wrappedNames[wrappedSide] = nil
-            meta.dispatchEvent("afterUnwrap", wrappedName, wrappedSide)
+            meta.dispatchEvent("unwrapped", wrappedName, wrappedSide)
         end
     end
 end
@@ -389,7 +389,7 @@ local function sync()
                 error("pinned " .. name .. " was removed illegally")
             end
 
-            meta.dispatchEvent("afterUnwrap", name, proxy.side)
+            meta.dispatchEvent("unwrapped", name, proxy.side)
 
             proxy.side = nil
             proxy.target = nil
@@ -424,7 +424,7 @@ local function wrap(name, side, isNotEquipment)
     end
 
     if target then
-        meta.dispatchEvent("afterWrap", name, side)
+        meta.dispatchEvent("wrapped", name, side)
 
         if isNotEquipment then
             meta.wrappedNames[side] = name
@@ -523,7 +523,7 @@ local function equip(name, side)
         local swapProxy = meta.equipProxies[swapName]
 
         if swapProxy then
-            meta.dispatchEvent("afterUnwrap", swapProxy.name, swapProxy.side)
+            meta.dispatchEvent("unwrapped", swapProxy.name, swapProxy.side)
 
             swapProxy.side = nil
             swapProxy.target = nil
@@ -594,7 +594,7 @@ local function unequip(proxy)
         return false, err
     end
 
-    meta.dispatchEvent("afterUnwrap", proxy.name, proxy.side)
+    meta.dispatchEvent("unwrapped", proxy.name, proxy.side)
 
     proxy.side = nil
     proxy.target = nil
@@ -816,15 +816,17 @@ local function equipHelper(name, pinned)
     local proxy = meta.equipProxies[name]
 
     if not proxy then
-        meta.dispatchEvent("beforeEquip", name)
-
         proxy = createEquipProxy(name)
         meta.equipProxies[name] = proxy
 
         proxy.use(true)
-    end
 
-    if pinned then
+        if pinned then
+            proxy.pin()
+        end
+
+        meta.dispatchEvent("equipped", name, pinned)
+    elseif pinned then
         proxy.pin()
     end
 
@@ -858,7 +860,7 @@ local function unequipHelper(name)
         proxy.use = nil
         meta.equipProxies[name] = nil
 
-        meta.dispatchEvent("afterUnequip", name)
+        meta.dispatchEvent("unequipped", name)
         return true
     end
 
