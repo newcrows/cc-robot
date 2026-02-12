@@ -1218,15 +1218,17 @@ function robot.insertEventListener(listener)
     listener.id = id
 
     meta.nextEventListenerId = id + 1
-    return true
+    return id
 end
 
-function robot.removeEventListener(listener)
-    if not listener then
+function robot.removeEventListener(idOrListener)
+    if type(idOrListener) == "table" then
+        idOrListener = idOrListener.id
+    elseif not idOrListener then
         error("listener must not be nil")
     end
 
-    meta.eventListeners[listener.id] = nil
+    meta.eventListeners[idOrListener] = nil
     return true
 end
 
