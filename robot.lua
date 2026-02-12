@@ -665,7 +665,7 @@ local function createEquipProxy(name)
             return true
         end
 
-        if proxy.target and canUnequip(proxy) then
+        if canUnequip(proxy) then
             return unequip(proxy)
         end
 
