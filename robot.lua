@@ -1526,7 +1526,8 @@ function robot.getItemSpaceForUnknown()
 end
 
 function robot.hasItemCount(name)
-    return robot.getItemCount(name) > 0
+    local slot = meta.getFirstSlot(name)
+    return slot and true or false
 end
 
 function robot.hasItemSpace(nameOrStackCount, stackCount)
@@ -1535,12 +1536,7 @@ end
 
 function robot.hasItemSpaceForUnknown()
     local slot = meta.getFirstEmptySlot()
-
-    if slot then
-        return true
-    else
-        return false
-    end
+    return slot and true or false
 end
 
 function robot.detect()
