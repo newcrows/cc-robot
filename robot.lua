@@ -336,15 +336,15 @@ meta.peripheralConstructors["advancedperipherals:me_bridge"] = function(opts)
 end
 
 local function unwrapAllWrappedNames()
-    for wrappedSide, wrappedName in pairs(meta.wrappedNames) do
-        meta.unwrap(wrappedName, wrappedSide)
+    for wrappedSide, _ in pairs(meta.wrappedNames) do
+        meta.unwrap(wrappedSide)
     end
 end
 
 local function unwrapNotPresentWrappedNames()
-    for wrappedSide, wrappedName in pairs(meta.wrappedNames) do
+    for wrappedSide, _ in pairs(meta.wrappedNames) do
         if not peripheral.isPresent(wrappedSide) then
-            meta.unwrap(wrappedName, wrappedSide)
+            meta.unwrap(wrappedSide)
         end
     end
 end
