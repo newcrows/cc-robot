@@ -562,7 +562,7 @@ local function canUnequip(proxy)
     local space = robot.getItemSpace(proxy.name)
 
     if space == 0 then
-        return false, name .. " can not be unequipped because there is no space in inventory"
+        return false, proxy.name .. " can not be unequipped because there is no space in inventory"
     end
 
     return true
