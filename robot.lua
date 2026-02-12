@@ -1526,6 +1526,12 @@ function robot.getItemSpaceForUnknown()
 end
 
 function robot.hasItemCount(name)
+    name = name or meta.selectedName
+
+    if not name then
+        error("name must not be nil")
+    end
+
     local slot = meta.getFirstSlot(name)
     return slot and true or false
 end
