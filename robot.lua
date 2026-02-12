@@ -855,7 +855,8 @@ local function unequipHelper(name)
     return true
 end
 
--- NOTE [JM] constructors should NEVER wrap equipment themselves, only blocks
+-- NOTE [JM] constructors MUST NEVER wrap equipment, only blocks
+-- isEquipment flag MUST ONLY be used by internal equipment rotation logic
 function meta.wrap(name, side, isEquipment)
     if not name then
         error("name must not be nil")
