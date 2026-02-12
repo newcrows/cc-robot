@@ -1657,6 +1657,10 @@ end
 function robot.getItemDetail(name)
     name = name or meta.selectedName
 
+    if not name then
+        error("name must not be nil")
+    end
+
     local count = robot.getItemCount(name)
 
     if count > 0 then
