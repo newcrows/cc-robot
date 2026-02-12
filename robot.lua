@@ -844,6 +844,7 @@ local function unequipHelper(name)
     return true
 end
 
+-- NOTE [JM] constructors should NEVER wrap equipment themselves, only blocks
 function meta.wrap(name, side, isEquipment)
     if not name then
         error("name must not be nil")
