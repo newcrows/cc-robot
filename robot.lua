@@ -70,7 +70,7 @@ local meta = {
     invisibleItemCounts = {},
     eventListeners = {},
     nextEventListenerId = 1,
-    wrappedPeripherals = {}
+    wrappedNames = {}
 }
 
 robot.meta = meta
@@ -334,6 +334,14 @@ meta.peripheralConstructors["advancedperipherals:me_bridge"] = function(opts)
     }
 end
 
+local function unwrapAllWrappedNames()
+    for wrappedSide, wrappedName in pairs(meta.wrappedNames) do
+        meta.dispatchEvent("afterUnwrap", wrappedName, wrappedSide)
+    end
+
+    meta.wrappedNames = {}
+end
+
 local function getName(side)
     if not side then
         error("side must not be nil")
@@ -405,10 +413,10 @@ local function wrap(name, side, isNotEquipment)
     end
 
     if target then
-        meta.dispatchEvent("afterWrap", name)
+        meta.dispatchEvent("afterWrap", name, side)
 
         if isNotEquipment then
-            meta.wrappedPeripherals[side] = name
+            meta.wrappedNames[side] = name
         end
     end
 
@@ -846,17 +854,15 @@ function meta.listSlots(filter, limit, includeEquipment)
     -- NOTE [JM] skipped for performance reasons
     -- sync()
 
-    for wrappedSide, wrappedName in pairs(meta.wrappedPeripherals) do
+    for wrappedSide, wrappedName in pairs(meta.wrappedNames) do
         if not peripheral.isPresent(wrappedSide) then
-            meta.wrappedPeripherals[wrappedSide] = nil
-            meta.dispatchEvent("afterUnwrap", wrappedName)
+            meta.wrappedNames[wrappedSide] = nil
+            meta.dispatchEvent("afterUnwrap", wrappedName, wrappedSide)
         end
     end
     -- equipment manages its own dispatch of "afterUnwrap" (both for equipment and for normal peripherals)
     -- -> it will mostly not equip equipment on a side that is wrapped
     -- -> and also it will dispatch "afterUnwrap" when equipment is unused
-
-    -- robot move and turn functions must invalidate ALL wrapped peripherals!
 
     for i = 1, 16 do
         local detail = turtle.getItemDetail(i)
@@ -1300,6 +1306,7 @@ function robot.up()
     local ok, err = turtle.up()
 
     if ok then
+        unwrapAllWrappedNames()
         robot.y = robot.y + DELTAS.up.y
     end
 
@@ -1310,6 +1317,7 @@ function robot.down()
     local ok, err = turtle.down()
 
     if ok then
+        unwrapAllWrappedNames()
         robot.y = robot.y + DELTAS.down.y
     end
 
@@ -1320,6 +1328,7 @@ function robot.forward()
     local ok, err = turtle.forward()
 
     if ok then
+        unwrapAllWrappedNames()
         local delta = DELTAS[robot.facing]
 
         robot.x = robot.x + delta.x
@@ -1333,6 +1342,7 @@ function robot.back()
     local ok, err = turtle.back()
 
     if ok then
+        unwrapAllWrappedNames()
         local delta = DELTAS[robot.facing]
 
         robot.x = robot.x - delta.x
@@ -1346,6 +1356,8 @@ function robot.turnLeft()
     local ok, err = turtle.turnLeft()
 
     if ok then
+        unwrapAllWrappedNames()
+
         local i = FACINGS[robot.facing] - 1
         robot.facing = FACINGS[i % 4]
     end
@@ -1357,6 +1369,8 @@ function robot.turnRight()
     local ok, err = turtle.turnRight()
 
     if ok then
+        unwrapAllWrappedNames()
+
         local i = FACINGS[robot.facing] + 1
         robot.facing = FACINGS[i % 4]
     end
