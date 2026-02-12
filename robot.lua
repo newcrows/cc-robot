@@ -874,6 +874,8 @@ function meta.listSlots(filter, limit, includeEquipment)
 
     sync()
 
+    unwrapNotPresentWrappedNames()
+
     for i = 1, 16 do
         local detail = turtle.getItemDetail(i)
 
