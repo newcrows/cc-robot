@@ -4,20 +4,8 @@ local meta = robot.meta
 --[[
     TEST SETUP
 
-    blocks:
-        front = air
-        right = air
-        back = air
-        left = air
-        top = air
-        bottom = air
-        below bottom = chest with 10x diamond pickaxe and nothing else
-
-    facing:
-        actual north
-
     fuel_level:
-        >64 and <99000
+        > 5 and < fuelLimit - 19
 
     inventory:
         slot_1 = 1x diamond pickaxe
@@ -33,10 +21,101 @@ local meta = robot.meta
         slot_right = empty
         slot_left = empty
 
+    blocks:
+        front = air
+        right = air
+        back = air
+        left = air
+        top = air
+        bottom = air
+        below bottom = chest with 10x diamond pickaxe and nothing else
+
     reboot and then run test.lua
 
     NOTE [JM] test order is fixed because tests have side effects
 ]]--
+
+local function testSetup()
+    local function assertItemsInSlot(slot, name, count)
+        local detail = turtle.getItemDetail(slot)
+        local msg = "need " .. tostring(count) .. " " .. name .. " in slot " .. slot
+
+        assert(detail and detail.name == name and detail.count == count, msg)
+    end
+
+    local fuelLevel = turtle.getFuelLevel()
+    local fuelLimit = turtle.getFuelLimit()
+    assert(fuelLevel > 5 and fuelLevel < fuelLimit - 19)
+
+    assertItemsInSlot(1, "minecraft:diamond_pickaxe", 1)
+
+    assertItemsInSlot(2, "minecraft:compass", 2)
+
+    assertItemsInSlot(3, "minecraft:chest", 2)
+
+    assertItemsInSlot(4, "minecraft:dirt", 64)
+
+    assertItemsInSlot(5, "minecraft:dirt", 32)
+
+    assertItemsInSlot(6, "minecraft:stick", 4)
+
+    assertItemsInSlot(7, "minecraft:diamond_sword", 1)
+
+    for i = 8, 16 do
+        assert(turtle.getItemCount(i) == 0, "slot " .. tostring(i) .. " must be empty")
+    end
+
+    assert(not turtle.getEquippedRight(), "must not have tool on right")
+    assert(not turtle.getEquippedLeft(), "must not have tool on left")
+
+    turtle.turnRight()
+    assert(not turtle.detect(), "must not have block on right")
+
+    turtle.turnRight()
+    assert(not turtle.detect(), "must not have block on back")
+
+    turtle.turnRight()
+    assert(not turtle.detect(), "must not have block on left")
+
+    turtle.turnRight()
+    assert(not turtle.detect(), "must not have block on front")
+
+    assert(not turtle.detectUp(), "must not have block above")
+    assert(not turtle.detectDown(), "must not have block below")
+
+    assert(turtle.down(), "move failed")
+
+    local function saveSetup()
+
+        local _, detail = turtle.inspectDown()
+        assert(detail and detail.name == "minecraft:chest", "must have chest on the second block below")
+
+        local chest = peripheral.wrap("bottom")
+        local chestItems = chest.list()
+        local chestItemCount = 0
+
+        for slot, item in pairs(chestItems) do
+            if slot < 11 then
+                assert(item.name == "minecraft:diamond_pickaxe", "chest.slot " .. tostring(slot) .. "must contain pickaxe")
+                chestItemCount = chestItemCount + 1
+            else
+                error("chest.slot " .. tostring(slot) .. " must be empty")
+            end
+        end
+
+        assert(chestItemCount == 10, "chest must contain exactly 10 pickaxes")
+    end
+
+    local ok, err = pcall(saveSetup)
+
+    assert(turtle.up(), "move failed")
+
+    if not ok then
+        error(err)
+    end
+
+    print("testSetup passed")
+end
 
 local function testInsertEventListener()
     local listener = {}
@@ -1458,6 +1537,7 @@ local function testListItems()
     print("testListItems passed")
 end
 
+testSetup()
 testInsertEventListener()
 testRemoveEventListener()
 testListEventListeners()
