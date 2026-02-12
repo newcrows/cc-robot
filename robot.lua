@@ -867,7 +867,7 @@ local function unequipHelper(name)
     return true
 end
 
-function meta.listSlots(filter, limit, includeEquipment)
+function meta.listSlots(filter, limit, includeEquipment, includeInvisibleItems)
     limit = limit or 16
 
     local slots = {}
@@ -898,14 +898,16 @@ function meta.listSlots(filter, limit, includeEquipment)
                 end
             end
 
-            local invisibleCount = meta.invisibleItemCounts[detail.name]
-            local seenInvisibleCount = seenInvisibleItems[detail.name] or 0
+            if not includeInvisibleItems then
+                local invisibleCount = meta.invisibleItemCounts[detail.name]
+                local seenInvisibleCount = seenInvisibleItems[detail.name] or 0
 
-            if invisibleCount and seenInvisibleCount < invisibleCount then
-                local invisibleCountOffset = -math.min(detail.count + countOffset, invisibleCount - seenInvisibleCount)
+                if invisibleCount and seenInvisibleCount < invisibleCount then
+                    local invisibleCountOffset = -math.min(detail.count + countOffset, invisibleCount - seenInvisibleCount)
 
-                countOffset = countOffset + invisibleCountOffset
-                seenInvisibleItems[detail.name] = seenInvisibleCount - invisibleCountOffset
+                    countOffset = countOffset + invisibleCountOffset
+                    seenInvisibleItems[detail.name] = seenInvisibleCount - invisibleCountOffset
+                end
             end
 
             local adjustedCount = turtle.getItemCount(i) + countOffset
@@ -1058,7 +1060,7 @@ function meta.setSlot(slotId, name, count, blacklist)
     }
 
     local sameSlots = {}
-    local candidateSlots = meta.listSlots(name, 16, true)
+    local candidateSlots = meta.listSlots(name, 16, true, true)
 
     for i = 1, #candidateSlots do
         local candidateSlot = candidateSlots[i]
