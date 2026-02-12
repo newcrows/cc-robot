@@ -106,6 +106,10 @@ end
 meta.peripheralConstructors["minecraft:crafting_table"] = function(opts)
     local target = opts.target
 
+    if not target then
+        return nil
+    end
+
     local function moveEquipmentOutOfTheWay()
         local lastEProxy = nil
         local eCount = 0
@@ -259,6 +263,10 @@ end
 meta.peripheralConstructors["advancedperipherals:me_bridge"] = function(opts)
     local side = opts.side
     local target = opts.target
+
+    if not target then
+        return nil
+    end
 
     local facing
 
