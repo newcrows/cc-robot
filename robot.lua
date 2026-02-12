@@ -71,7 +71,7 @@ local meta = {
     invisibleItemCounts = {},
     eventListeners = {},
     nextEventListenerId = 1,
-    wrappedNames = {}
+    wrappedBlockNames = {}
 }
 
 robot.meta = meta
@@ -335,14 +335,14 @@ meta.peripheralConstructors["advancedperipherals:me_bridge"] = function(opts)
     }
 end
 
-local function unwrapAllWrappedNames()
-    for wrappedSide, _ in pairs(meta.wrappedNames) do
+local function unwrapAllBlocks()
+    for wrappedSide, _ in pairs(meta.wrappedBlockNames) do
         meta.unwrap(wrappedSide)
     end
 end
 
-local function unwrapNotPresentWrappedNames()
-    for wrappedSide, _ in pairs(meta.wrappedNames) do
+local function unwrapNotPresentBlocks()
+    for wrappedSide, _ in pairs(meta.wrappedBlockNames) do
         if not peripheral.isPresent(wrappedSide) then
             meta.unwrap(wrappedSide)
         end
@@ -426,7 +426,7 @@ local function canEquip(name, side)
         return true
     end
 
-    if meta.wrappedNames[side] then
+    if meta.wrappedBlockNames[side] then
         return false, name .. " can not be equipped because a peripheral is bound on " .. side
     end
 
@@ -874,7 +874,7 @@ function meta.wrap(name, side, isEquipment)
 
     if target then
         if not isEquipment then
-            meta.wrappedNames[side] = name
+            meta.wrappedBlockNames[side] = name
         end
 
         meta.dispatchEvent("wrapped", name, side, isEquipment)
@@ -884,10 +884,10 @@ function meta.wrap(name, side, isEquipment)
 end
 
 function meta.unwrap(side)
-    local name = meta.wrappedNames[side]
+    local name = meta.wrappedBlockNames[side]
 
     if name then
-        meta.wrappedNames[side] = nil
+        meta.wrappedBlockNames[side] = nil
         meta.dispatchEvent("unwrapped", name, side)
     end
 end
@@ -908,7 +908,7 @@ function meta.listSlots(filter, limit, includeEquipment, includeInvisibleItems)
         -- programs can do some weird stuff inside event listeners that may change inventory contents,
         -- external forces (like the player) can also take or mine peripheral blocks at any time
         -- so we should make sure we unwrapNotPresentWrappedNames() before we access the inventory
-        unwrapNotPresentWrappedNames()
+        unwrapNotPresentBlocks()
     end
 
     for i = 1, 16 do
@@ -1362,7 +1362,7 @@ function robot.forward()
     local ok, err = turtle.forward()
 
     if ok then
-        unwrapAllWrappedNames()
+        unwrapAllBlocks()
         local delta = DELTAS[robot.facing]
 
         robot.x = robot.x + delta.x
@@ -1376,7 +1376,7 @@ function robot.back()
     local ok, err = turtle.back()
 
     if ok then
-        unwrapAllWrappedNames()
+        unwrapAllBlocks()
         local delta = DELTAS[robot.facing]
 
         robot.x = robot.x - delta.x
@@ -1390,7 +1390,7 @@ function robot.up()
     local ok, err = turtle.up()
 
     if ok then
-        unwrapAllWrappedNames()
+        unwrapAllBlocks()
         robot.y = robot.y + DELTAS.up.y
     end
 
@@ -1401,7 +1401,7 @@ function robot.down()
     local ok, err = turtle.down()
 
     if ok then
-        unwrapAllWrappedNames()
+        unwrapAllBlocks()
         robot.y = robot.y + DELTAS.down.y
     end
 
@@ -1412,7 +1412,7 @@ function robot.turnLeft()
     local ok, err = turtle.turnLeft()
 
     if ok then
-        unwrapAllWrappedNames()
+        unwrapAllBlocks()
 
         local i = FACINGS[robot.facing] - 1
         robot.facing = FACINGS[i % 4]
@@ -1425,7 +1425,7 @@ function robot.turnRight()
     local ok, err = turtle.turnRight()
 
     if ok then
-        unwrapAllWrappedNames()
+        unwrapAllBlocks()
 
         local i = FACINGS[robot.facing] + 1
         robot.facing = FACINGS[i % 4]
