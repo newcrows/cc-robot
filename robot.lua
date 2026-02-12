@@ -380,6 +380,8 @@ local function sync()
                 error("pinned " .. name .. " was removed illegally")
             end
 
+            meta.dispatchEvent("afterUnwrap", name, proxy.side)
+
             proxy.side = nil
             proxy.target = nil
         end
@@ -507,6 +509,8 @@ local function equip(name, side)
         local swapProxy = meta.equipProxies[swapName]
 
         if swapProxy then
+            meta.dispatchEvent("afterUnwrap", swapProxy.name, swapProxy.side)
+
             swapProxy.side = nil
             swapProxy.target = nil
         end
@@ -574,6 +578,8 @@ local function unequip(proxy)
     if not ok then
         return false, err
     end
+
+    meta.dispatchEvent("afterUnwrap", proxy.name, proxy.side)
 
     proxy.side = nil
     proxy.target = nil
@@ -860,6 +866,7 @@ function meta.listSlots(filter, limit, includeEquipment)
             meta.dispatchEvent("afterUnwrap", wrappedName, wrappedSide)
         end
     end
+
     -- equipment manages its own dispatch of "afterUnwrap" (both for equipment and for normal peripherals)
     -- -> it will mostly not equip equipment on a side that is wrapped
     -- -> and also it will dispatch "afterUnwrap" when equipment is unused
