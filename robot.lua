@@ -69,7 +69,8 @@ local meta = {
     peripheralConstructors = {},
     invisibleItemCounts = {},
     eventListeners = {},
-    nextEventListenerId = 1
+    nextEventListenerId = 1,
+    wrappedPeripherals = {}
 }
 
 robot.meta = meta
@@ -360,7 +361,7 @@ local function sync()
     for name, proxy in pairs(meta.equipProxies) do
         if proxy.target and name ~= getName(proxy.side) then
             if proxy.pinned then
-                error("pinned " .. name .. " was removed manually")
+                error("pinned " .. name .. " was removed illegally")
             end
 
             proxy.side = nil
@@ -369,7 +370,7 @@ local function sync()
     end
 end
 
-local function wrap(name, side)
+local function wrap(name, side, isNotEquipment)
     if not name then
         error("name must not be nil")
     end
@@ -390,7 +391,17 @@ local function wrap(name, side)
             target = target
         }
 
-        return constructor(opts)
+        -- most constructors should return nil if opts.target is nil
+        -- only targets that are not peripherals (i.E. pickaxe) should behave differently
+        target = constructor(opts)
+    end
+
+    if target then
+        meta.dispatchEvent("afterWrap", name)
+
+        if isNotEquipment then
+            meta.wrappedPeripherals[side] = name
+        end
     end
 
     return target
@@ -827,6 +838,18 @@ function meta.listSlots(filter, limit, includeEquipment)
     -- NOTE [JM] skipped for performance reasons
     -- sync()
 
+    for wrappedSide, wrappedName in pairs(meta.wrappedPeripherals) do
+        if not peripheral.isPresent(wrappedSide) then
+            meta.wrappedPeripherals[wrappedSide] = nil
+            meta.dispatchEvent("afterUnwrap", wrappedName)
+        end
+    end
+    -- equipment manages its own dispatch of "afterUnwrap" (both for equipment and for normal peripherals)
+    -- -> it will mostly not equip equipment on a side that is wrapped
+    -- -> and also it will dispatch "afterUnwrap" when equipment is unused
+
+    -- robot move and turn functions must invalidate ALL wrapped peripherals!
+
     for i = 1, 16 do
         local detail = turtle.getItemDetail(i)
 
@@ -1224,22 +1247,45 @@ function robot.listPeripheralConstructors()
     return constructorArr
 end
 
-function robot.wrap(side)
-    side = side or SIDES.front
+function robot.wrap(side, wrapAs)
+    if (side == SIDES.front or side == SIDES.top or side == SIDES.bottom) and not wrapAs then
+        return wrap(getName(side), side, true)
+    elseif side == SIDES.front or side == SIDES.top or side == SIDES.bottom then
+        return wrap(wrapAs, side, true)
+    elseif (side == SIDES.right or side == SIDES.left) and wrapAs then
+        local detail = side == SIDES.right and turtle.getEquippedRight() or turtle.getEquippedLeft()
 
-    if not side then
-        error("side must not be nil")
+        if detail then
+            if not meta.selectFirstEmptySlot() then
+                error("can't unequip tool because inventory is full")
+            end
+
+            local ok, err = side == SIDES.right and turtle.equipRight() or turtle.equipLeft()
+
+            if not ok then
+                error(err)
+            end
+
+            sync()
+        end
+
+        return wrap(wrapAs, side, true)
+    elseif side == SIDES.right or side == SIDES.left then
+        error("must explicitly wrap " .. side)
+    elseif not side and not wrapAs then
+        return wrap(getName(SIDES.front), SIDES.front, true)
+    else
+        wrapAs = wrapAs or side
+        return wrap(wrapAs, SIDES.front, true)
     end
-
-    return wrap(getName(side), side)
 end
 
 function robot.wrapUp()
-    return wrap(getName(SIDES.top), SIDES.top)
+    return wrap(getName(SIDES.top), SIDES.top, true)
 end
 
 function robot.wrapDown()
-    return wrap(getName(SIDES.bottom), SIDES.bottom)
+    return wrap(getName(SIDES.bottom), SIDES.bottom, true)
 end
 
 function robot.up()
