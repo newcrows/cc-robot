@@ -449,8 +449,12 @@ local function canEquip(name, side)
         error("proxy must not be nil")
     end
 
-    if proxy and proxy.target then
+    if proxy.target then
         return true
+    end
+
+    if meta.wrappedNames[side] then
+        return false, name .. " can not be equipped because a peripheral is bound on " .. side
     end
 
     local slot = meta.getFirstSlot(name, true)
