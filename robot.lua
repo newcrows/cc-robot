@@ -1325,28 +1325,6 @@ function robot.wrapDown(wrapAs)
     return wrap(wrapAs or getName(SIDES.bottom), SIDES.bottom, true)
 end
 
-function robot.up()
-    local ok, err = turtle.up()
-
-    if ok then
-        unwrapAllWrappedNames()
-        robot.y = robot.y + DELTAS.up.y
-    end
-
-    return ok, err
-end
-
-function robot.down()
-    local ok, err = turtle.down()
-
-    if ok then
-        unwrapAllWrappedNames()
-        robot.y = robot.y + DELTAS.down.y
-    end
-
-    return ok, err
-end
-
 function robot.forward()
     local ok, err = turtle.forward()
 
@@ -1370,6 +1348,28 @@ function robot.back()
 
         robot.x = robot.x - delta.x
         robot.z = robot.z - delta.z
+    end
+
+    return ok, err
+end
+
+function robot.up()
+    local ok, err = turtle.up()
+
+    if ok then
+        unwrapAllWrappedNames()
+        robot.y = robot.y + DELTAS.up.y
+    end
+
+    return ok, err
+end
+
+function robot.down()
+    local ok, err = turtle.down()
+
+    if ok then
+        unwrapAllWrappedNames()
+        robot.y = robot.y + DELTAS.down.y
     end
 
     return ok, err
