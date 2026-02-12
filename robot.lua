@@ -883,8 +883,10 @@ function meta.wrap(name, side, isEquipment)
     return target
 end
 
-function meta.unwrap(name, side)
-    if meta.wrappedNames[side] then
+function meta.unwrap(side)
+    local name = meta.wrappedNames[side]
+
+    if name then
         meta.wrappedNames[side] = nil
         meta.dispatchEvent("unwrapped", name, side)
     end
