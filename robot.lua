@@ -335,13 +335,13 @@ meta.peripheralConstructors["advancedperipherals:me_bridge"] = function(opts)
     }
 end
 
-local function unwrapAllBlocks()
+local function unwrapAllWrappedBlocks()
     for wrappedSide, _ in pairs(meta.wrappedBlockNames) do
         meta.unwrap(wrappedSide)
     end
 end
 
-local function unwrapNotPresentBlocks()
+local function unwrapNotPresentWrappedBlocks()
     for wrappedSide, _ in pairs(meta.wrappedBlockNames) do
         if not peripheral.isPresent(wrappedSide) then
             meta.unwrap(wrappedSide)
@@ -908,7 +908,7 @@ function meta.listSlots(filter, limit, includeEquipment, includeInvisibleItems)
         -- programs can do some weird stuff inside event listeners that may change inventory contents,
         -- external forces (like the player) can also take or mine peripheral blocks at any time
         -- so we should make sure we unwrapNotPresentWrappedNames() before we access the inventory
-        unwrapNotPresentBlocks()
+        unwrapNotPresentWrappedBlocks()
     end
 
     for i = 1, 16 do
@@ -1362,7 +1362,7 @@ function robot.forward()
     local ok, err = turtle.forward()
 
     if ok then
-        unwrapAllBlocks()
+        unwrapAllWrappedBlocks()
         local delta = DELTAS[robot.facing]
 
         robot.x = robot.x + delta.x
@@ -1376,7 +1376,7 @@ function robot.back()
     local ok, err = turtle.back()
 
     if ok then
-        unwrapAllBlocks()
+        unwrapAllWrappedBlocks()
         local delta = DELTAS[robot.facing]
 
         robot.x = robot.x - delta.x
@@ -1390,7 +1390,7 @@ function robot.up()
     local ok, err = turtle.up()
 
     if ok then
-        unwrapAllBlocks()
+        unwrapAllWrappedBlocks()
         robot.y = robot.y + DELTAS.up.y
     end
 
@@ -1401,7 +1401,7 @@ function robot.down()
     local ok, err = turtle.down()
 
     if ok then
-        unwrapAllBlocks()
+        unwrapAllWrappedBlocks()
         robot.y = robot.y + DELTAS.down.y
     end
 
@@ -1412,7 +1412,7 @@ function robot.turnLeft()
     local ok, err = turtle.turnLeft()
 
     if ok then
-        unwrapAllBlocks()
+        unwrapAllWrappedBlocks()
 
         local i = FACINGS[robot.facing] - 1
         robot.facing = FACINGS[i % 4]
@@ -1425,7 +1425,7 @@ function robot.turnRight()
     local ok, err = turtle.turnRight()
 
     if ok then
-        unwrapAllBlocks()
+        unwrapAllWrappedBlocks()
 
         local i = FACINGS[robot.facing] + 1
         robot.facing = FACINGS[i % 4]
