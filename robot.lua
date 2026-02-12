@@ -896,6 +896,10 @@ function meta.wrap(name, side, isEquipment)
 end
 
 function meta.unwrap(side)
+    if not side then
+        error("side must not be nil")
+    end
+
     local name = meta.wrappedBlockNames[side]
 
     if name then
