@@ -583,7 +583,7 @@ local function unequip(proxy)
     local slot = meta.getFirstEmptySlot()
 
     if not slot then
-        return false, "could not unequip " .. name .. " because there is no space in inventory"
+        return false, "could not unequip " .. proxy.name .. " because there is no space in inventory"
     end
 
     turtle.select(slot.id)
