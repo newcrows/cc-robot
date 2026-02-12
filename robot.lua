@@ -890,6 +890,8 @@ function meta.unwrap(side)
         meta.wrappedBlockNames[side] = nil
         meta.dispatchEvent("unwrapped", name, side)
     end
+
+    return true
 end
 
 function meta.listSlots(filter, limit, includeEquipment, includeInvisibleItems)
