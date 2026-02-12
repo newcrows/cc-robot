@@ -39,9 +39,9 @@
 
 requires `CC:Tweaked 1.116.0` or higher.
 
-download from [pastebin](https://pastebin.com/aHyLYPrm)
+download from [pastebin](https://pastebin.com/cx27MhNy)
 
-`pastebin get aHyLYPrm robot.lua`
+`pastebin get cx27MhNy robot.lua`
 
 get a `robot` instance using `require()`
 ```lua
