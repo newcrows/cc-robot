@@ -1317,12 +1317,12 @@ function robot.wrap(side, wrapAs)
     end
 end
 
-function robot.wrapUp()
-    return wrap(getName(SIDES.top), SIDES.top, true)
+function robot.wrapUp(wrapAs)
+    return wrap(wrapAs or getName(SIDES.top), SIDES.top, true)
 end
 
-function robot.wrapDown()
-    return wrap(getName(SIDES.bottom), SIDES.bottom, true)
+function robot.wrapDown(wrapAs)
+    return wrap(wrapAs or getName(SIDES.bottom), SIDES.bottom, true)
 end
 
 function robot.up()
