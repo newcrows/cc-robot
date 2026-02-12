@@ -399,44 +399,6 @@ local function sync()
     end
 end
 
-local function wrap(name, side, isEquipment)
-    if not name then
-        error("name must not be nil")
-    end
-
-    if not side then
-        error("side must not be nil")
-    end
-
-    local constructor = meta.peripheralConstructors[name]
-    local target = peripheral.wrap(side)
-
-    if constructor then
-        local opts = {
-            robot = robot,
-            meta = meta,
-            name = name,
-            side = side,
-            target = target,
-            wrappedAsEquipment = isEquipment
-        }
-
-        -- most constructors should return nil if opts.target is nil
-        -- only targets that are not peripherals (i.E. pickaxe) should behave differently
-        target = constructor(opts)
-    end
-
-    if target then
-        if not isEquipment then
-            meta.wrappedNames[side] = name
-        end
-
-        meta.dispatchEvent("wrapped", name, side, isEquipment)
-    end
-
-    return target
-end
-
 local function isEmpty(side)
     if not side then
         error("side must not be nil")
@@ -538,7 +500,7 @@ local function equip(name, side)
     local proxy = meta.equipProxies[name]
 
     proxy.side = side
-    proxy.target = wrap(name, side, true)
+    proxy.target = meta.wrap(name, side, true)
 
     meta.equipSide = OPPOSITE_SIDES[meta.equipSide]
     return true
@@ -635,14 +597,14 @@ local function createEquipProxy(name)
 
         if name == getName(SIDES.right) then
             proxy.side = SIDES.right
-            proxy.target = wrap(name, SIDES.right, true)
+            proxy.target = meta.wrap(name, SIDES.right, true)
 
             meta.equipSide = SIDES.left
         end
 
         if name == getName(SIDES.left) then
             proxy.side = SIDES.left
-            proxy.target = wrap(name, SIDES.left, true)
+            proxy.target = meta.wrap(name, SIDES.left, true)
 
             meta.equipSide = SIDES.right
         end
@@ -882,6 +844,44 @@ local function unequipHelper(name)
     end
 
     return true
+end
+
+function meta.wrap(name, side, isEquipment)
+    if not name then
+        error("name must not be nil")
+    end
+
+    if not side then
+        error("side must not be nil")
+    end
+
+    local constructor = meta.peripheralConstructors[name]
+    local target = peripheral.wrap(side)
+
+    if constructor then
+        local opts = {
+            robot = robot,
+            meta = meta,
+            name = name,
+            side = side,
+            target = target,
+            wrappedAsEquipment = isEquipment
+        }
+
+        -- most constructors should return nil if opts.target is nil
+        -- only targets that are not peripherals (i.E. pickaxe) should behave differently
+        target = constructor(opts)
+    end
+
+    if target then
+        if not isEquipment then
+            meta.wrappedNames[side] = name
+        end
+
+        meta.dispatchEvent("wrapped", name, side, isEquipment)
+    end
+
+    return target
 end
 
 function meta.listSlots(filter, limit, includeEquipment, includeInvisibleItems)
@@ -1306,9 +1306,9 @@ end
 
 function robot.wrap(side, wrapAs)
     if (side == SIDES.front or side == SIDES.top or side == SIDES.bottom) and not wrapAs then
-        return wrap(getName(side), side)
+        return meta.wrap(getName(side), side)
     elseif side == SIDES.front or side == SIDES.back or side == SIDES.top or side == SIDES.bottom then
-        return wrap(wrapAs, side)
+        return meta.wrap(wrapAs, side)
     elseif (side == SIDES.right or side == SIDES.left) and wrapAs then
         local detail = side == SIDES.right and turtle.getEquippedRight() or turtle.getEquippedLeft()
 
@@ -1331,23 +1331,23 @@ function robot.wrap(side, wrapAs)
             end
         end
 
-        return wrap(wrapAs, side)
+        return meta.wrap(wrapAs, side)
     elseif side == SIDES.right or side == SIDES.left then
         error("must explicitly wrap " .. side)
     elseif not side and not wrapAs then
-        return wrap(getName(SIDES.front), SIDES.front)
+        return meta.wrap(getName(SIDES.front), SIDES.front)
     else
         wrapAs = wrapAs or side
-        return wrap(wrapAs, SIDES.front)
+        return meta.wrap(wrapAs, SIDES.front)
     end
 end
 
 function robot.wrapUp(wrapAs)
-    return wrap(wrapAs or getName(SIDES.top), SIDES.top)
+    return meta.wrap(wrapAs or getName(SIDES.top), SIDES.top)
 end
 
 function robot.wrapDown(wrapAs)
-    return wrap(wrapAs or getName(SIDES.bottom), SIDES.bottom)
+    return meta.wrap(wrapAs or getName(SIDES.bottom), SIDES.bottom)
 end
 
 function robot.forward()
