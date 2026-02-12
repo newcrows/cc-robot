@@ -434,6 +434,7 @@ local function isEmpty(side)
     return detail == nil
 end
 
+-- NOTE [JM] assumes sync() was called beforehand
 local function canEquip(name, side)
     if not name then
         error("name must not be nil")
@@ -529,6 +530,7 @@ local function equip(name, side)
     return true
 end
 
+-- NOTE [JM] assumes sync() was called beforehand
 local function canUnequip(proxy)
     if not proxy then
         error("proxy must not be nil")
