@@ -342,6 +342,15 @@ local function unwrapAllWrappedNames()
     meta.wrappedNames = {}
 end
 
+local function unwrapNotPresentWrappedNames()
+    for wrappedSide, wrappedName in pairs(meta.wrappedNames) do
+        if not peripheral.isPresent(wrappedSide) then
+            meta.wrappedNames[wrappedSide] = nil
+            meta.dispatchEvent("afterUnwrap", wrappedName, wrappedSide)
+        end
+    end
+end
+
 local function getName(side)
     if not side then
         error("side must not be nil")
@@ -865,17 +874,6 @@ function meta.listSlots(filter, limit, includeEquipment)
 
     -- NOTE [JM] skipped for performance reasons
     -- sync()
-
-    for wrappedSide, wrappedName in pairs(meta.wrappedNames) do
-        if not peripheral.isPresent(wrappedSide) then
-            meta.wrappedNames[wrappedSide] = nil
-            meta.dispatchEvent("afterUnwrap", wrappedName, wrappedSide)
-        end
-    end
-
-    -- equipment manages its own dispatch of "afterUnwrap" (both for equipment and for normal peripherals)
-    -- -> it will mostly not equip equipment on a side that is wrapped
-    -- -> and also it will dispatch "afterUnwrap" when equipment is unused
 
     for i = 1, 16 do
         local detail = turtle.getItemDetail(i)
