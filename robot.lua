@@ -76,27 +76,38 @@ local meta = {
 
 robot.meta = meta
 
-meta.peripheralConstructors["minecraft:diamond_pickaxe"] = function()
+local digConstructor = function()
     return {
-        dig = turtle.dig,
-        digUp = turtle.digUp,
-        digDown = turtle.digDown
+        dig = function()
+            if turtle.dig() then
+                unwrap(SIDES.front)
+                return true
+            end
+
+            return false
+        end,
+        digUp = function()
+            if turtle.digUp() then
+                unwrap(SIDES.top)
+                return true
+            end
+
+            return false
+        end,
+        digDown = function()
+            if turtle.digDown() then
+                unwrap(SIDES.bottom)
+                return true
+            end
+
+            return false
+        end
     }
 end
-meta.peripheralConstructors["minecraft:diamond_axe"] = function()
-    return {
-        dig = turtle.dig,
-        digUp = turtle.digUp,
-        digDown = turtle.digDown
-    }
-end
-meta.peripheralConstructors["minecraft:diamond_shovel"] = function()
-    return {
-        dig = turtle.dig,
-        digUp = turtle.digUp,
-        digDown = turtle.digDown
-    }
-end
+
+meta.peripheralConstructors["minecraft:diamond_pickaxe"] = digConstructor
+meta.peripheralConstructors["minecraft:diamond_axe"] = digConstructor
+meta.peripheralConstructors["minecraft:diamond_shovel"] = digConstructor
 meta.peripheralConstructors["minecraft:diamond_sword"] = function()
     return {
         attack = turtle.attack,
