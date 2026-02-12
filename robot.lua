@@ -337,16 +337,14 @@ end
 
 local function unwrapAllWrappedNames()
     for wrappedSide, wrappedName in pairs(meta.wrappedNames) do
-        meta.wrappedNames[wrappedSide] = nil
-        meta.dispatchEvent("unwrapped", wrappedName, wrappedSide)
+        meta.unwrap(wrappedName, wrappedSide)
     end
 end
 
 local function unwrapNotPresentWrappedNames()
     for wrappedSide, wrappedName in pairs(meta.wrappedNames) do
         if not peripheral.isPresent(wrappedSide) then
-            meta.wrappedNames[wrappedSide] = nil
-            meta.dispatchEvent("unwrapped", wrappedName, wrappedSide)
+            meta.unwrap(wrappedName, wrappedSide)
         end
     end
 end
@@ -394,7 +392,7 @@ local function sync()
             proxy.side = nil
             proxy.target = nil
 
-            meta.dispatchEvent("unwrapped", name, side, true)
+            meta.dispatchEvent("unwrapped", proxy.name, side, true)
         end
     end
 end
@@ -882,6 +880,13 @@ function meta.wrap(name, side, isEquipment)
     end
 
     return target
+end
+
+function meta.unwrap(name, side)
+    if meta.wrappedNames[side] then
+        meta.wrappedNames[side] = nil
+        meta.dispatchEvent("unwrapped", name, side)
+    end
 end
 
 function meta.listSlots(filter, limit, includeEquipment, includeInvisibleItems)
