@@ -69,7 +69,8 @@ local meta = {
     peripheralConstructors = {},
     invisibleItemCounts = {},
     eventListeners = {},
-    nextEventListenerId = 1
+    nextEventListenerId = 1,
+    wrappedNames = {}
 }
 
 robot.meta = meta
@@ -104,6 +105,10 @@ meta.peripheralConstructors["minecraft:diamond_sword"] = function()
 end
 meta.peripheralConstructors["minecraft:crafting_table"] = function(opts)
     local target = opts.target
+
+    if not target then
+        return nil
+    end
 
     local function moveEquipmentOutOfTheWay()
         local lastEProxy = nil
@@ -259,6 +264,10 @@ meta.peripheralConstructors["advancedperipherals:me_bridge"] = function(opts)
     local side = opts.side
     local target = opts.target
 
+    if not target then
+        return nil
+    end
+
     local facing
 
     if side == "front" then
@@ -325,6 +334,23 @@ meta.peripheralConstructors["advancedperipherals:me_bridge"] = function(opts)
     }
 end
 
+local function unwrapAllWrappedNames()
+    for wrappedSide, wrappedName in pairs(meta.wrappedNames) do
+        meta.dispatchEvent("unwrapped", wrappedName, wrappedSide)
+    end
+
+    meta.wrappedNames = {}
+end
+
+local function unwrapNotPresentWrappedNames()
+    for wrappedSide, wrappedName in pairs(meta.wrappedNames) do
+        if not peripheral.isPresent(wrappedSide) then
+            meta.wrappedNames[wrappedSide] = nil
+            meta.dispatchEvent("unwrapped", wrappedName, wrappedSide)
+        end
+    end
+end
+
 local function getName(side)
     if not side then
         error("side must not be nil")
@@ -360,8 +386,10 @@ local function sync()
     for name, proxy in pairs(meta.equipProxies) do
         if proxy.target and name ~= getName(proxy.side) then
             if proxy.pinned then
-                error("pinned " .. name .. " was removed manually")
+                error("pinned " .. name .. " was removed illegally")
             end
+
+            meta.dispatchEvent("unwrapped", name, proxy.side, true)
 
             proxy.side = nil
             proxy.target = nil
@@ -369,7 +397,7 @@ local function sync()
     end
 end
 
-local function wrap(name, side)
+local function wrap(name, side, isNotEquipment)
     if not name then
         error("name must not be nil")
     end
@@ -390,7 +418,17 @@ local function wrap(name, side)
             target = target
         }
 
-        return constructor(opts)
+        -- most constructors should return nil if opts.target is nil
+        -- only targets that are not peripherals (i.E. pickaxe) should behave differently
+        target = constructor(opts)
+    end
+
+    if target then
+        meta.dispatchEvent("wrapped", name, side, not isNotEquipment)
+
+        if isNotEquipment then
+            meta.wrappedNames[side] = name
+        end
     end
 
     return target
@@ -405,6 +443,7 @@ local function isEmpty(side)
     return detail == nil
 end
 
+-- NOTE [JM] assumes sync() was called beforehand
 local function canEquip(name, side)
     if not name then
         error("name must not be nil")
@@ -420,8 +459,12 @@ local function canEquip(name, side)
         error("proxy must not be nil")
     end
 
-    if proxy and proxy.target then
+    if proxy.target then
         return true
+    end
+
+    if meta.wrappedNames[side] then
+        return false, name .. " can not be equipped because a peripheral is bound on " .. side
     end
 
     local slot = meta.getFirstSlot(name, true)
@@ -480,6 +523,8 @@ local function equip(name, side)
         local swapProxy = meta.equipProxies[swapName]
 
         if swapProxy then
+            meta.dispatchEvent("unwrapped", swapProxy.name, swapProxy.side, true)
+
             swapProxy.side = nil
             swapProxy.target = nil
         end
@@ -494,6 +539,7 @@ local function equip(name, side)
     return true
 end
 
+-- NOTE [JM] assumes sync() was called beforehand
 local function canUnequip(proxy)
     if not proxy then
         error("proxy must not be nil")
@@ -516,7 +562,7 @@ local function canUnequip(proxy)
     local space = robot.getItemSpace(proxy.name)
 
     if space == 0 then
-        return false, name .. " can not be unequipped because there is no space in inventory"
+        return false, proxy.name .. " can not be unequipped because there is no space in inventory"
     end
 
     return true
@@ -537,7 +583,7 @@ local function unequip(proxy)
     local slot = meta.getFirstEmptySlot()
 
     if not slot then
-        return false, "could not unequip " .. name .. " because there is no space in inventory"
+        return false, "could not unequip " .. proxy.name .. " because there is no space in inventory"
     end
 
     turtle.select(slot.id)
@@ -547,6 +593,8 @@ local function unequip(proxy)
     if not ok then
         return false, err
     end
+
+    meta.dispatchEvent("unwrapped", proxy.name, proxy.side, true)
 
     proxy.side = nil
     proxy.target = nil
@@ -617,7 +665,7 @@ local function createEquipProxy(name)
             return true
         end
 
-        if proxy.target and canUnequip(proxy) then
+        if canUnequip(proxy) then
             return unequip(proxy)
         end
 
@@ -768,15 +816,17 @@ local function equipHelper(name, pinned)
     local proxy = meta.equipProxies[name]
 
     if not proxy then
-        meta.dispatchEvent("beforeEquip", name)
-
         proxy = createEquipProxy(name)
         meta.equipProxies[name] = proxy
 
         proxy.use(true)
-    end
 
-    if pinned then
+        if pinned then
+            proxy.pin()
+        end
+
+        meta.dispatchEvent("equipped", name, pinned)
+    elseif pinned then
         proxy.pin()
     end
 
@@ -810,22 +860,28 @@ local function unequipHelper(name)
         proxy.use = nil
         meta.equipProxies[name] = nil
 
-        meta.dispatchEvent("afterUnequip", name)
+        meta.dispatchEvent("unequipped", name)
         return true
     end
 
     return true
 end
 
-function meta.listSlots(filter, limit, includeEquipment)
+function meta.listSlots(filter, limit, includeEquipment, includeInvisibleItems)
     limit = limit or 16
 
     local slots = {}
     local seenEquipment = {}
     local seenInvisibleItems = {}
 
-    -- NOTE [JM] skipped for performance reasons
-    -- sync()
+    -- programs can do some weird stuff with slotted equipment, like temporarily removing it
+    -- which would change (visible) inventory contents
+    -- so we should make sure we sync() before we access the inventory
+    sync()
+
+    -- programs can do some weird stuff inside event listeners that may change inventory contents,
+    -- so we should make sure afterUnwrap is dispatched before we access the inventory
+    unwrapNotPresentWrappedNames()
 
     for i = 1, 16 do
         local detail = turtle.getItemDetail(i)
@@ -842,14 +898,16 @@ function meta.listSlots(filter, limit, includeEquipment)
                 end
             end
 
-            local invisibleCount = meta.invisibleItemCounts[detail.name]
-            local seenInvisibleCount = seenInvisibleItems[detail.name] or 0
+            if not includeInvisibleItems then
+                local invisibleCount = meta.invisibleItemCounts[detail.name]
+                local seenInvisibleCount = seenInvisibleItems[detail.name] or 0
 
-            if invisibleCount and seenInvisibleCount < invisibleCount then
-                local invisibleCountOffset = -math.min(detail.count + countOffset, invisibleCount - seenInvisibleCount)
+                if invisibleCount and seenInvisibleCount < invisibleCount then
+                    local invisibleCountOffset = -math.min(detail.count + countOffset, invisibleCount - seenInvisibleCount)
 
-                countOffset = countOffset + invisibleCountOffset
-                seenInvisibleItems[detail.name] = seenInvisibleCount - invisibleCountOffset
+                    countOffset = countOffset + invisibleCountOffset
+                    seenInvisibleItems[detail.name] = seenInvisibleCount - invisibleCountOffset
+                end
             end
 
             local adjustedCount = turtle.getItemCount(i) + countOffset
@@ -1002,7 +1060,7 @@ function meta.setSlot(slotId, name, count, blacklist)
     }
 
     local sameSlots = {}
-    local candidateSlots = meta.listSlots(name, 16, true)
+    local candidateSlots = meta.listSlots(name, 16, true, true)
 
     for i = 1, #candidateSlots do
         local candidateSlot = candidateSlots[i]
@@ -1160,15 +1218,17 @@ function robot.insertEventListener(listener)
     listener.id = id
 
     meta.nextEventListenerId = id + 1
-    return true
+    return id
 end
 
-function robot.removeEventListener(listener)
-    if not listener then
+function robot.removeEventListener(idOrListener)
+    if type(idOrListener) == "table" then
+        idOrListener = idOrListener.id
+    elseif not idOrListener then
         error("listener must not be nil")
     end
 
-    meta.eventListeners[listener.id] = nil
+    meta.eventListeners[idOrListener] = nil
     return true
 end
 
@@ -1224,48 +1284,52 @@ function robot.listPeripheralConstructors()
     return constructorArr
 end
 
-function robot.wrap(side)
-    side = side or SIDES.front
+function robot.wrap(side, wrapAs)
+    if (side == SIDES.front or side == SIDES.top or side == SIDES.bottom) and not wrapAs then
+        return wrap(getName(side), side, true)
+    elseif side == SIDES.front or side == SIDES.back or side == SIDES.top or side == SIDES.bottom then
+        return wrap(wrapAs, side, true)
+    elseif (side == SIDES.right or side == SIDES.left) and wrapAs then
+        local detail = side == SIDES.right and turtle.getEquippedRight() or turtle.getEquippedLeft()
 
-    if not side then
-        error("side must not be nil")
+        if detail then
+            if not meta.selectFirstEmptySlot() then
+                error("can't unequip tool because inventory is full")
+            end
+
+            local ok, err = side == SIDES.right and turtle.equipRight() or turtle.equipLeft()
+
+            if not ok then
+                error(err)
+            end
+
+            sync()
+        end
+
+        return wrap(wrapAs, side, true)
+    elseif side == SIDES.right or side == SIDES.left then
+        error("must explicitly wrap " .. side)
+    elseif not side and not wrapAs then
+        return wrap(getName(SIDES.front), SIDES.front, true)
+    else
+        wrapAs = wrapAs or side
+        return wrap(wrapAs, SIDES.front, true)
     end
-
-    return wrap(getName(side), side)
 end
 
-function robot.wrapUp()
-    return wrap(getName(SIDES.top), SIDES.top)
+function robot.wrapUp(wrapAs)
+    return wrap(wrapAs or getName(SIDES.top), SIDES.top, true)
 end
 
-function robot.wrapDown()
-    return wrap(getName(SIDES.bottom), SIDES.bottom)
-end
-
-function robot.up()
-    local ok, err = turtle.up()
-
-    if ok then
-        robot.y = robot.y + DELTAS.up.y
-    end
-
-    return ok, err
-end
-
-function robot.down()
-    local ok, err = turtle.down()
-
-    if ok then
-        robot.y = robot.y + DELTAS.down.y
-    end
-
-    return ok, err
+function robot.wrapDown(wrapAs)
+    return wrap(wrapAs or getName(SIDES.bottom), SIDES.bottom, true)
 end
 
 function robot.forward()
     local ok, err = turtle.forward()
 
     if ok then
+        unwrapAllWrappedNames()
         local delta = DELTAS[robot.facing]
 
         robot.x = robot.x + delta.x
@@ -1279,6 +1343,7 @@ function robot.back()
     local ok, err = turtle.back()
 
     if ok then
+        unwrapAllWrappedNames()
         local delta = DELTAS[robot.facing]
 
         robot.x = robot.x - delta.x
@@ -1288,10 +1353,34 @@ function robot.back()
     return ok, err
 end
 
+function robot.up()
+    local ok, err = turtle.up()
+
+    if ok then
+        unwrapAllWrappedNames()
+        robot.y = robot.y + DELTAS.up.y
+    end
+
+    return ok, err
+end
+
+function robot.down()
+    local ok, err = turtle.down()
+
+    if ok then
+        unwrapAllWrappedNames()
+        robot.y = robot.y + DELTAS.down.y
+    end
+
+    return ok, err
+end
+
 function robot.turnLeft()
     local ok, err = turtle.turnLeft()
 
     if ok then
+        unwrapAllWrappedNames()
+
         local i = FACINGS[robot.facing] - 1
         robot.facing = FACINGS[i % 4]
     end
@@ -1303,6 +1392,8 @@ function robot.turnRight()
     local ok, err = turtle.turnRight()
 
     if ok then
+        unwrapAllWrappedNames()
+
         local i = FACINGS[robot.facing] + 1
         robot.facing = FACINGS[i % 4]
     end
@@ -1435,7 +1526,14 @@ function robot.getItemSpaceForUnknown()
 end
 
 function robot.hasItemCount(name)
-    return robot.getItemCount(name) > 0
+    name = name or meta.selectedName
+
+    if not name then
+        error("name must not be nil")
+    end
+
+    local slot = meta.getFirstSlot(name)
+    return slot and true or false
 end
 
 function robot.hasItemSpace(nameOrStackCount, stackCount)
@@ -1444,12 +1542,7 @@ end
 
 function robot.hasItemSpaceForUnknown()
     local slot = meta.getFirstEmptySlot()
-
-    if slot then
-        return true
-    else
-        return false
-    end
+    return slot and true or false
 end
 
 function robot.detect()
@@ -1563,6 +1656,10 @@ end
 
 function robot.getItemDetail(name)
     name = name or meta.selectedName
+
+    if not name then
+        error("name must not be nil")
+    end
 
     local count = robot.getItemCount(name)
 
