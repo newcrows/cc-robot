@@ -1023,10 +1023,6 @@ function meta.getFirstEmptySlot()
 end
 
 function meta.selectFirstSlot(name, includeEquipment, includeHiddenItems)
-    if not name then
-        error("name must not be nil")
-    end
-
     local slot = meta.getFirstSlot(name, includeEquipment, includeHiddenItems)
 
     if slot then
