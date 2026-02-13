@@ -1537,6 +1537,89 @@ local function testListItems()
     print("testListItems passed")
 end
 
+local function testMetaWrap()
+    local function digChest()
+        turtle.select(1)
+        turtle.equipRight()
+        turtle.select(3)
+        turtle.dig()
+        turtle.select(1)
+        turtle.equipRight()
+    end
+
+    turtle.select(3)
+    turtle.place()
+
+    local name, side, isEquipment
+    local id = robot.insertEventListener({
+        wrapped = function(_name, _side, _isEquipment)
+            name = _name
+            side = _side
+            isEquipment = _isEquipment
+        end
+    })
+
+    -- NOTE [JM] the luaVM has a bug here:
+    -- meta.wrappedBlockNames["front"] is sometimes nil
+    -- I looked inside the code and adding a print("hello") statement ANYWHERE in meta.wrap
+    -- fixes the problem, however that makes sense..
+    local chest = meta.wrap("minecraft:chest", "front")
+
+    assert(chest)
+    assert(meta.wrappedBlockNames["front"] == "minecraft:chest")
+    assert(name == "minecraft:chest")
+    assert(side == "front")
+    assert(not isEquipment)
+
+    robot.removeEventListener(id)
+
+    digChest()
+
+    print("testMetaWrap passed")
+end
+
+local function testMetaUnwrap()
+    local function digChest()
+        turtle.select(1)
+        turtle.equipRight()
+        turtle.select(3)
+        turtle.dig()
+        turtle.select(1)
+        turtle.equipRight()
+    end
+
+    turtle.select(3)
+    turtle.place()
+
+    local name, side, wasEquipment
+    local id = robot.insertEventListener({
+        unwrapped = function(_name, _side, _wasEquipment)
+            name = _name
+            side = _side
+            wasEquipment = _wasEquipment
+        end
+    })
+
+    -- NOTE [JM] the luaVM has a bug here:
+    -- meta.wrappedBlockNames["front"] is sometimes nil
+    -- I looked inside the code and adding a print("hello") statement ANYWHERE in meta.wrap
+    -- fixes the problem, however that makes sense..
+    meta.wrap("minecraft:chest", "front")
+
+    assert(meta.wrappedBlockNames["front"] == "minecraft:chest")
+    assert(meta.unwrap("front"))
+    assert(not meta.wrappedBlockNames["front"])
+    assert(name == "minecraft:chest")
+    assert(side == "front")
+    assert(not wasEquipment)
+
+    robot.removeEventListener(id)
+
+    digChest()
+
+    print("testMetaUnwrap passed")
+end
+
 testSetup()
 testInsertEventListener()
 testRemoveEventListener()
@@ -1586,3 +1669,5 @@ testInspectUp()
 testInspectDown()
 testGetItemDetail()
 testListItems()
+testMetaWrap()
+testMetaUnwrap()
