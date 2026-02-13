@@ -1959,6 +1959,8 @@ local function testMetaDispatchEvent()
     meta.dispatchEvent("customEvent", "hello, world!")
     assert(customArg == "hello, world!")
 
+    robot.eventListeners = {}
+
     print("testMetaDispatchEvent passed")
 end
 
@@ -2014,12 +2016,92 @@ local function testEvent_softWrap_softUnwrap()
     didSoftUnwrap = false
 
     robot.back()
+    robot.eventListeners = {}
 
     assert(not didSoftWrap)
     assert(not didSoftUnwrap)
     assert(not pcall(chest.list))
 
     print("testEvent_softWrap_softUnwrap passed")
+end
+
+local function testEvent_wrap_unwrap()
+    local didWrap = false
+    local didUnwrap = false
+
+    robot.addEventListener({
+        wrap = function(name, side, isEquipment)
+            assert(name == "minecraft:chest")
+            assert(side == "front")
+            assert(not isEquipment)
+            didWrap = true
+        end,
+        unwrap = function(name, side, wasEquipment)
+            assert(name == "minecraft:chest")
+            assert(side == "front")
+            assert(not wasEquipment)
+            didUnwrap = true
+        end
+    })
+
+    turtle.select(3)
+    turtle.place()
+
+    os.sleep(0.1)
+    local chest = robot.wrap()
+
+    assert(didWrap)
+    assert(#chest.list() == 0)
+
+    robot.forward()
+
+    assert(not didUnwrap)
+    assert(#chest.list() == 0)
+
+    turtle.select(1)
+    turtle.equipRight()
+    turtle.select(3)
+    turtle.dig()
+    turtle.select(1)
+    turtle.equipRight()
+
+    robot.forward()
+
+    assert(didUnwrap)
+    assert(not pcall(chest.list))
+
+    robot.back()
+    robot.eventListeners = {}
+
+    print("testEvent_wrap_unwrap passed")
+end
+
+local function testEvent_equip_unequip()
+    local didEquip = false
+    local didUnequip = false
+
+    robot.addEventListener({
+        equip = function(name, isPinned)
+            assert(name == "minecraft:diamond_pickaxe")
+            assert(not isPinned)
+            didEquip = true
+        end,
+        unequip = function(name, wasPinned)
+            assert(name == "minecraft:diamond_pickaxe")
+            assert(not wasPinned)
+            didUnequip = true
+        end
+    })
+
+    robot.equip("minecraft:diamond_pickaxe")
+    assert(didEquip)
+
+    robot.unequip("minecraft:diamond_pickaxe")
+    assert(didUnequip)
+
+    meta.eventListeners = {}
+
+    print("testEvent_equip_unequip passed")
 end
 
 testSetup()
@@ -2086,3 +2168,5 @@ testMetaMarkItemsVisible()
 testMetaMarkItemsHidden()
 testMetaDispatchEvent()
 testEvent_softWrap_softUnwrap()
+testEvent_wrap_unwrap()
+testEvent_equip_unequip()
