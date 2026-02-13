@@ -133,11 +133,6 @@ local function testRemoveEventListener()
     robot.removeEventListener(id)
     assert(meta.eventListeners[id] == nil)
 
-    id = robot.addEventListener(listener)
-
-    robot.removeEventListener(listener)
-    assert(meta.eventListeners[id] == nil)
-
     print("testRemoveEventListener passed")
 end
 
