@@ -1306,17 +1306,22 @@ function robot.insertPeripheralConstructor(nameOrConstructor, constructor)
         error("constructor must not be nil")
     end
 
+    constructor.name = nameOrConstructor
     meta.peripheralConstructors[nameOrConstructor] = constructor
 end
 
-function robot.removePeripheralConstructor(name)
-    name = name or meta.selectedName
+function robot.removePeripheralConstructor(nameOrConstructor)
+    nameOrConstructor = nameOrConstructor or meta.selectedName
 
-    if not name then
+    if type(nameOrConstructor) == "table" then
+        nameOrConstructor = nameOrConstructor.name
+    end
+
+    if not nameOrConstructor then
         error("name must not be nil")
     end
 
-    meta.peripheralConstructors[name] = nil
+    meta.peripheralConstructors[nameOrConstructor] = nil
 end
 
 function robot.listPeripheralConstructors()
