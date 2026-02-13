@@ -1811,9 +1811,6 @@ local function testMetaGetFirstEmptySlot()
     print("testMetaGetFirstEmptySlot passed")
 end
 
-testMetaGetFirstEmptySlot()
-error("done")
-
 testSetup()
 testInsertEventListener()
 testRemoveEventListener()
