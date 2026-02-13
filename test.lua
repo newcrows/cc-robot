@@ -1811,6 +1811,79 @@ local function testMetaGetFirstEmptySlot()
     print("testMetaGetFirstEmptySlot passed")
 end
 
+local function testMetaSelectFirstSlot()
+    turtle.select(16)
+
+    meta.selectFirstSlot()
+    assert(turtle.getSelectedSlot() == 1)
+
+    turtle.select(1)
+    turtle.transferTo(16, 1)
+
+    meta.selectFirstSlot()
+    assert(turtle.getSelectedSlot() == 2)
+
+    turtle.select(16)
+    turtle.transferTo(1, 1)
+
+    robot.equip("minecraft:diamond_pickaxe")
+
+    meta.selectFirstSlot()
+    assert(turtle.getSelectedSlot() == 2)
+
+    meta.equipProxies = {}
+
+    meta.markItemsHidden("minecraft:diamond_pickaxe", 1)
+    meta.markItemsHidden("minecraft:compass", 1)
+
+    meta.selectFirstSlot()
+    assert(turtle.getSelectedSlot() == 2)
+
+    meta.markItemsHidden("minecraft:compass", 1)
+
+    meta.selectFirstSlot()
+    assert(turtle.getSelectedSlot() == 3)
+
+    meta.hiddenItemCounts = {}
+
+    print("testMetaSelectFirstSlot passed")
+end
+
+local function testMetaSelectFirstEmptySlot()
+    meta.selectFirstEmptySlot()
+    assert(turtle.getSelectedSlot() == 6)
+
+    turtle.select(4)
+    turtle.transferTo(6, 1)
+
+    meta.selectFirstEmptySlot()
+    assert(turtle.getSelectedSlot() == 8)
+
+    turtle.select(6)
+    turtle.transferTo(4, 1)
+
+    print("testMetaSelectFirstEmptySlot passed")
+end
+
+local function testMetaCountItems()
+    assert(meta.countItems() == 1 + 2 + 2 + 64 + 32 + 1)
+    assert(meta.countItems("minecraft:compass") == 2)
+
+    robot.equip("minecraft:compass")
+    assert(meta.countItems("minecraft:compass") == 1)
+    assert(meta.countItems("minecraft:compass", true) == 2)
+
+    meta.equipProxies = {}
+
+    meta.markItemsHidden("minecraft:compass", 1)
+    assert(meta.countItems("minecraft:compass") == 1)
+    assert(meta.countItems("minecraft:compass", nil, true) == 2)
+
+    meta.hiddenItemCounts = {}
+
+    print("testMetaCountItems passed")
+end
+
 testSetup()
 testInsertEventListener()
 testRemoveEventListener()
@@ -1866,3 +1939,6 @@ testMetaListSlots()
 testMetaListEmptySlots()
 testMetaGetFirstSlot()
 testMetaGetFirstEmptySlot()
+testMetaSelectFirstSlot()
+testMetaSelectFirstEmptySlot()
+testMetaCountItems()
