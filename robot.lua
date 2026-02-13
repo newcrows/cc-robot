@@ -68,7 +68,7 @@ local meta = {
     equipProxies = {},
     equipSide = SIDES.right,
     peripheralConstructors = {},
-    invisibleItemCounts = {},
+    hiddenItemCounts = {},
     eventListeners = {},
     nextEventListenerId = 1,
     wrappedBlockNames = {}
@@ -910,7 +910,7 @@ function meta.unwrap(side)
     return true
 end
 
-function meta.listSlots(filter, limit, includeEquipment, includeInvisibleItems)
+function meta.listSlots(filter, limit, includeEquipment, includeHiddenItems)
     limit = limit or 16
 
     local slots = {}
@@ -944,8 +944,8 @@ function meta.listSlots(filter, limit, includeEquipment, includeInvisibleItems)
                 end
             end
 
-            if not includeInvisibleItems then
-                local invisibleCount = meta.invisibleItemCounts[detail.name]
+            if not includeHiddenItems then
+                local invisibleCount = meta.hiddenItemCounts[detail.name]
                 local seenInvisibleCount = seenInvisibleItems[detail.name] or 0
 
                 if invisibleCount and seenInvisibleCount < invisibleCount then
@@ -1002,12 +1002,8 @@ function meta.listEmptySlots(limit, skipCompact)
     return slots
 end
 
-function meta.getFirstSlot(name, includeEquipment, includeInvisibleItems)
-    if not name then
-        error("name must not be nil")
-    end
-
-    local slots = meta.listSlots(name, 1, includeEquipment, includeInvisibleItems)
+function meta.getFirstSlot(name, includeEquipment, includeHiddenItems)
+    local slots = meta.listSlots(name, 1, includeEquipment, includeHiddenItems)
 
     if #slots == 1 then
         return slots[1]
@@ -1026,12 +1022,8 @@ function meta.getFirstEmptySlot()
     end
 end
 
-function meta.selectFirstSlot(name, includeEquipment, includeInvisibleItems)
-    if not name then
-        error("name must not be nil")
-    end
-
-    local slot = meta.getFirstSlot(name, includeEquipment, includeInvisibleItems)
+function meta.selectFirstSlot(name, includeEquipment, includeHiddenItems)
+    local slot = meta.getFirstSlot(name, includeEquipment, includeHiddenItems)
 
     if slot then
         return turtle.select(slot.id)
@@ -1050,9 +1042,9 @@ function meta.selectFirstEmptySlot()
     end
 end
 
-function meta.countItems(filter, includeEquipment, includeInvisibleItems)
+function meta.countItems(filter, includeEquipment, includeHiddenItems)
     local count = 0
-    local slots = meta.listSlots(filter, 16, includeEquipment, includeInvisibleItems)
+    local slots = meta.listSlots(filter, 16, includeEquipment, includeHiddenItems)
 
     for i = 1, #slots do
         count = count + slots[i].count
@@ -1090,6 +1082,16 @@ end
 function meta.setSlot(slotId, name, count, blacklist)
     if not slotId then
         error("slotId must not be nil")
+    end
+
+    if name == "air" then
+        name = nil
+    end
+
+    if not name then
+        count = 0
+    elseif not count then
+        count = meta.countItems(name, true, true)
     end
 
     if count == nil then
@@ -1210,7 +1212,7 @@ function meta.setSlot(slotId, name, count, blacklist)
     return true
 end
 
-function meta.makeItemCountVisible(name, count)
+function meta.markItemsVisible(name, count)
     if not name then
         error("name must not be nil")
     end
@@ -1219,14 +1221,14 @@ function meta.makeItemCountVisible(name, count)
         error("count must not be nil")
     end
 
-    if meta.invisibleItemCounts[name] then
-        meta.invisibleItemCounts[name] = meta.invisibleItemCounts[name] - count
+    if meta.hiddenItemCounts[name] then
+        meta.hiddenItemCounts[name] = meta.hiddenItemCounts[name] - count
     end
 
     return true
 end
 
-function meta.makeItemCountInvisible(name, count)
+function meta.markItemsHidden(name, count)
     if not name then
         error("name must not be nil")
     end
@@ -1235,11 +1237,11 @@ function meta.makeItemCountInvisible(name, count)
         error("count must not be nil")
     end
 
-    if not meta.invisibleItemCounts[name] then
-        meta.invisibleItemCounts[name] = 0
+    if not meta.hiddenItemCounts[name] then
+        meta.hiddenItemCounts[name] = 0
     end
 
-    meta.invisibleItemCounts[name] = meta.invisibleItemCounts[name] + count
+    meta.hiddenItemCounts[name] = meta.hiddenItemCounts[name] + count
     return true
 end
 
@@ -1253,7 +1255,7 @@ function meta.dispatchEvent(name, ...)
     end
 end
 
-function robot.insertEventListener(listener)
+function robot.addEventListener(listener)
     if not listener then
         error("listener must not be nil")
     end
@@ -1261,20 +1263,17 @@ function robot.insertEventListener(listener)
     local id = meta.nextEventListenerId
 
     meta.eventListeners[id] = listener
-    listener.id = id
-
     meta.nextEventListenerId = id + 1
+
     return id
 end
 
-function robot.removeEventListener(idOrListener)
-    if type(idOrListener) == "table" then
-        idOrListener = idOrListener.id
-    elseif not idOrListener then
-        error("listener must not be nil")
+function robot.removeEventListener(id)
+    if not id then
+        error("id must not be nil")
     end
 
-    meta.eventListeners[idOrListener] = nil
+    meta.eventListeners[id] = nil
     return true
 end
 
@@ -1288,7 +1287,7 @@ function robot.listEventListeners()
     return listenerArr
 end
 
-function robot.insertPeripheralConstructor(nameOrConstructor, constructor)
+function robot.setPeripheralConstructor(nameOrConstructor, constructor)
     if nameOrConstructor == nil then
         nameOrConstructor = meta.selectedName
     elseif type(nameOrConstructor) == "function" then
@@ -1305,6 +1304,8 @@ function robot.insertPeripheralConstructor(nameOrConstructor, constructor)
     end
 
     meta.peripheralConstructors[nameOrConstructor] = constructor
+
+    return nameOrConstructor
 end
 
 function robot.removePeripheralConstructor(name)
@@ -1343,17 +1344,26 @@ function robot.wrap(sideOrWrapAs, wrapAs)
                 error("can't unequip tool because inventory is full")
             end
 
-            local ok, err = sideOrWrapAs == SIDES.right and turtle.equipRight() or turtle.equipLeft()
+            local wasEquipment = false
 
-            if not ok then
-                error(err)
+            for _, proxy in pairs(meta.equipProxies) do
+                if proxy.side == sideOrWrapAs then
+                    local ok = proxy.unuse()
+
+                    if not ok then
+                        error("could not unuse equipment")
+                    end
+
+                    wasEquipment = true
+                end
             end
 
-            if robot.strict then
-                -- programs can do some weird stuff with slotted equipment, like temporarily removing it
-                -- external forces (like the player) can also remove equipment at any time
-                -- so we should make sure we sync() before we access the inventory
-                sync()
+            if not wasEquipment then
+                local ok, err = sideOrWrapAs == SIDES.right and turtle.equipRight() or turtle.equipLeft()
+
+                if not ok then
+                    error(err)
+                end
             end
         end
 
