@@ -1330,20 +1330,20 @@ function robot.listPeripheralConstructors()
     return constructorArr
 end
 
-function robot.wrap(side, wrapAs)
-    if (side == SIDES.front or side == SIDES.top or side == SIDES.bottom) and not wrapAs then
-        return meta.wrap(getName(side), side)
-    elseif side == SIDES.front or side == SIDES.back or side == SIDES.top or side == SIDES.bottom then
-        return meta.wrap(wrapAs, side)
-    elseif (side == SIDES.right or side == SIDES.left) and wrapAs then
-        local detail = side == SIDES.right and turtle.getEquippedRight() or turtle.getEquippedLeft()
+function robot.wrap(sideOrWrapAs, wrapAs)
+    if (sideOrWrapAs == SIDES.front or sideOrWrapAs == SIDES.top or sideOrWrapAs == SIDES.bottom) and not wrapAs then
+        return meta.wrap(getName(sideOrWrapAs), sideOrWrapAs)
+    elseif sideOrWrapAs == SIDES.front or sideOrWrapAs == SIDES.back or sideOrWrapAs == SIDES.top or sideOrWrapAs == SIDES.bottom then
+        return meta.wrap(wrapAs, sideOrWrapAs)
+    elseif (sideOrWrapAs == SIDES.right or sideOrWrapAs == SIDES.left) and wrapAs then
+        local detail = sideOrWrapAs == SIDES.right and turtle.getEquippedRight() or turtle.getEquippedLeft()
 
         if detail then
             if not meta.selectFirstEmptySlot() then
                 error("can't unequip tool because inventory is full")
             end
 
-            local ok, err = side == SIDES.right and turtle.equipRight() or turtle.equipLeft()
+            local ok, err = sideOrWrapAs == SIDES.right and turtle.equipRight() or turtle.equipLeft()
 
             if not ok then
                 error(err)
@@ -1357,13 +1357,13 @@ function robot.wrap(side, wrapAs)
             end
         end
 
-        return meta.wrap(wrapAs, side)
-    elseif side == SIDES.right or side == SIDES.left then
-        error("must explicitly wrap " .. side)
-    elseif not side and not wrapAs then
+        return meta.wrap(wrapAs, sideOrWrapAs)
+    elseif sideOrWrapAs == SIDES.right or sideOrWrapAs == SIDES.left then
+        error("must explicitly wrap " .. sideOrWrapAs)
+    elseif not sideOrWrapAs and not wrapAs then
         return meta.wrap(getName(SIDES.front), SIDES.front)
     else
-        wrapAs = wrapAs or side
+        wrapAs = wrapAs or sideOrWrapAs
         return meta.wrap(wrapAs, SIDES.front)
     end
 end
