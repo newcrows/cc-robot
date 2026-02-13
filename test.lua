@@ -1961,6 +1961,8 @@ local function testMetaDispatchEvent()
 
     meta.dispatchEvent("customEvent", "hello, world!")
     assert(customArg == "hello, world!")
+
+    print("testMetaDispatchEvent passed")
 end
 
 testSetup()
