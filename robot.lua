@@ -1002,12 +1002,12 @@ function meta.listEmptySlots(limit, skipCompact)
     return slots
 end
 
-function meta.getFirstSlot(name, includeEquipment)
+function meta.getFirstSlot(name, includeEquipment, includeInvisibleItems)
     if not name then
         error("name must not be nil")
     end
 
-    local slots = meta.listSlots(name, 1, includeEquipment)
+    local slots = meta.listSlots(name, 1, includeEquipment, includeInvisibleItems)
 
     if #slots == 1 then
         return slots[1]
@@ -1026,12 +1026,12 @@ function meta.getFirstEmptySlot()
     end
 end
 
-function meta.selectFirstSlot(name, includeEquipment)
+function meta.selectFirstSlot(name, includeEquipment, includeInvisibleItems)
     if not name then
         error("name must not be nil")
     end
 
-    local slot = meta.getFirstSlot(name, includeEquipment)
+    local slot = meta.getFirstSlot(name, includeEquipment, includeInvisibleItems)
 
     if slot then
         return turtle.select(slot.id)
@@ -1050,9 +1050,9 @@ function meta.selectFirstEmptySlot()
     end
 end
 
-function meta.countItems(filter, includeEquipment)
+function meta.countItems(filter, includeEquipment, includeInvisibleItems)
     local count = 0
-    local slots = meta.listSlots(filter, 16, includeEquipment)
+    local slots = meta.listSlots(filter, 16, includeEquipment, includeInvisibleItems)
 
     for i = 1, #slots do
         count = count + slots[i].count
