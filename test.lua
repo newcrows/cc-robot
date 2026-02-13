@@ -1965,12 +1965,64 @@ local function testMetaDispatchEvent()
     print("testMetaDispatchEvent passed")
 end
 
-local function testMetaEvent_wrap()
-    robot.addEventListener({
-        wrap = function(name, side, isEquipment)
+local function testEvent_softWrap_softUnwrap()
+    local didSoftWrap = false
+    local didSoftUnwrap = false
 
+    robot.addEventListener({
+        softWrap = function(name, side)
+            assert(name == "minecraft:chest")
+            assert(side == "front")
+
+            didSoftWrap = true
+        end,
+        softUnwrap = function(name, side)
+            assert(name == "minecraft:chest")
+            assert(side == "front")
+
+            didSoftUnwrap = true
         end
     })
+
+    turtle.select(3)
+    turtle.place()
+
+    os.sleep(0.1)
+    local chest = robot.wrap()
+
+    assert(#chest.list() == 0)
+
+    robot.forward()
+
+    assert(didSoftUnwrap)
+    assert(didSoftWrap)
+    assert(#chest.list() == 0)
+
+    didSoftWrap = false
+    didSoftUnwrap = false
+
+    turtle.select(1)
+    turtle.equipRight()
+    turtle.select(3)
+    turtle.dig()
+    turtle.select(1)
+    turtle.equipRight()
+
+    robot.forward()
+
+    assert(not didSoftWrap)
+    assert(didSoftUnwrap)
+
+    didSoftWrap = false
+    didSoftUnwrap = false
+
+    robot.back()
+
+    assert(not didSoftWrap)
+    assert(not didSoftUnwrap)
+    assert(not pcall(chest.list))
+
+    print("testEvent_softWrap_softUnwrap passed")
 end
 
 testSetup()
@@ -2036,4 +2088,4 @@ testMetaSetSlot()
 testMetaMarkItemsVisible()
 testMetaMarkItemsHidden()
 testMetaDispatchEvent()
-testMetaEvent_wrap()
+testEvent_softWrap_softUnwrap()

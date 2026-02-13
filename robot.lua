@@ -372,6 +372,8 @@ local function createWrapProxy(name, side, target)
             end
 
             return function(...)
+                print("called")
+
                 if not proxy.target then
                     error("wrapped block is no longer accessible")
                 end
@@ -936,6 +938,8 @@ function meta.softWrap(side)
 
         proxy.target = target
         meta.dispatchEvent("softWrap", proxy.name, side)
+
+        print("soft wrapped")
     end
 
     return true
@@ -949,8 +953,12 @@ function meta.softUnwrap(side)
     local proxy = meta.wrapProxies[side]
 
     if proxy then
+        proxy.side = nil
         proxy.target = nil
+
         meta.dispatchEvent("softUnwrap", proxy.name, side)
+
+        print("soft unwrapped")
     end
 
     return true
@@ -987,7 +995,8 @@ function meta.wrap(name, side, isEquipment)
 
     if target then
         if not isEquipment then
-            meta.wrapProxies[side] = createWrapProxy(name, side, target)
+            target = createWrapProxy(name, side, target)
+            meta.wrapProxies[side] = target
         end
 
         meta.dispatchEvent("wrap", name, side, isEquipment)
@@ -1004,6 +1013,9 @@ function meta.unwrap(side)
     local wrapProxy = meta.wrapProxies[side]
 
     if wrapProxy then
+        wrapProxy.side = nil
+        wrapProxy.target = nil
+
         meta.wrapProxies[side] = nil
         meta.dispatchEvent("unwrap", wrapProxy.name, side)
     end
