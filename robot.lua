@@ -1344,17 +1344,26 @@ function robot.wrap(sideOrWrapAs, wrapAs)
                 error("can't unequip tool because inventory is full")
             end
 
-            local ok, err = sideOrWrapAs == SIDES.right and turtle.equipRight() or turtle.equipLeft()
+            local wasEquipment = false
 
-            if not ok then
-                error(err)
+            for _, proxy in pairs(meta.equipProxies) do
+                if proxy.side == sideOrWrapAs then
+                    local ok = proxy.unuse()
+
+                    if not ok then
+                        error("could not unuse equipment")
+                    end
+
+                    wasEquipment = true
+                end
             end
 
-            if robot.strict then
-                -- programs can do some weird stuff with slotted equipment, like temporarily removing it
-                -- external forces (like the player) can also remove equipment at any time
-                -- so we should make sure we sync() before we access the inventory
-                sync()
+            if not wasEquipment then
+                local ok, err = sideOrWrapAs == SIDES.right and turtle.equipRight() or turtle.equipLeft()
+
+                if not ok then
+                    error(err)
+                end
             end
         end
 
