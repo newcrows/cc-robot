@@ -372,8 +372,6 @@ local function createWrapProxy(name, side, target)
             end
 
             return function(...)
-                print("called")
-
                 if not proxy.target then
                     error("wrapped block is no longer accessible")
                 end
@@ -938,8 +936,6 @@ function meta.softWrap(side)
 
         proxy.target = target
         meta.dispatchEvent("softWrap", proxy.name, side)
-
-        print("soft wrapped")
     end
 
     return true
@@ -957,8 +953,6 @@ function meta.softUnwrap(side)
         proxy.target = nil
 
         meta.dispatchEvent("softUnwrap", proxy.name, side)
-
-        print("soft unwrapped")
     end
 
     return true
