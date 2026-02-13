@@ -1884,6 +1884,54 @@ local function testMetaCountItems()
     print("testMetaCountItems passed")
 end
 
+local function testMetaCompact()
+    turtle.select(4)
+    turtle.transferTo(16, 4)
+
+    turtle.select(5)
+    turtle.transferTo(12, 4)
+
+    meta.compact()
+
+    assert(turtle.getItemCount(16) == 0)
+    assert(turtle.getItemCount(12) == 0)
+    assert(turtle.getItemCount(4) == 64)
+    assert(turtle.getItemCount(5) == 32)
+
+    print("testMetaCompact passed")
+end
+
+local function testMetaSetSlot()
+    meta.setSlot(16, "minecraft:dirt", 17)
+    assert(turtle.getItemCount(16) == 17)
+
+    meta.setSlot(16, "air")
+    assert(turtle.getItemCount(16) == 0)
+
+    meta.setSlot(16, "minecraft:dirt", 17)
+    meta.setSlot(16, "minecraft:dirt", 0)
+    assert(turtle.getItemCount(16) == 0)
+
+    meta.setSlot(16, "minecraft:dirt", 17, {[4] = true})
+    assert(turtle.getItemCount(4) == 64)
+    assert(turtle.getItemCount(5) == 15)
+    assert(turtle.getItemCount(16) == 17)
+
+    meta.setSlot(16, "minecraft:dirt", 0, {[5] = true})
+    assert(turtle.getItemCount(16) == 0)
+
+    turtle.select(6)
+    turtle.transferTo(5)
+
+    meta.setSlot(1, "minecraft:dirt", 5)
+    assert(turtle.getItemCount(4) == 59)
+    assert(turtle.getItemCount(6) == 1)
+
+    meta.setSlot(1, "minecraft:diamond_pickaxe")
+
+    print("testMetaSetSlot passed")
+end
+
 testSetup()
 testInsertEventListener()
 testRemoveEventListener()
@@ -1942,3 +1990,5 @@ testMetaGetFirstEmptySlot()
 testMetaSelectFirstSlot()
 testMetaSelectFirstEmptySlot()
 testMetaCountItems()
+testMetaCompact()
+testMetaSetSlot()
