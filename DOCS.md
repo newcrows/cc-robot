@@ -39,9 +39,9 @@
 
 requires `CC:Tweaked 1.116.0` or higher.
 
-download from [pastebin](https://pastebin.com/N61zjrft)
+download from [pastebin](https://pastebin.com/3yTuFc8q)
 
-`pastebin get N61zjrft robot.lua`
+`pastebin get 3yTuFc8q robot.lua`
 
 or checkout this repo, which includes `test.lua` that tests the complete `robot api`
 on a live turtle.
