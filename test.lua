@@ -248,7 +248,7 @@ local function testWrap()
 
     turtle.turnRight()
 
-    local ok, _ = pcall(robot.wrap, "right")
+    ok, _ = pcall(robot.wrap, "right")
     assert(not ok)
 
     wrapped = robot.wrap("right", "test:wrap")
