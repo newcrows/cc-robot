@@ -21,7 +21,7 @@ download from [pastebin](https://pastebin.com/3yTuFc8q)
 
 `pastebin get 3yTuFc8q robot.lua`
 
-or checkout this repo, which includes `test.lua` that tests the complete `robot api`
+or checkout this repo, it includes `test.lua` that tests the complete `robot api`
 on a live turtle.
 
 get a `robot` instance using `require()`
