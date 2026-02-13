@@ -910,7 +910,7 @@ function meta.unwrap(side)
     return true
 end
 
-function meta.listSlots(filter, limit, includeEquipment, includeInvisibleItems)
+function meta.listSlots(filter, limit, includeEquipment, includeHiddenItems)
     limit = limit or 16
 
     local slots = {}
@@ -944,7 +944,7 @@ function meta.listSlots(filter, limit, includeEquipment, includeInvisibleItems)
                 end
             end
 
-            if not includeInvisibleItems then
+            if not includeHiddenItems then
                 local invisibleCount = meta.invisibleItemCounts[detail.name]
                 local seenInvisibleCount = seenInvisibleItems[detail.name] or 0
 
@@ -1002,12 +1002,12 @@ function meta.listEmptySlots(limit, skipCompact)
     return slots
 end
 
-function meta.getFirstSlot(name, includeEquipment, includeInvisibleItems)
+function meta.getFirstSlot(name, includeEquipment, includeHiddenItems)
     if not name then
         error("name must not be nil")
     end
 
-    local slots = meta.listSlots(name, 1, includeEquipment, includeInvisibleItems)
+    local slots = meta.listSlots(name, 1, includeEquipment, includeHiddenItems)
 
     if #slots == 1 then
         return slots[1]
@@ -1026,12 +1026,12 @@ function meta.getFirstEmptySlot()
     end
 end
 
-function meta.selectFirstSlot(name, includeEquipment, includeInvisibleItems)
+function meta.selectFirstSlot(name, includeEquipment, includeHiddenItems)
     if not name then
         error("name must not be nil")
     end
 
-    local slot = meta.getFirstSlot(name, includeEquipment, includeInvisibleItems)
+    local slot = meta.getFirstSlot(name, includeEquipment, includeHiddenItems)
 
     if slot then
         return turtle.select(slot.id)
@@ -1050,9 +1050,9 @@ function meta.selectFirstEmptySlot()
     end
 end
 
-function meta.countItems(filter, includeEquipment, includeInvisibleItems)
+function meta.countItems(filter, includeEquipment, includeHiddenItems)
     local count = 0
-    local slots = meta.listSlots(filter, 16, includeEquipment, includeInvisibleItems)
+    local slots = meta.listSlots(filter, 16, includeEquipment, includeHiddenItems)
 
     for i = 1, #slots do
         count = count + slots[i].count
@@ -1210,7 +1210,7 @@ function meta.setSlot(slotId, name, count, blacklist)
     return true
 end
 
-function meta.makeItemCountVisible(name, count)
+function meta.markItemsHidden(name, count)
     if not name then
         error("name must not be nil")
     end
@@ -1226,7 +1226,7 @@ function meta.makeItemCountVisible(name, count)
     return true
 end
 
-function meta.makeItemCountInvisible(name, count)
+function meta.markItemsVisible(name, count)
     if not name then
         error("name must not be nil")
     end
