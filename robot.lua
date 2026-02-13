@@ -68,7 +68,7 @@ local meta = {
     equipProxies = {},
     equipSide = SIDES.right,
     peripheralConstructors = {},
-    invisibleItemCounts = {},
+    hiddenItemCounts = {},
     eventListeners = {},
     nextEventListenerId = 1,
     wrappedBlockNames = {}
@@ -945,7 +945,7 @@ function meta.listSlots(filter, limit, includeEquipment, includeHiddenItems)
             end
 
             if not includeHiddenItems then
-                local invisibleCount = meta.invisibleItemCounts[detail.name]
+                local invisibleCount = meta.hiddenItemCounts[detail.name]
                 local seenInvisibleCount = seenInvisibleItems[detail.name] or 0
 
                 if invisibleCount and seenInvisibleCount < invisibleCount then
@@ -1210,22 +1210,6 @@ function meta.setSlot(slotId, name, count, blacklist)
     return true
 end
 
-function meta.markItemsHidden(name, count)
-    if not name then
-        error("name must not be nil")
-    end
-
-    if not count then
-        error("count must not be nil")
-    end
-
-    if meta.invisibleItemCounts[name] then
-        meta.invisibleItemCounts[name] = meta.invisibleItemCounts[name] - count
-    end
-
-    return true
-end
-
 function meta.markItemsVisible(name, count)
     if not name then
         error("name must not be nil")
@@ -1235,11 +1219,27 @@ function meta.markItemsVisible(name, count)
         error("count must not be nil")
     end
 
-    if not meta.invisibleItemCounts[name] then
-        meta.invisibleItemCounts[name] = 0
+    if meta.hiddenItemCounts[name] then
+        meta.hiddenItemCounts[name] = meta.hiddenItemCounts[name] - count
     end
 
-    meta.invisibleItemCounts[name] = meta.invisibleItemCounts[name] + count
+    return true
+end
+
+function meta.markItemsHidden(name, count)
+    if not name then
+        error("name must not be nil")
+    end
+
+    if not count then
+        error("count must not be nil")
+    end
+
+    if not meta.hiddenItemCounts[name] then
+        meta.hiddenItemCounts[name] = 0
+    end
+
+    meta.hiddenItemCounts[name] = meta.hiddenItemCounts[name] + count
     return true
 end
 
