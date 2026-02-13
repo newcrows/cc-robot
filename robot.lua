@@ -71,7 +71,7 @@ local meta = {
     hiddenItemCounts = {},
     eventListeners = {},
     nextEventListenerId = 1,
-    wrappedBlockNames = {}
+    wrappedBlocks = {}
 }
 
 robot.meta = meta
@@ -347,13 +347,13 @@ meta.peripheralConstructors["advancedperipherals:me_bridge"] = function(opts)
 end
 
 local function unwrapAllWrappedBlocks()
-    for wrappedSide, _ in pairs(meta.wrappedBlockNames) do
+    for wrappedSide, _ in pairs(meta.wrappedBlocks) do
         meta.unwrap(wrappedSide)
     end
 end
 
 local function unwrapNotPresentWrappedBlocks()
-    for wrappedSide, _ in pairs(meta.wrappedBlockNames) do
+    for wrappedSide, _ in pairs(meta.wrappedBlocks) do
         if not peripheral.isPresent(wrappedSide) then
             meta.unwrap(wrappedSide)
         end
@@ -437,7 +437,7 @@ local function canEquip(name, side)
         return true
     end
 
-    if meta.wrappedBlockNames[side] then
+    if meta.wrappedBlocks[side] then
         return false, name .. " can not be equipped because a peripheral is bound on " .. side
     end
 
@@ -855,7 +855,7 @@ local function unequipHelper(name)
     return true
 end
 
--- NOTE [JM] custom peripherals MAY NEVER wrap other equipment, only other blocks
+-- NOTE [JM] custom code MAY NEVER wrap equipment, only blocks
 -- isEquipment flag MUST ONLY be used by internal equipment rotation logic
 function meta.wrap(name, side, isEquipment)
     if not name then
@@ -886,7 +886,7 @@ function meta.wrap(name, side, isEquipment)
 
     if target then
         if not isEquipment then
-            meta.wrappedBlockNames[side] = name
+            meta.wrappedBlocks[side] = {name = name, side = side, target = target}
         end
 
         meta.dispatchEvent("wrapped", name, side, isEquipment)
@@ -900,11 +900,11 @@ function meta.unwrap(side)
         error("side must not be nil")
     end
 
-    local name = meta.wrappedBlockNames[side]
+    local wrappedBlock = meta.wrappedBlocks[side]
 
-    if name then
-        meta.wrappedBlockNames[side] = nil
-        meta.dispatchEvent("unwrapped", name, side)
+    if wrappedBlock then
+        meta.wrappedBlocks[side] = nil
+        meta.dispatchEvent("unwrapped", wrappedBlock.name, side)
     end
 
     return true

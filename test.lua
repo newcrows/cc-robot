@@ -1567,7 +1567,7 @@ local function testMetaWrap()
     local chest = meta.wrap("minecraft:chest", "front")
 
     assert(chest)
-    assert(meta.wrappedBlockNames["front"] == "minecraft:chest")
+    assert(meta.wrappedBlocks["front"] and meta.wrappedBlocks["front"].name == "minecraft:chest")
     assert(name == "minecraft:chest")
     assert(side == "front")
     assert(not isEquipment)
@@ -1607,9 +1607,9 @@ local function testMetaUnwrap()
     sleep(0.1)
     meta.wrap("minecraft:chest", "front")
 
-    assert(meta.wrappedBlockNames["front"] == "minecraft:chest")
+    assert(meta.wrappedBlocks["front"] and meta.wrappedBlocks["front"].name == "minecraft:chest")
     assert(meta.unwrap("front"))
-    assert(not meta.wrappedBlockNames["front"])
+    assert(not meta.wrappedBlocks["front"])
     assert(name == "minecraft:chest")
     assert(side == "front")
     assert(not wasEquipment)
@@ -1963,6 +1963,14 @@ local function testMetaDispatchEvent()
     assert(customArg == "hello, world!")
 
     print("testMetaDispatchEvent passed")
+end
+
+local function testMetaEvent_wrapped()
+    robot.addEventListener({
+        wrapped = function(name, side, isEquipment)
+
+        end
+    })
 end
 
 testSetup()
