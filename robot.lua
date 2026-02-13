@@ -911,51 +911,14 @@ local function unequipHelper(name)
     return true
 end
 
-function meta.softWrap(side)
-    if not side then
-        error("side must not be nil")
-    end
+function meta.dispatchEvent(name, ...)
+    for _, listener in pairs(meta.eventListeners) do
+        local func = listener[name]
 
-    local proxy = meta.wrapProxies[side]
-
-    if proxy then
-        local constructor = meta.peripheralConstructors[proxy.name]
-        local target = peripheral.wrap(side)
-
-        if constructor then
-            local opts = {
-                robot = robot,
-                meta = meta,
-                name = proxy.name,
-                side = side,
-                target = target
-            }
-
-            target = constructor(opts)
+        if func then
+            func(...)
         end
-
-        proxy.target = target
-        meta.dispatchEvent("softWrap", proxy.name, side)
     end
-
-    return true
-end
-
-function meta.softUnwrap(side)
-    if not side then
-        error("side must not be nil")
-    end
-
-    local proxy = meta.wrapProxies[side]
-
-    if proxy then
-        proxy.side = nil
-        proxy.target = nil
-
-        meta.dispatchEvent("softUnwrap", proxy.name, side)
-    end
-
-    return true
 end
 
 -- NOTE [JM] custom code MAY NEVER wrap equipment, only blocks
@@ -1012,6 +975,53 @@ function meta.unwrap(side)
 
         meta.wrapProxies[side] = nil
         meta.dispatchEvent("unwrap", wrapProxy.name, side)
+    end
+
+    return true
+end
+
+function meta.softWrap(side)
+    if not side then
+        error("side must not be nil")
+    end
+
+    local proxy = meta.wrapProxies[side]
+
+    if proxy then
+        local constructor = meta.peripheralConstructors[proxy.name]
+        local target = peripheral.wrap(side)
+
+        if constructor then
+            local opts = {
+                robot = robot,
+                meta = meta,
+                name = proxy.name,
+                side = side,
+                target = target
+            }
+
+            target = constructor(opts)
+        end
+
+        proxy.target = target
+        meta.dispatchEvent("softWrap", proxy.name, side)
+    end
+
+    return true
+end
+
+function meta.softUnwrap(side)
+    if not side then
+        error("side must not be nil")
+    end
+
+    local proxy = meta.wrapProxies[side]
+
+    if proxy then
+        proxy.side = nil
+        proxy.target = nil
+
+        meta.dispatchEvent("softUnwrap", proxy.name, side)
     end
 
     return true
@@ -1319,7 +1329,7 @@ function meta.setSlot(slotId, name, count, blacklist)
     return true
 end
 
-function meta.markItemsVisible(name, count)
+function meta.makeItemsVisible(name, count)
     if not name then
         error("name must not be nil")
     end
@@ -1328,14 +1338,15 @@ function meta.markItemsVisible(name, count)
         error("count must not be nil")
     end
 
-    if meta.hiddenItemCounts[name] then
-        meta.hiddenItemCounts[name] = meta.hiddenItemCounts[name] - count
+    if not meta.hiddenItemCounts[name] then
+        meta.hiddenItemCounts[name] = 0
     end
 
+    meta.hiddenItemCounts[name] = meta.hiddenItemCounts[name] - count
     return true
 end
 
-function meta.markItemsHidden(name, count)
+function meta.makeItemsInvisible(name, count)
     if not name then
         error("name must not be nil")
     end
@@ -1350,16 +1361,6 @@ function meta.markItemsHidden(name, count)
 
     meta.hiddenItemCounts[name] = meta.hiddenItemCounts[name] + count
     return true
-end
-
-function meta.dispatchEvent(name, ...)
-    for _, listener in pairs(meta.eventListeners) do
-        local func = listener[name]
-
-        if func then
-            func(...)
-        end
-    end
 end
 
 function robot.addEventListener(listener)

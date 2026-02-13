@@ -1677,7 +1677,7 @@ local function testMetaListSlots()
         assertItem(item, "minecraft:sword", 1)
     end
 
-    meta.markItemsHidden("minecraft:dirt", 4)
+    meta.makeItemsInvisible("minecraft:dirt", 4)
 
     slots = meta.listSlots("minecraft:dirt")
     assert(#slots == 2)
@@ -1771,13 +1771,13 @@ local function testMetaGetFirstSlot()
 
     meta.equipProxies = {}
 
-    meta.markItemsHidden("minecraft:diamond_pickaxe", 1)
-    meta.markItemsHidden("minecraft:compass", 1)
+    meta.makeItemsInvisible("minecraft:diamond_pickaxe", 1)
+    meta.makeItemsInvisible("minecraft:compass", 1)
 
     slot = meta.getFirstSlot()
     assert(slot.id == 2 and slot.name == "minecraft:compass" and slot.count == 1)
 
-    meta.markItemsHidden("minecraft:compass", 1)
+    meta.makeItemsInvisible("minecraft:compass", 1)
 
     slot = meta.getFirstSlot()
     assert(slot.id == 3 and slot.name == "minecraft:chest" and slot.count == 2)
@@ -1825,13 +1825,13 @@ local function testMetaSelectFirstSlot()
 
     meta.equipProxies = {}
 
-    meta.markItemsHidden("minecraft:diamond_pickaxe", 1)
-    meta.markItemsHidden("minecraft:compass", 1)
+    meta.makeItemsInvisible("minecraft:diamond_pickaxe", 1)
+    meta.makeItemsInvisible("minecraft:compass", 1)
 
     meta.selectFirstSlot()
     assert(turtle.getSelectedSlot() == 2)
 
-    meta.markItemsHidden("minecraft:compass", 1)
+    meta.makeItemsInvisible("minecraft:compass", 1)
 
     meta.selectFirstSlot()
     assert(turtle.getSelectedSlot() == 3)
@@ -1867,7 +1867,7 @@ local function testMetaCountItems()
 
     meta.equipProxies = {}
 
-    meta.markItemsHidden("minecraft:compass", 1)
+    meta.makeItemsInvisible("minecraft:compass", 1)
     assert(meta.countItems("minecraft:compass") == 1)
     assert(meta.countItems("minecraft:compass", nil, true) == 2)
 
@@ -1927,7 +1927,7 @@ end
 local function testMetaMarkItemsVisible()
     meta.hiddenItemCounts["minecraft:dirt"] = 100
 
-    meta.markItemsVisible("minecraft:dirt", 10)
+    meta.makeItemsVisible("minecraft:dirt", 10)
     assert(meta.hiddenItemCounts["minecraft:dirt"] == 90)
 
     meta.hiddenItemCounts = {}
@@ -1936,10 +1936,10 @@ local function testMetaMarkItemsVisible()
 end
 
 local function testMetaMarkItemsHidden()
-    meta.markItemsHidden("minecraft:dirt", 10)
+    meta.makeItemsInvisible("minecraft:dirt", 10)
     assert(meta.hiddenItemCounts["minecraft:dirt"] == 10)
 
-    meta.markItemsHidden("minecraft:dirt", 10)
+    meta.makeItemsInvisible("minecraft:dirt", 10)
     assert(meta.hiddenItemCounts["minecraft:dirt"] == 20)
 
     meta.hiddenItemCounts = {}
