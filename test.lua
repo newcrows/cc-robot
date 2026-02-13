@@ -1523,15 +1523,21 @@ local function testGetItemDetail()
 end
 
 local function testListItems()
+    local function assertItem(item, name, count)
+        if item.name == name then
+            assert(item.count == count)
+        end
+    end
+
     local items = robot.listItems()
     assert(#items == 5)
 
     for _, item in ipairs(items) do
-        assert(item.name == "minecraft:diamond_pickaxe" and item.count == 1 or true)
-        assert(item.name == "minecraft:compass" and item.count == 2 or true)
-        assert(item.name == "minecraft:chest" and item.count == 2 or true)
-        assert(item.name == "minecraft:dirt" and item.count == 64 + 32 or true)
-        assert(item.name == "minecraft:sword" and item.count == 1 or true)
+        assertItem(item, "minecraft:diamond_pickaxe", 1)
+        assertItem(item, "minecraft:compass", 2)
+        assertItem(item, "minecraft:chest", 2)
+        assertItem(item, "minecraft:dirt", 64 + 32)
+        assertItem(item, "minecraft:sword", 1)
     end
 
     print("testListItems passed")
@@ -1620,6 +1626,194 @@ local function testMetaUnwrap()
     print("testMetaUnwrap passed")
 end
 
+local function testMetaListSlots()
+    local function assertItem(item, name, count, orCount)
+        if item.name == name then
+            assert(item.count == count or orCount and item.count == orCount)
+        end
+    end
+
+    local slots = meta.listSlots()
+    assert(#slots == 6)
+
+    for _, item in pairs(slots) do
+        assertItem(item, "minecraft:diamond_pickaxe", 1)
+        assertItem(item, "minecraft:compass", 2)
+        assertItem(item, "minecraft:chest", 2)
+        assertItem(item, "minecraft:dirt", 64, 32)
+        assertItem(item, "minecraft:sword", 1)
+    end
+
+    slots = meta.listSlots("minecraft:dirt")
+    assert(#slots == 2)
+
+    for _, item in pairs(slots) do
+        assertItem(item, "minecraft:dirt", 64, 32)
+    end
+
+    slots = meta.listSlots(nil, 3)
+    assert(#slots == 3)
+
+    for _, item in pairs(slots) do
+        assertItem(item, "minecraft:diamond_pickaxe", 1)
+        assertItem(item, "minecraft:compass", 2)
+        assertItem(item, "minecraft:chest", 2)
+    end
+
+    robot.equip("minecraft:diamond_pickaxe")
+
+    slots = meta.listSlots()
+
+    assert(#slots == 5)
+
+    for _, item in pairs(slots) do
+        assert(item.name ~= "minecraft:diamond_pickaxe")
+        assertItem(item, "minecraft:compass", 2)
+        assertItem(item, "minecraft:chest", 2)
+        assertItem(item, "minecraft:dirt", 64, 32)
+        assertItem(item, "minecraft:sword", 1)
+    end
+
+    slots = meta.listSlots(nil, nil, true)
+    assert(#slots == 6)
+
+    for _, item in pairs(slots) do
+        assertItem(item, "minecraft:diamond_pickaxe", 1)
+        assertItem(item, "minecraft:compass", 2)
+        assertItem(item, "minecraft:chest", 2)
+        assertItem(item, "minecraft:dirt", 64, 32)
+        assertItem(item, "minecraft:sword", 1)
+    end
+
+    meta.markItemsHidden("minecraft:dirt", 4)
+
+    slots = meta.listSlots("minecraft:dirt")
+    assert(#slots == 2)
+
+    for _, item in pairs(slots) do
+        assertItem(item, "minecraft:dirt", 60, 32)
+    end
+
+    meta.equipProxies = {}
+    meta.hiddenItemCounts = {}
+
+    print("testMetaListSlots passed")
+end
+
+local function testMetaListEmptySlots()
+    local slots = meta.listEmptySlots()
+    assert(#slots == 10)
+
+    for _, slot in pairs(slots) do
+        assert(slot.id > 5 and slot.id ~= 7)
+        assert(not slot.name)
+        assert(slot.count == 0)
+    end
+
+    slots = meta.listEmptySlots(4)
+    assert(#slots == 4)
+
+    for _, slot in pairs(slots) do
+        assert(slot.id > 5 and slot.id ~= 7)
+        assert(not slot.name)
+        assert(slot.count == 0)
+    end
+
+    turtle.select(4)
+    turtle.transferTo(6, 1)
+
+    for i = 8, 16 do
+        turtle.transferTo(i, 1)
+    end
+
+    slots = meta.listEmptySlots()
+    assert(#slots == 10)
+
+    for _, slot in pairs(slots) do
+        assert(slot.id > 5 and slot.id ~= 7)
+        assert(not slot.name)
+        assert(slot.count == 0)
+    end
+
+    turtle.select(4)
+    turtle.transferTo(6, 1)
+
+    for i = 8, 16 do
+        turtle.transferTo(i, 1)
+    end
+
+    slots = meta.listEmptySlots(16, true)
+    assert(#slots == 0)
+
+    for i = 8, 16 do
+        turtle.select(i)
+        turtle.transferTo(4, 1)
+    end
+
+    turtle.select(6)
+    turtle.transferTo(4, 1)
+
+    print("testMetaListEmptySlots passed")
+end
+
+local function testMetaGetFirstSlot()
+    local slot = meta.getFirstSlot()
+    assert(slot.id == 1 and slot.name == "minecraft:diamond_pickaxe" and slot.count == 1)
+
+    turtle.select(1)
+    turtle.transferTo(16, 1)
+
+    slot = meta.getFirstSlot()
+    assert(slot.id == 2 and slot.name == "minecraft:compass" and slot.count == 2)
+
+    turtle.select(16)
+    turtle.transferTo(1, 1)
+
+    robot.equip("minecraft:diamond_pickaxe")
+
+    slot = meta.getFirstSlot()
+    assert(slot.id == 2 and slot.name == "minecraft:compass" and slot.count == 2)
+
+    slot = meta.getFirstSlot(nil, true)
+    assert(slot.id == 1 and slot.name == "minecraft:diamond_pickaxe" and slot.count == 1)
+
+    meta.equipProxies = {}
+
+    meta.markItemsHidden("minecraft:diamond_pickaxe", 1)
+    meta.markItemsHidden("minecraft:compass", 1)
+
+    slot = meta.getFirstSlot()
+    assert(slot.id == 2 and slot.name == "minecraft:compass" and slot.count == 1)
+
+    meta.markItemsHidden("minecraft:compass", 1)
+
+    slot = meta.getFirstSlot()
+    assert(slot.id == 3 and slot.name == "minecraft:chest" and slot.count == 2)
+
+    meta.hiddenItemCounts = {}
+
+    print("testMetaGetFirstSlot passed")
+end
+
+local function testMetaGetFirstEmptySlot()
+    local slot = meta.getFirstEmptySlot()
+    assert(slot.id == 6)
+
+    turtle.select(4)
+    turtle.transferTo(6, 1)
+
+    slot = meta.getFirstEmptySlot()
+    assert(slot.id == 8)
+
+    turtle.select(6)
+    turtle.transferTo(4, 1)
+
+    print("testMetaGetFirstEmptySlot passed")
+end
+
+testMetaGetFirstEmptySlot()
+error("done")
+
 testSetup()
 testInsertEventListener()
 testRemoveEventListener()
@@ -1671,3 +1865,7 @@ testGetItemDetail()
 testListItems()
 testMetaWrap()
 testMetaUnwrap()
+testMetaListSlots()
+testMetaListEmptySlots()
+testMetaGetFirstSlot()
+testMetaGetFirstEmptySlot()
