@@ -1559,10 +1559,10 @@ local function testMetaWrap()
         end
     })
 
-    -- NOTE [JM] the luaVM has a bug here:
-    -- meta.wrappedBlockNames["front"] is sometimes nil
-    -- I looked inside the code and adding a print("hello") statement ANYWHERE in meta.wrap
-    -- fixes the problem, however that makes sense..
+    -- NOTE [JM] the CC:Tweaked has a bug here:
+    -- you can't peripheral.wrap() in the same tick as you turtle.place()'d
+    -- so we yield via sleep
+    sleep(0.1)
     local chest = meta.wrap("minecraft:chest", "front")
 
     assert(chest)
@@ -1600,10 +1600,10 @@ local function testMetaUnwrap()
         end
     })
 
-    -- NOTE [JM] the luaVM has a bug here:
-    -- meta.wrappedBlockNames["front"] is sometimes nil
-    -- I looked inside the code and adding a print("hello") statement ANYWHERE in meta.wrap
-    -- fixes the problem, however that makes sense..
+    -- NOTE [JM] the CC:Tweaked has a bug here:
+    -- you can't peripheral.wrap() in the same tick as you turtle.place()'d
+    -- so we yield via sleep
+    sleep(0.1)
     meta.wrap("minecraft:chest", "front")
 
     assert(meta.wrappedBlockNames["front"] == "minecraft:chest")
