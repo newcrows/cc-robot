@@ -1263,20 +1263,17 @@ function robot.insertEventListener(listener)
     local id = meta.nextEventListenerId
 
     meta.eventListeners[id] = listener
-    listener.id = id
-
     meta.nextEventListenerId = id + 1
+
     return id
 end
 
-function robot.removeEventListener(idOrListener)
-    if type(idOrListener) == "table" then
-        idOrListener = idOrListener.id
-    elseif not idOrListener then
-        error("listener must not be nil")
+function robot.removeEventListener(id)
+    if not id then
+        error("id must not be nil")
     end
 
-    meta.eventListeners[idOrListener] = nil
+    meta.eventListeners[id] = nil
     return true
 end
 
@@ -1307,6 +1304,8 @@ function robot.insertPeripheralConstructor(nameOrConstructor, constructor)
     end
 
     meta.peripheralConstructors[nameOrConstructor] = constructor
+
+    return nameOrConstructor
 end
 
 function robot.removePeripheralConstructor(name)
