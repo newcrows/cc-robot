@@ -56,6 +56,7 @@ local RAW_PROPERTIES = {
 }
 
 local robot = {
+    strict = true,
     version = "1.0.0",
     x = 0,
     y = 0,
@@ -70,32 +71,43 @@ local meta = {
     invisibleItemCounts = {},
     eventListeners = {},
     nextEventListenerId = 1,
-    wrappedNames = {}
+    wrappedBlockNames = {}
 }
 
 robot.meta = meta
 
-meta.peripheralConstructors["minecraft:diamond_pickaxe"] = function()
+local digConstructor = function()
     return {
-        dig = turtle.dig,
-        digUp = turtle.digUp,
-        digDown = turtle.digDown
+        dig = function()
+            if turtle.dig() then
+                unwrap(SIDES.front)
+                return true
+            end
+
+            return false
+        end,
+        digUp = function()
+            if turtle.digUp() then
+                unwrap(SIDES.top)
+                return true
+            end
+
+            return false
+        end,
+        digDown = function()
+            if turtle.digDown() then
+                unwrap(SIDES.bottom)
+                return true
+            end
+
+            return false
+        end
     }
 end
-meta.peripheralConstructors["minecraft:diamond_axe"] = function()
-    return {
-        dig = turtle.dig,
-        digUp = turtle.digUp,
-        digDown = turtle.digDown
-    }
-end
-meta.peripheralConstructors["minecraft:diamond_shovel"] = function()
-    return {
-        dig = turtle.dig,
-        digUp = turtle.digUp,
-        digDown = turtle.digDown
-    }
-end
+
+meta.peripheralConstructors["minecraft:diamond_pickaxe"] = digConstructor
+meta.peripheralConstructors["minecraft:diamond_axe"] = digConstructor
+meta.peripheralConstructors["minecraft:diamond_shovel"] = digConstructor
 meta.peripheralConstructors["minecraft:diamond_sword"] = function()
     return {
         attack = turtle.attack,
@@ -334,19 +346,16 @@ meta.peripheralConstructors["advancedperipherals:me_bridge"] = function(opts)
     }
 end
 
-local function unwrapAllWrappedNames()
-    for wrappedSide, wrappedName in pairs(meta.wrappedNames) do
-        meta.dispatchEvent("unwrapped", wrappedName, wrappedSide)
+local function unwrapAllWrappedBlocks()
+    for wrappedSide, _ in pairs(meta.wrappedBlockNames) do
+        meta.unwrap(wrappedSide)
     end
-
-    meta.wrappedNames = {}
 end
 
-local function unwrapNotPresentWrappedNames()
-    for wrappedSide, wrappedName in pairs(meta.wrappedNames) do
+local function unwrapNotPresentWrappedBlocks()
+    for wrappedSide, _ in pairs(meta.wrappedBlockNames) do
         if not peripheral.isPresent(wrappedSide) then
-            meta.wrappedNames[wrappedSide] = nil
-            meta.dispatchEvent("unwrapped", wrappedName, wrappedSide)
+            meta.unwrap(wrappedSide)
         end
     end
 end
@@ -389,49 +398,14 @@ local function sync()
                 error("pinned " .. name .. " was removed illegally")
             end
 
-            meta.dispatchEvent("unwrapped", name, proxy.side, true)
+            local side = proxy.side
 
             proxy.side = nil
             proxy.target = nil
+
+            meta.dispatchEvent("unwrapped", proxy.name, side, true)
         end
     end
-end
-
-local function wrap(name, side, isNotEquipment)
-    if not name then
-        error("name must not be nil")
-    end
-
-    if not side then
-        error("side must not be nil")
-    end
-
-    local constructor = meta.peripheralConstructors[name]
-    local target = peripheral.wrap(side)
-
-    if constructor then
-        local opts = {
-            robot = robot,
-            meta = meta,
-            name = name,
-            side = side,
-            target = target
-        }
-
-        -- most constructors should return nil if opts.target is nil
-        -- only targets that are not peripherals (i.E. pickaxe) should behave differently
-        target = constructor(opts)
-    end
-
-    if target then
-        meta.dispatchEvent("wrapped", name, side, not isNotEquipment)
-
-        if isNotEquipment then
-            meta.wrappedNames[side] = name
-        end
-    end
-
-    return target
 end
 
 local function isEmpty(side)
@@ -443,7 +417,7 @@ local function isEmpty(side)
     return detail == nil
 end
 
--- NOTE [JM] assumes sync() was called beforehand
+-- NOTE [JM] assumes sync() was called beforehand (in strict mode)
 local function canEquip(name, side)
     if not name then
         error("name must not be nil")
@@ -463,7 +437,7 @@ local function canEquip(name, side)
         return true
     end
 
-    if meta.wrappedNames[side] then
+    if meta.wrappedBlockNames[side] then
         return false, name .. " can not be equipped because a peripheral is bound on " .. side
     end
 
@@ -523,23 +497,25 @@ local function equip(name, side)
         local swapProxy = meta.equipProxies[swapName]
 
         if swapProxy then
-            meta.dispatchEvent("unwrapped", swapProxy.name, swapProxy.side, true)
+            local swapSide = swapProxy.side
 
             swapProxy.side = nil
             swapProxy.target = nil
+
+            meta.dispatchEvent("unwrapped", swapProxy.name, swapSide, true)
         end
     end
 
     local proxy = meta.equipProxies[name]
 
     proxy.side = side
-    proxy.target = wrap(name, side)
+    proxy.target = meta.wrap(name, side, true)
 
     meta.equipSide = OPPOSITE_SIDES[meta.equipSide]
     return true
 end
 
--- NOTE [JM] assumes sync() was called beforehand
+-- NOTE [JM] assumes sync() was called beforehand (in strict mode)
 local function canUnequip(proxy)
     if not proxy then
         error("proxy must not be nil")
@@ -594,10 +570,12 @@ local function unequip(proxy)
         return false, err
     end
 
-    meta.dispatchEvent("unwrapped", proxy.name, proxy.side, true)
+    local side = proxy.side
 
     proxy.side = nil
     proxy.target = nil
+
+    meta.dispatchEvent("unwrapped", proxy.name, side, true)
 
     return true
 end
@@ -615,7 +593,12 @@ local function createEquipProxy(name)
     }
 
     function proxy.use(wrapOnly)
-        sync()
+        if robot.strict then
+            -- programs can do some weird stuff with slotted equipment, like temporarily removing it
+            -- external forces (like the player) can also remove equipment at any time
+            -- so we should make sure we sync() before we access the inventory
+            sync()
+        end
 
         if proxy.target then
             return true
@@ -623,14 +606,14 @@ local function createEquipProxy(name)
 
         if name == getName(SIDES.right) then
             proxy.side = SIDES.right
-            proxy.target = wrap(name, SIDES.right)
+            proxy.target = meta.wrap(name, SIDES.right, true)
 
             meta.equipSide = SIDES.left
         end
 
         if name == getName(SIDES.left) then
             proxy.side = SIDES.left
-            proxy.target = wrap(name, SIDES.left)
+            proxy.target = meta.wrap(name, SIDES.left, true)
 
             meta.equipSide = SIDES.right
         end
@@ -659,7 +642,12 @@ local function createEquipProxy(name)
     end
 
     function proxy.unuse()
-        sync()
+        if robot.strict then
+            -- programs can do some weird stuff with slotted equipment, like temporarily removing it
+            -- external forces (like the player) can also remove equipment at any time
+            -- so we should make sure we sync() before we access the inventory
+            sync()
+        end
 
         if not proxy.target then
             return true
@@ -867,6 +855,61 @@ local function unequipHelper(name)
     return true
 end
 
+-- NOTE [JM] constructors MUST NEVER wrap equipment, only blocks
+-- isEquipment flag MUST ONLY be used by internal equipment rotation logic
+function meta.wrap(name, side, isEquipment)
+    if not name then
+        error("name must not be nil")
+    end
+
+    if not side then
+        error("side must not be nil")
+    end
+
+    local constructor = meta.peripheralConstructors[name]
+    local target = peripheral.wrap(side)
+
+    if constructor then
+        local opts = {
+            robot = robot,
+            meta = meta,
+            name = name,
+            side = side,
+            target = target,
+            wrappedAsEquipment = isEquipment
+        }
+
+        -- most constructors should return nil if opts.target is nil
+        -- only targets that are not peripherals (i.E. pickaxe) should behave differently
+        target = constructor(opts)
+    end
+
+    if target then
+        if not isEquipment then
+            meta.wrappedBlockNames[side] = name
+        end
+
+        meta.dispatchEvent("wrapped", name, side, isEquipment)
+    end
+
+    return target
+end
+
+function meta.unwrap(side)
+    if not side then
+        error("side must not be nil")
+    end
+
+    local name = meta.wrappedBlockNames[side]
+
+    if name then
+        meta.wrappedBlockNames[side] = nil
+        meta.dispatchEvent("unwrapped", name, side)
+    end
+
+    return true
+end
+
 function meta.listSlots(filter, limit, includeEquipment, includeInvisibleItems)
     limit = limit or 16
 
@@ -874,14 +917,17 @@ function meta.listSlots(filter, limit, includeEquipment, includeInvisibleItems)
     local seenEquipment = {}
     local seenInvisibleItems = {}
 
-    -- programs can do some weird stuff with slotted equipment, like temporarily removing it
-    -- which would change (visible) inventory contents
-    -- so we should make sure we sync() before we access the inventory
-    sync()
+    if robot.strict then
+        -- programs can do some weird stuff with slotted equipment, like temporarily removing it
+        -- external forces (like the player) can also remove equipment at any time
+        -- so we should make sure we sync() before we access the inventory
+        sync()
 
-    -- programs can do some weird stuff inside event listeners that may change inventory contents,
-    -- so we should make sure afterUnwrap is dispatched before we access the inventory
-    unwrapNotPresentWrappedNames()
+        -- programs can do some weird stuff inside event listeners that may change inventory contents,
+        -- external forces (like the player) can also take or mine peripheral blocks at any time
+        -- so we should make sure we unwrapNotPresentWrappedNames() before we access the inventory
+        unwrapNotPresentWrappedBlocks()
+    end
 
     for i = 1, 16 do
         local detail = turtle.getItemDetail(i)
@@ -1286,9 +1332,9 @@ end
 
 function robot.wrap(side, wrapAs)
     if (side == SIDES.front or side == SIDES.top or side == SIDES.bottom) and not wrapAs then
-        return wrap(getName(side), side, true)
+        return meta.wrap(getName(side), side)
     elseif side == SIDES.front or side == SIDES.back or side == SIDES.top or side == SIDES.bottom then
-        return wrap(wrapAs, side, true)
+        return meta.wrap(wrapAs, side)
     elseif (side == SIDES.right or side == SIDES.left) and wrapAs then
         local detail = side == SIDES.right and turtle.getEquippedRight() or turtle.getEquippedLeft()
 
@@ -1303,33 +1349,38 @@ function robot.wrap(side, wrapAs)
                 error(err)
             end
 
-            sync()
+            if robot.strict then
+                -- programs can do some weird stuff with slotted equipment, like temporarily removing it
+                -- external forces (like the player) can also remove equipment at any time
+                -- so we should make sure we sync() before we access the inventory
+                sync()
+            end
         end
 
-        return wrap(wrapAs, side, true)
+        return meta.wrap(wrapAs, side)
     elseif side == SIDES.right or side == SIDES.left then
         error("must explicitly wrap " .. side)
     elseif not side and not wrapAs then
-        return wrap(getName(SIDES.front), SIDES.front, true)
+        return meta.wrap(getName(SIDES.front), SIDES.front)
     else
         wrapAs = wrapAs or side
-        return wrap(wrapAs, SIDES.front, true)
+        return meta.wrap(wrapAs, SIDES.front)
     end
 end
 
 function robot.wrapUp(wrapAs)
-    return wrap(wrapAs or getName(SIDES.top), SIDES.top, true)
+    return meta.wrap(wrapAs or getName(SIDES.top), SIDES.top)
 end
 
 function robot.wrapDown(wrapAs)
-    return wrap(wrapAs or getName(SIDES.bottom), SIDES.bottom, true)
+    return meta.wrap(wrapAs or getName(SIDES.bottom), SIDES.bottom)
 end
 
 function robot.forward()
     local ok, err = turtle.forward()
 
     if ok then
-        unwrapAllWrappedNames()
+        unwrapAllWrappedBlocks()
         local delta = DELTAS[robot.facing]
 
         robot.x = robot.x + delta.x
@@ -1343,7 +1394,7 @@ function robot.back()
     local ok, err = turtle.back()
 
     if ok then
-        unwrapAllWrappedNames()
+        unwrapAllWrappedBlocks()
         local delta = DELTAS[robot.facing]
 
         robot.x = robot.x - delta.x
@@ -1357,7 +1408,7 @@ function robot.up()
     local ok, err = turtle.up()
 
     if ok then
-        unwrapAllWrappedNames()
+        unwrapAllWrappedBlocks()
         robot.y = robot.y + DELTAS.up.y
     end
 
@@ -1368,7 +1419,7 @@ function robot.down()
     local ok, err = turtle.down()
 
     if ok then
-        unwrapAllWrappedNames()
+        unwrapAllWrappedBlocks()
         robot.y = robot.y + DELTAS.down.y
     end
 
@@ -1379,7 +1430,7 @@ function robot.turnLeft()
     local ok, err = turtle.turnLeft()
 
     if ok then
-        unwrapAllWrappedNames()
+        unwrapAllWrappedBlocks()
 
         local i = FACINGS[robot.facing] - 1
         robot.facing = FACINGS[i % 4]
@@ -1392,7 +1443,7 @@ function robot.turnRight()
     local ok, err = turtle.turnRight()
 
     if ok then
-        unwrapAllWrappedNames()
+        unwrapAllWrappedBlocks()
 
         local i = FACINGS[robot.facing] + 1
         robot.facing = FACINGS[i % 4]

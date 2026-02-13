@@ -21,6 +21,9 @@ download from [pastebin](https://pastebin.com/cx27MhNy)
 
 `pastebin get cx27MhNy robot.lua`
 
+or checkout this repo, which includes `test.lua` that tests the complete `robot api`
+on a live turtle.
+
 get a `robot` instance using `require()`
 ```lua
 local robot = require("robot")
