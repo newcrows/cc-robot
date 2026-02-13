@@ -46,9 +46,9 @@ local OPPOSITE_SIDES = {
 }
 local RAW_PROPERTIES = {
     name = true,
-    pinned = true,
     side = true,
     target = true,
+    pinned = true,
     use = true,
     unuse = true,
     pin = true,
@@ -71,7 +71,7 @@ local meta = {
     hiddenItemCounts = {},
     eventListeners = {},
     nextEventListenerId = 1,
-    wrappedBlocks = {}
+    wrapProxies = {}
 }
 
 robot.meta = meta
@@ -79,25 +79,37 @@ robot.meta = meta
 local digConstructor = function()
     return {
         dig = function()
+            meta.softUnwrap(SIDES.front)
+
             if turtle.dig() then
                 meta.unwrap(SIDES.front)
                 return true
+            else
+                meta.softWrap(SIDES.front)
             end
 
             return false
         end,
         digUp = function()
+            meta.softUnwrap(SIDES.top)
+
             if turtle.digUp() then
                 meta.unwrap(SIDES.top)
                 return true
+            else
+                meta.softWrap(SIDES.top)
             end
 
             return false
         end,
         digDown = function()
+            meta.softUnwrap(SIDES.bottom)
+
             if turtle.digDown() then
                 meta.unwrap(SIDES.bottom)
                 return true
+            else
+                meta.softWrap(SIDES.bottom)
             end
 
             return false
@@ -346,14 +358,58 @@ meta.peripheralConstructors["advancedperipherals:me_bridge"] = function(opts)
     }
 end
 
-local function unwrapAllWrappedBlocks()
-    for wrappedSide, _ in pairs(meta.wrappedBlocks) do
+local function createWrapProxy(name, side, target)
+    local proxy = {
+        name = name,
+        side = side,
+        target = target
+    }
+
+    local metatable = {
+        __index = function(_, key)
+            if RAW_PROPERTIES[key] then
+                return rawget(proxy, key)
+            end
+
+            return function(...)
+                if not proxy.target then
+                    error("wrapped block is no longer accessible")
+                end
+
+                return proxy.target[key](...)
+            end
+        end,
+        __newindex = function(_, key, value)
+            if RAW_PROPERTIES[key] then
+                rawset(proxy, key, value)
+            end
+        end
+    }
+
+    setmetatable(proxy, metatable)
+    return proxy
+end
+
+local function softUnwrapAllWrapProxies()
+    for wrappedSide, _ in pairs(meta.wrapProxies) do
+        meta.softUnwrap(wrappedSide)
+    end
+end
+
+local function softWrapAllWrapProxies()
+    for wrappedSide, _ in pairs(meta.wrapProxies) do
+        meta.softWrap(wrappedSide)
+    end
+end
+
+local function unwrapAllWrapProxies()
+    for wrappedSide, _ in pairs(meta.wrapProxies) do
         meta.unwrap(wrappedSide)
     end
 end
 
-local function unwrapNotPresentWrappedBlocks()
-    for wrappedSide, _ in pairs(meta.wrappedBlocks) do
+local function unwrapNotPresentWrapProxies()
+    for wrappedSide, _ in pairs(meta.wrapProxies) do
         if not peripheral.isPresent(wrappedSide) then
             meta.unwrap(wrappedSide)
         end
@@ -403,7 +459,7 @@ local function sync()
             proxy.side = nil
             proxy.target = nil
 
-            meta.dispatchEvent("unwrapped", proxy.name, side, true)
+            meta.dispatchEvent("unwrap", proxy.name, side, true)
         end
     end
 end
@@ -437,7 +493,7 @@ local function canEquip(name, side)
         return true
     end
 
-    if meta.wrappedBlocks[side] then
+    if meta.wrapProxies[side] then
         return false, name .. " can not be equipped because a peripheral is bound on " .. side
     end
 
@@ -502,7 +558,7 @@ local function equip(name, side)
             swapProxy.side = nil
             swapProxy.target = nil
 
-            meta.dispatchEvent("unwrapped", swapProxy.name, swapSide, true)
+            meta.dispatchEvent("unwrap", swapProxy.name, swapSide, true)
         end
     end
 
@@ -575,7 +631,7 @@ local function unequip(proxy)
     proxy.side = nil
     proxy.target = nil
 
-    meta.dispatchEvent("unwrapped", proxy.name, side, true)
+    meta.dispatchEvent("unwrap", proxy.name, side, true)
 
     return true
 end
@@ -813,7 +869,7 @@ local function equipHelper(name, pinned)
             proxy.pin()
         end
 
-        meta.dispatchEvent("equipped", name, pinned)
+        meta.dispatchEvent("equip", name, pinned)
     elseif pinned then
         proxy.pin()
     end
@@ -848,8 +904,53 @@ local function unequipHelper(name)
         proxy.use = nil
         meta.equipProxies[name] = nil
 
-        meta.dispatchEvent("unequipped", name)
+        meta.dispatchEvent("unequip", name)
         return true
+    end
+
+    return true
+end
+
+function meta.softWrap(side)
+    if not side then
+        error("side must not be nil")
+    end
+
+    local proxy = meta.wrapProxies[side]
+
+    if proxy then
+        local constructor = meta.peripheralConstructors[proxy.name]
+        local target = peripheral.wrap(side)
+
+        if constructor then
+            local opts = {
+                robot = robot,
+                meta = meta,
+                name = proxy.name,
+                side = side,
+                target = target
+            }
+
+            target = constructor(opts)
+        end
+
+        proxy.target = target
+        meta.dispatchEvent("softWrap", proxy.name, side)
+    end
+
+    return true
+end
+
+function meta.softUnwrap(side)
+    if not side then
+        error("side must not be nil")
+    end
+
+    local proxy = meta.wrapProxies[side]
+
+    if proxy then
+        proxy.target = nil
+        meta.dispatchEvent("softUnwrap", proxy.name, side)
     end
 
     return true
@@ -886,10 +987,10 @@ function meta.wrap(name, side, isEquipment)
 
     if target then
         if not isEquipment then
-            meta.wrappedBlocks[side] = {name = name, side = side, target = target}
+            meta.wrapProxies[side] = createWrapProxy(name, side, target)
         end
 
-        meta.dispatchEvent("wrapped", name, side, isEquipment)
+        meta.dispatchEvent("wrap", name, side, isEquipment)
     end
 
     return target
@@ -900,11 +1001,11 @@ function meta.unwrap(side)
         error("side must not be nil")
     end
 
-    local wrappedBlock = meta.wrappedBlocks[side]
+    local wrapProxy = meta.wrapProxies[side]
 
-    if wrappedBlock then
-        meta.wrappedBlocks[side] = nil
-        meta.dispatchEvent("unwrapped", wrappedBlock.name, side)
+    if wrapProxy then
+        meta.wrapProxies[side] = nil
+        meta.dispatchEvent("unwrap", wrapProxy.name, side)
     end
 
     return true
@@ -926,7 +1027,7 @@ function meta.listSlots(filter, limit, includeEquipment, includeHiddenItems)
         -- programs can do some weird stuff inside event listeners that may change inventory contents,
         -- external forces (like the player) can also take or mine peripheral blocks at any time
         -- so we should make sure we unwrapNotPresentWrappedNames() before we access the inventory
-        unwrapNotPresentWrappedBlocks()
+        unwrapNotPresentWrapProxies()
     end
 
     for i = 1, 16 do
@@ -1387,79 +1488,103 @@ function robot.wrapDown(wrapAs)
 end
 
 function robot.forward()
+    softUnwrapAllWrapProxies()
+
     local ok, err = turtle.forward()
 
     if ok then
-        unwrapAllWrappedBlocks()
+        unwrapAllWrapProxies()
         local delta = DELTAS[robot.facing]
 
         robot.x = robot.x + delta.x
         robot.z = robot.z + delta.z
+    else
+        softWrapAllWrapProxies()
     end
 
     return ok, err
 end
 
 function robot.back()
+    softUnwrapAllWrapProxies()
+
     local ok, err = turtle.back()
 
     if ok then
-        unwrapAllWrappedBlocks()
+        unwrapAllWrapProxies()
         local delta = DELTAS[robot.facing]
 
         robot.x = robot.x - delta.x
         robot.z = robot.z - delta.z
+    else
+        softWrapAllWrapProxies()
     end
 
     return ok, err
 end
 
 function robot.up()
+    softUnwrapAllWrapProxies()
+
     local ok, err = turtle.up()
 
     if ok then
-        unwrapAllWrappedBlocks()
+        unwrapAllWrapProxies()
         robot.y = robot.y + DELTAS.up.y
+    else
+        softWrapAllWrapProxies()
     end
 
     return ok, err
 end
 
 function robot.down()
+    softUnwrapAllWrapProxies()
+
     local ok, err = turtle.down()
 
     if ok then
-        unwrapAllWrappedBlocks()
+        unwrapAllWrapProxies()
         robot.y = robot.y + DELTAS.down.y
+    else
+        softWrapAllWrapProxies()
     end
 
     return ok, err
 end
 
 function robot.turnLeft()
-    local ok, err = turtle.turnLeft()
+    softUnwrapAllWrapProxies()
+
+    local ok = turtle.turnLeft()
 
     if ok then
-        unwrapAllWrappedBlocks()
+        unwrapAllWrapProxies()
 
         local i = FACINGS[robot.facing] - 1
         robot.facing = FACINGS[i % 4]
+    else
+        error("turnLeft can't fail, this is an illegal state")
     end
 
-    return ok, err
+    return ok
 end
 
 function robot.turnRight()
-    local ok, err = turtle.turnRight()
+    softUnwrapAllWrapProxies()
+
+    local ok = turtle.turnRight()
 
     if ok then
-        unwrapAllWrappedBlocks()
+        unwrapAllWrapProxies()
 
         local i = FACINGS[robot.facing] + 1
         robot.facing = FACINGS[i % 4]
+    else
+        error("turnRight can't fail, this is an illegal state")
     end
 
-    return ok, err
+    return ok
 end
 
 function robot.place(name)

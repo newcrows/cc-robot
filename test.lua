@@ -1553,7 +1553,7 @@ local function testMetaWrap()
 
     local name, side, isEquipment
     local id = robot.addEventListener({
-        wrapped = function(_name, _side, _isEquipment)
+        wrap = function(_name, _side, _isEquipment)
             name = _name
             side = _side
             isEquipment = _isEquipment
@@ -1567,7 +1567,7 @@ local function testMetaWrap()
     local chest = meta.wrap("minecraft:chest", "front")
 
     assert(chest)
-    assert(meta.wrappedBlocks["front"] and meta.wrappedBlocks["front"].name == "minecraft:chest")
+    assert(meta.wrapProxies["front"] and meta.wrapProxies["front"].name == "minecraft:chest")
     assert(name == "minecraft:chest")
     assert(side == "front")
     assert(not isEquipment)
@@ -1594,7 +1594,7 @@ local function testMetaUnwrap()
 
     local name, side, wasEquipment
     local id = robot.addEventListener({
-        unwrapped = function(_name, _side, _wasEquipment)
+        unwrap = function(_name, _side, _wasEquipment)
             name = _name
             side = _side
             wasEquipment = _wasEquipment
@@ -1607,9 +1607,9 @@ local function testMetaUnwrap()
     sleep(0.1)
     meta.wrap("minecraft:chest", "front")
 
-    assert(meta.wrappedBlocks["front"] and meta.wrappedBlocks["front"].name == "minecraft:chest")
+    assert(meta.wrapProxies["front"] and meta.wrapProxies["front"].name == "minecraft:chest")
     assert(meta.unwrap("front"))
-    assert(not meta.wrappedBlocks["front"])
+    assert(not meta.wrapProxies["front"])
     assert(name == "minecraft:chest")
     assert(side == "front")
     assert(not wasEquipment)
@@ -1907,12 +1907,12 @@ local function testMetaSetSlot()
     meta.setSlot(16, "minecraft:dirt", 0)
     assert(turtle.getItemCount(16) == 0)
 
-    meta.setSlot(16, "minecraft:dirt", 17, {[4] = true})
+    meta.setSlot(16, "minecraft:dirt", 17, { [4] = true })
     assert(turtle.getItemCount(4) == 64)
     assert(turtle.getItemCount(5) == 15)
     assert(turtle.getItemCount(16) == 17)
 
-    meta.setSlot(16, "minecraft:dirt", 0, {[5] = true})
+    meta.setSlot(16, "minecraft:dirt", 0, { [5] = true })
     assert(turtle.getItemCount(16) == 0)
 
     turtle.select(6)
@@ -1965,9 +1965,9 @@ local function testMetaDispatchEvent()
     print("testMetaDispatchEvent passed")
 end
 
-local function testMetaEvent_wrapped()
+local function testMetaEvent_wrap()
     robot.addEventListener({
-        wrapped = function(name, side, isEquipment)
+        wrap = function(name, side, isEquipment)
 
         end
     })
@@ -2036,3 +2036,4 @@ testMetaSetSlot()
 testMetaMarkItemsVisible()
 testMetaMarkItemsHidden()
 testMetaDispatchEvent()
+testMetaEvent_wrap()
