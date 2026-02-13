@@ -1932,6 +1932,42 @@ local function testMetaSetSlot()
     print("testMetaSetSlot passed")
 end
 
+local function testMetaMarkItemsVisible()
+    meta.hiddenItemCounts["minecraft:dirt"] = 100
+
+    meta.markItemsVisible("minecraft:dirt", 10)
+    assert(meta.hiddenItemCounts["minecraft:dirt"] == 90)
+
+    meta.hiddenItemCounts = {}
+
+    print("testMetaMarkItemsVisible passed")
+end
+
+local function testMetaMarkItemsHidden()
+    meta.markItemsHidden("minecraft:dirt", 10)
+    assert(meta.hiddenItemCounts["minecraft:dirt"] == 10)
+
+    meta.markItemsHidden("minecraft:dirt", 10)
+    assert(meta.hiddenItemCounts["minecraft:dirt"] == 20)
+
+    meta.hiddenItemCounts = {}
+
+    print("testMetaMarkItemsHidden passed")
+end
+
+local function testMetaDispatchEvent()
+    local customArg
+
+    robot.insertEventListener({
+        customEvent = function(_customArg)
+            customArg = _customArg
+        end
+    })
+
+    meta.dispatchEvent("customEvent", "hello, world!")
+    assert(customArg == "hello, world!")
+end
+
 testSetup()
 testInsertEventListener()
 testRemoveEventListener()
@@ -1992,3 +2028,6 @@ testMetaSelectFirstEmptySlot()
 testMetaCountItems()
 testMetaCompact()
 testMetaSetSlot()
+testMetaMarkItemsVisible()
+testMetaMarkItemsHidden()
+testMetaDispatchEvent()
