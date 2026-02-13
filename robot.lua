@@ -1084,6 +1084,16 @@ function meta.setSlot(slotId, name, count, blacklist)
         error("slotId must not be nil")
     end
 
+    if name == "air" then
+        name = nil
+    end
+
+    if not name then
+        count = 0
+    elseif not count then
+        count = meta.countItems(name, true, true)
+    end
+
     if count == nil then
         error("count must not be nil")
     end
