@@ -208,8 +208,7 @@ local function testWrap()
     placeChest()
 
     local custom = {}
-    local constructor = function(opts)
-        custom.target = opts.target
+    local constructor = function()
         return custom
     end
 
@@ -222,13 +221,13 @@ local function testWrap()
     assert(wrapped)
 
     wrapped = robot.wrap("test:wrap")
-    assert(wrapped == custom and wrapped.target)
+    assert(wrapped.target == custom and wrapped.target)
 
     wrapped = robot.wrap(nil, "test:wrap")
-    assert(wrapped == custom and wrapped.target)
+    assert(wrapped.target == custom and wrapped.target)
 
     wrapped = robot.wrap("front", "test:wrap")
-    assert(wrapped == custom and wrapped.target)
+    assert(wrapped.target == custom and wrapped.target)
 
     turtle.turnRight()
 
@@ -236,7 +235,7 @@ local function testWrap()
     assert(not ok)
 
     wrapped = robot.wrap("left", "test:wrap")
-    assert(wrapped == custom and wrapped.target)
+    assert(wrapped.target == custom and wrapped.target)
 
     turtle.turnRight()
 
@@ -244,7 +243,7 @@ local function testWrap()
     assert(not ok)
 
     wrapped = robot.wrap("back", "test:wrap")
-    assert(wrapped == custom and wrapped.target)
+    assert(wrapped.target == custom and wrapped.target)
 
     turtle.turnRight()
 
@@ -252,7 +251,7 @@ local function testWrap()
     assert(not ok)
 
     wrapped = robot.wrap("right", "test:wrap")
-    assert(wrapped == custom and wrapped.target)
+    assert(wrapped.target == custom and wrapped.target)
 
     turtle.turnRight()
 
@@ -279,8 +278,7 @@ local function testWrapUp()
     placeChest()
 
     local custom = {}
-    local constructor = function(opts)
-        custom.target = opts.target
+    local constructor = function()
         return custom
     end
 
@@ -293,7 +291,7 @@ local function testWrapUp()
     assert(wrapped)
 
     wrapped = robot.wrapUp("test:wrap")
-    assert(wrapped == custom and wrapped.target)
+    assert(wrapped.target == custom and wrapped.target)
 
     digChest()
 
@@ -318,8 +316,7 @@ local function testWrapDown()
     placeChest()
 
     local custom = {}
-    local constructor = function(opts)
-        custom.target = opts.target
+    local constructor = function()
         return custom
     end
 
@@ -332,7 +329,7 @@ local function testWrapDown()
     assert(wrapped)
 
     wrapped = robot.wrapDown("test:wrap")
-    assert(wrapped == custom and wrapped.target)
+    assert(wrapped.target == custom and wrapped.target)
 
     digChest()
 
