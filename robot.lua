@@ -80,7 +80,7 @@ local digConstructor = function()
     return {
         dig = function()
             if turtle.dig() then
-                unwrap(SIDES.front)
+                meta.unwrap(SIDES.front)
                 return true
             end
 
@@ -88,7 +88,7 @@ local digConstructor = function()
         end,
         digUp = function()
             if turtle.digUp() then
-                unwrap(SIDES.top)
+                meta.unwrap(SIDES.top)
                 return true
             end
 
@@ -96,7 +96,7 @@ local digConstructor = function()
         end,
         digDown = function()
             if turtle.digDown() then
-                unwrap(SIDES.bottom)
+                meta.unwrap(SIDES.bottom)
                 return true
             end
 
