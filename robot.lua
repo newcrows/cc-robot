@@ -1003,10 +1003,6 @@ function meta.listEmptySlots(limit, skipCompact)
 end
 
 function meta.getFirstSlot(name, includeEquipment, includeHiddenItems)
-    if not name then
-        error("name must not be nil")
-    end
-
     local slots = meta.listSlots(name, 1, includeEquipment, includeHiddenItems)
 
     if #slots == 1 then
