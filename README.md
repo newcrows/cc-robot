@@ -17,9 +17,9 @@ see [DOCS.md](./DOCS.md) for documentation.
 
 requires `CC:Tweaked 1.116.0` or higher.
 
-download from [pastebin](https://pastebin.com/cx27MhNy)
+download from [pastebin](https://pastebin.com/N61zjrft)
 
-`pastebin get cx27MhNy robot.lua`
+`pastebin get N61zjrft robot.lua`
 
 or checkout this repo, which includes `test.lua` that tests the complete `robot api`
 on a live turtle.
