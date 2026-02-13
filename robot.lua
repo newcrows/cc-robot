@@ -1255,7 +1255,7 @@ function meta.dispatchEvent(name, ...)
     end
 end
 
-function robot.insertEventListener(listener)
+function robot.addEventListener(listener)
     if not listener then
         error("listener must not be nil")
     end
@@ -1287,7 +1287,7 @@ function robot.listEventListeners()
     return listenerArr
 end
 
-function robot.insertPeripheralConstructor(nameOrConstructor, constructor)
+function robot.setPeripheralConstructor(nameOrConstructor, constructor)
     if nameOrConstructor == nil then
         nameOrConstructor = meta.selectedName
     elseif type(nameOrConstructor) == "function" then

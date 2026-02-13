@@ -119,7 +119,7 @@ end
 
 local function testInsertEventListener()
     local listener = {}
-    local id = robot.insertEventListener(listener)
+    local id = robot.addEventListener(listener)
 
     assert(meta.eventListeners[id] == listener)
 
@@ -128,12 +128,12 @@ end
 
 local function testRemoveEventListener()
     local listener = {}
-    local id = robot.insertEventListener(listener)
+    local id = robot.addEventListener(listener)
 
     robot.removeEventListener(id)
     assert(meta.eventListeners[id] == nil)
 
-    id = robot.insertEventListener(listener)
+    id = robot.addEventListener(listener)
 
     robot.removeEventListener(listener)
     assert(meta.eventListeners[id] == nil)
@@ -145,7 +145,7 @@ local function testListEventListeners()
     assert(#robot.listEventListeners() == 1)
 
     local listener = {}
-    local id = robot.insertEventListener(listener)
+    local id = robot.addEventListener(listener)
 
     assert(#robot.listEventListeners() == 2)
 
@@ -160,7 +160,7 @@ local function testInsertPeripheralConstructor()
         return opts.target
     end
 
-    robot.insertPeripheralConstructor("test:peripheral", constructor)
+    robot.setPeripheralConstructor("test:peripheral", constructor)
 
     assert(meta.peripheralConstructors["test:peripheral"] == constructor)
 
@@ -172,7 +172,7 @@ local function testRemovePeripheralConstructor()
         return opts.target
     end
 
-    robot.insertPeripheralConstructor("test:peripheral", constructor)
+    robot.setPeripheralConstructor("test:peripheral", constructor)
     assert(meta.peripheralConstructors["test:peripheral"] == constructor)
 
     robot.removePeripheralConstructor("test:peripheral")
@@ -188,7 +188,7 @@ local function testListPeripheralConstructors()
         return opts.target
     end
 
-    robot.insertPeripheralConstructor("test:peripheral_2", constructor)
+    robot.setPeripheralConstructor("test:peripheral_2", constructor)
 
     assert(#robot.listPeripheralConstructors() == 7)
 
@@ -218,7 +218,7 @@ local function testWrap()
         return custom
     end
 
-    robot.insertPeripheralConstructor("test:wrap", constructor)
+    robot.setPeripheralConstructor("test:wrap", constructor)
 
     local wrapped = assert(robot.wrap())
     assert(wrapped)
@@ -289,7 +289,7 @@ local function testWrapUp()
         return custom
     end
 
-    robot.insertPeripheralConstructor("test:wrap", constructor)
+    robot.setPeripheralConstructor("test:wrap", constructor)
 
     local wrapped = assert(robot.wrapUp())
     assert(wrapped)
@@ -328,7 +328,7 @@ local function testWrapDown()
         return custom
     end
 
-    robot.insertPeripheralConstructor("test:wrap", constructor)
+    robot.setPeripheralConstructor("test:wrap", constructor)
 
     local wrapped = assert(robot.wrapDown())
     assert(wrapped)
@@ -1557,7 +1557,7 @@ local function testMetaWrap()
     turtle.place()
 
     local name, side, isEquipment
-    local id = robot.insertEventListener({
+    local id = robot.addEventListener({
         wrapped = function(_name, _side, _isEquipment)
             name = _name
             side = _side
@@ -1598,7 +1598,7 @@ local function testMetaUnwrap()
     turtle.place()
 
     local name, side, wasEquipment
-    local id = robot.insertEventListener({
+    local id = robot.addEventListener({
         unwrapped = function(_name, _side, _wasEquipment)
             name = _name
             side = _side
@@ -1958,7 +1958,7 @@ end
 local function testMetaDispatchEvent()
     local customArg
 
-    robot.insertEventListener({
+    robot.addEventListener({
         customEvent = function(_customArg)
             customArg = _customArg
         end
