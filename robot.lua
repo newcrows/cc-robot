@@ -1963,4 +1963,14 @@ function robot.listReservedItems()
     return arr
 end
 
+-- NOTE: you can ONLY interact with the normal inventory directly
+-- the equipment "mini inventory" and the reserved "mini inventory" are not
+-- accessible for practical purposes, they fulfill different roles
+
+-- equipment: abstracts away tools to use,
+--  returns tool handles and there is no other way to access it
+
+-- reserved: abstracts away the need for certain items to remain in the turtle at all times
+--  those items are not necessarily equipment, so reserved is its own separate inventory
+--  that can only be interacted with by defining its space for each item it should hold
 return robot
