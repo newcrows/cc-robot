@@ -24,7 +24,8 @@ $ = meta
 ...
 all init calls here, logically separated:
 POSITIONING = {
-    forward, back, up, down, turnLeft, turnRight, getFuelLevel, refuel, getFuelLimit
+    robot_properties = {x, y, z, facing}
+    forward, back, up, down, turnRight, turnLeft, getFuelLevel, refuel, getFuelLimit
 }
 EVENTS = {
     addEventListener, removeEventListener, getEventListener, listEventListeners,

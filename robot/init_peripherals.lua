@@ -1,5 +1,5 @@
-return function(robot, meta, constants)
-    function robot.wrap(sideOrWrapAs, wrapAs)
+return function(robot, meta)
+    function robot.wrap(side, wrapAs)
 
     end
 
