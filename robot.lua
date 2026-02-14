@@ -57,7 +57,6 @@ local RAW_PROPERTIES = {
 
 local robot = {
     strict = true,
-    version = "1.0.0",
     x = 0,
     y = 0,
     z = 0,
