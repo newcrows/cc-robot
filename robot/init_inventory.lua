@@ -261,6 +261,19 @@ return function(robot, meta)
     end
 
     function robot.listReservedItems()
+        local arr = {}
 
+        for name, _ in pairs(meta.reservedSpaces) do
+            local count = robot.getReservedItemCount(name)
+
+            if count > 0 then
+                table.insert({
+                    name = name,
+                    count = count
+                })
+            end
+        end
+
+        return arr
     end
 end
