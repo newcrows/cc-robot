@@ -1886,8 +1886,9 @@ end
 -- or deletes it if space = 0
 -- per default frees the full $item reserved space
 -- so it stays consistent with robot.drop()
-function robot.free(name, space)
-    if not name then
+-- works on meta.selectedName as fallback
+function robot.free(nameOrSpace, space)
+    if not nameOrSpace then
         error("name must not be nil")
     end
 
@@ -1895,11 +1896,11 @@ function robot.free(name, space)
         error("count must not be nil")
     end
 
-    if not meta.reservedItemSpaces[name] then
-        meta.reservedItemSpaces[name] = 0
+    if not meta.reservedItemSpaces[nameOrSpace] then
+        meta.reservedItemSpaces[nameOrSpace] = 0
     end
 
-    meta.reservedItemSpaces[name] = meta.reservedItemSpaces[name] - space
+    meta.reservedItemSpaces[nameOrSpace] = meta.reservedItemSpaces[nameOrSpace] - space
     return true
 end
 
@@ -1908,8 +1909,9 @@ end
 -- separate from both the normal inventory and the equipment inventory
 -- per default reserves the current amount of $item in inventory
 -- so it stays consistent with robot.suck behavior
-function robot.reserve(name, space)
-    if not name then
+-- works on meta.selectedName as fallback
+function robot.reserve(nameOrSpace, space)
+    if not nameOrSpace then
         error("name must not be nil")
     end
 
@@ -1917,36 +1919,41 @@ function robot.reserve(name, space)
         error("count must not be nil")
     end
 
-    if not meta.reservedItemSpaces[name] then
-        meta.reservedItemSpaces[name] = 0
+    if not meta.reservedItemSpaces[nameOrSpace] then
+        meta.reservedItemSpaces[nameOrSpace] = 0
     end
 
-    meta.reservedItemSpaces[name] = meta.reservedItemSpaces[name] + space
+    meta.reservedItemSpaces[nameOrSpace] = meta.reservedItemSpaces[nameOrSpace] + space
     return true
 end
 
 -- return {name, count} of the reserved item,
 -- analogous to normal getItemDetails()
+-- works on meta.selectedName as fallback
 function robot.getReservedItemDetails(name)
 
 end
 
 -- how much of the reserved item do we actually have in inventory?
+-- works on meta.selectedName as fallback
 function robot.getReservedItemCount(name)
 
 end
 
 -- how much space is left in the "mini inventory" for that reserved item?
+-- works on meta.selectedName as fallback
 function robot.getReservedItemSpace(name)
 
 end
 
 -- do we have any of the reserved item?
+-- works on meta.selectedName as fallback
 function robot.hasReservedItemCount(name)
 
 end
 
 -- is there space left in the "mini inventory" for the reserved item?
+-- works on meta.selectedName as fallback
 function robot.hasReservedItemSpace(name)
 
 end
@@ -1976,4 +1983,22 @@ end
 -- reserved: abstracts away the need for certain items to remain in the turtle at all times
 --  those items are not necessarily equipment, so reserved is its own separate inventory
 --  that can only be interacted with by defining its space for each item it should hold
+
+-- getReservedItemSpaceForUnknown / hasReservedItemSpaceForUnknown
+-- must count the actual space for reserved plus the space left in inventory
+-- -> the consequence is that the normal getItemSpaceForUnknown / hasItemSpaceForUnknown
+--  functions must also consider reserved space in their calculation
+-- -> in fact ALL normal getItemCount / getItemSpace functions
+--  and their getReservedItemCount / getReservedItemSpace counterparts
+--  must respect each other's values
+-- -> that gets complicated quickly, so we need to find a way to normalize this
+--  i.E. some kind of virtual inventory abstraction
+--  if at all possible, this should then also be applicable to equipment inventory functions
+-- -> if we can get it to be coherent across an arbitrary amount of virtual inventories,
+--  that would make it trivial again
+-- -> because of side effects in other functions, we need to be careful with edge cases
+--  (i.E. suck must know how much space there is)
+--  (i.E. equipment can only be unequipped if the inventory has a physicall AND virtually empty slot)
+--  (i.E. meta.compact, meta.listSlots, etc. must ALSO respect this, though they kinda already do)
+-- -> that's the last big thing we need to do for robot to be complete
 return robot
