@@ -105,8 +105,8 @@ see [DOCS.md](./DOCS.md) for documentation.
 -- snippet assumes a chest in front of the turtle that may or may not contain coal blocks
 --  it also assumes the turtle has at least one additional chest in its inventory
 local robot = require("robot")
-
 local chest = robot.wrap()
+
 robot.reserve("minecraft:coal_block", 64)
 
 function restockFuel()
