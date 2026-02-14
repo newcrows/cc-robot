@@ -68,7 +68,7 @@ local meta = {
     equipProxies = {},
     equipSide = SIDES.right,
     peripheralConstructors = {},
-    reservedItemCounts = {},
+    reservedItemSpaces = {},
     eventListeners = {},
     nextEventListenerId = 1,
     wrapProxies = {}
@@ -1062,7 +1062,7 @@ function meta.listSlots(filter, limit, includeEquipment, includeHiddenItems)
             end
 
             if not includeHiddenItems then
-                local invisibleCount = meta.reservedItemCounts[detail.name]
+                local invisibleCount = meta.reservedItemSpaces[detail.name]
                 local seenInvisibleCount = seenInvisibleItems[detail.name] or 0
 
                 if invisibleCount and seenInvisibleCount < invisibleCount then
@@ -1791,6 +1791,27 @@ function robot.unequip(nameOrProxy)
     return unequipHelper(nameOrProxy)
 end
 
+-- essentially behaves like normal hasItemCount / not hasItemSpace
+-- the other normal inventory methods don't really make sense for equipment
+-- count is always 0 or 1 and so is space, just inverted
+-- if the equipment is equipped, return true, otherwise return false
+-- NOTE: equipment behaves like a "mini inventory", but every entry has space = 1
+function robot.hasEquipmentCount(name)
+
+end
+
+-- essentially getItemSpace / hasItemSpace for equipment
+-- if the equipment is equipped, return false, otherwise return true
+function robot.hasEquipmentSpace(name)
+
+end
+
+-- essentially checks whether there is at least 1 empty slot in inventory
+-- OR at least one empty equip slot (left / right)
+function robot.hasEquipmentSpaceForUnknown()
+
+end
+
 function robot.listEquipment()
     local proxyArr = {}
 
@@ -1861,54 +1882,82 @@ function robot.listItems()
     return itemArr
 end
 
-function robot.reserveItems(name, count)
+-- how much space should be freed for item?
+-- essentially changes the "mini inventory" size for that reserved item,
+-- or deletes it if space = 0
+function robot.free(name, space)
     if not name then
         error("name must not be nil")
     end
 
-    if not count then
+    if not space then
         error("count must not be nil")
     end
 
-    if not meta.reservedItemCounts[name] then
-        meta.reservedItemCounts[name] = 0
+    if not meta.reservedItemSpaces[name] then
+        meta.reservedItemSpaces[name] = 0
     end
 
-    meta.reservedItemCounts[name] = meta.reservedItemCounts[name] + count
+    meta.reservedItemSpaces[name] = meta.reservedItemSpaces[name] - space
     return true
 end
 
-function robot.freeItems(name, count)
+-- how much space should be reserved for item?
+-- essentially creates a "mini inventory" only for that item,
+-- separate from both the normal inventory and the equipment inventory
+function robot.reserve(name, space)
     if not name then
         error("name must not be nil")
     end
 
-    if not count then
+    if not space then
         error("count must not be nil")
     end
 
-    if not meta.reservedItemCounts[name] then
-        meta.reservedItemCounts[name] = 0
+    if not meta.reservedItemSpaces[name] then
+        meta.reservedItemSpaces[name] = 0
     end
 
-    meta.reservedItemCounts[name] = meta.reservedItemCounts[name] - count
+    meta.reservedItemSpaces[name] = meta.reservedItemSpaces[name] + space
     return true
 end
 
-function robot.listReservedItems(detailed)
+-- return {name, count} of the reserved item,
+-- analogous to normal getItemDetails()
+function robot.getReservedItemDetails(name)
+
+end
+
+-- how much of the reserved item do we actually have in inventory?
+function robot.getReservedItemCount(name)
+
+end
+
+-- how much space is left in the "mini inventory" for that reserved item?
+function robot.getReservedItemSpace(name)
+
+end
+
+-- do we have any of the reserved item?
+function robot.hasReservedItemCount(name)
+
+end
+
+-- is there space left in the "mini inventory" for the reserved item?
+function robot.hasReservedItemSpace(name)
+
+end
+
+-- list all "mini inventories" with {name, count} entry per item,
+-- analogous to normal listItems()
+function robot.listReservedItems()
     local arr = {}
 
-    for name, count in pairs(meta.reservedItemCounts) do
-        local reservedItem = {
+    for name, count in pairs(meta.reservedItemSpaces) do
+        table.insert(arr, {
             name = name,
             count = count
-        }
-
-        if detailed then
-            reservedItem.actualCount = meta.countItems(name, false, true)
-        end
-
-        table.insert(arr, reservedItem)
+        })
     end
 
     return arr
