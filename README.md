@@ -102,7 +102,7 @@ see [DOCS.md](./DOCS.md) for documentation.
 
 ## coming soon: wrapping and reserved items
 ```lua
--- snippet assumes a chest in front of the turtle that may or may not contain coal blocks
+-- snippet assumes a chest in front of the turtle and no block above the turtle
 -- it also assumes the turtle has at least one additional chest in its inventory
 local robot = require("robot")
 local chest = robot.wrap()
