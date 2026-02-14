@@ -30,9 +30,22 @@ return function(robot, meta)
         return true
     end
 
-    function meta.getConstructor(name)
+    function meta.getConstructorDetail(name)
         assert(name, "name must not be nil")
-        return constructors[name]
+        local constructor = constructors[name]
+
+        if constructor then
+            return {
+                name = name,
+                constructor = constructor
+            }
+        end
+
+        return nil
+    end
+
+    function meta.hasConstructor(name)
+        return meta.getConstructorDetail(name) and true or false
     end
 
     -- NOTE [JM] moved to meta because writing custom peripherals is definitely meta
