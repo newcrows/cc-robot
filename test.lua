@@ -1924,7 +1924,7 @@ local function testMetaSetSlot()
     print("testMetaSetSlot passed")
 end
 
-local function testMetaMarkItemsVisible()
+local function testFreeItems()
     meta.reservedItemCounts["minecraft:dirt"] = 100
 
     robot.freeItems("minecraft:dirt", 10)
@@ -1935,7 +1935,7 @@ local function testMetaMarkItemsVisible()
     print("testMetaMarkItemsVisible passed")
 end
 
-local function testMetaMarkItemsHidden()
+local function testReserveItems()
     robot.reserveItems("minecraft:dirt", 10)
     assert(meta.reservedItemCounts["minecraft:dirt"] == 10)
 
@@ -2153,6 +2153,9 @@ testInspectUp()
 testInspectDown()
 testGetItemDetail()
 testListItems()
+testFreeItems()
+testReserveItems()
+-- TODO [JM] testListReservedItems()
 testMetaWrap()
 testMetaUnwrap()
 testMetaListSlots()
@@ -2164,8 +2167,6 @@ testMetaSelectFirstEmptySlot()
 testMetaCountItems()
 testMetaCompact()
 testMetaSetSlot()
-testMetaMarkItemsVisible()
-testMetaMarkItemsHidden()
 testMetaDispatchEvent()
 testEvent_softWrap_softUnwrap()
 testEvent_wrap_unwrap()
