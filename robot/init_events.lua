@@ -29,8 +29,11 @@ return function(robot, meta)
     function robot.listEventListeners()
         local arr = {}
 
-        for _, listener in pairs(listeners) do
-            table.insert(arr, listener)
+        for id, listener in pairs(listeners) do
+            table.insert(arr, {
+                id = id,
+                listener = listener
+            })
         end
 
         return arr

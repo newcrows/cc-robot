@@ -1,4 +1,6 @@
 return function(robot, meta)
+    local reservedSpaces = {}
+
     local function getPhysicalCount(name)
         local count = 0
 
@@ -68,7 +70,7 @@ return function(robot, meta)
     end
 
     local function compactPhysical()
-
+        -- TODO [JM] implement
     end
 
     local function getEquipmentCount(name)
@@ -118,7 +120,7 @@ return function(robot, meta)
             end
         end
 
-        for name, space in pairs(meta.reservedSpaces) do
+        for name, space in pairs(reservedSpaces) do
             local additionalSpaceWeNeed = math.max(space - (itemsWeHaveCountOf[name] or 0), 0)
             itemsWeNeedSpaceFor[name] = (itemsWeNeedSpaceFor[name] or 0) + additionalSpaceWeNeed
         end
@@ -134,31 +136,31 @@ return function(robot, meta)
     end
 
     function meta.listSlots(name, limit, includeEquipment, includeReservedItems)
-
+        -- TODO [JM] implement
     end
 
     function meta.getFirstSlot(name, includeEquipment, includeReservedItems)
-
+        -- TODO [JM] implement
     end
 
     function meta.selectFirstSlot(name, includeEquipment, includeReservedItems)
-
+        -- TODO [JM] implement
     end
 
     function meta.listEmptySlots(limit, compact)
-
+        -- TODO [JM] implement
     end
 
     function meta.getFirstEmptySlot(compact)
-
+        -- TODO [JM] implement
     end
 
     function meta.selectFirstEmptySlot(compact)
-
+        -- TODO [JM] implement
     end
 
     function meta.countItems(name, includeEquipment, includeReservedItems)
-
+        -- TODO [JM] implement
     end
 
     function meta.arrangeSlots(layoutFunc)
@@ -176,15 +178,26 @@ return function(robot, meta)
     end
 
     function robot.select(name)
-
+        assert(name, "name must not be nil")
+        meta.selectedName = name
     end
 
     function robot.getSelectedName()
-
+        return meta.selectedName
     end
 
     function robot.getItemDetail(name)
+        name = name or meta.selectedName
+        local count = robot.getItemCount(name)
 
+        if count > 0 then
+            return {
+                name = name,
+                count = count
+            }
+        end
+
+        return nil
     end
 
     function robot.getItemCount(name)
@@ -217,39 +230,55 @@ return function(robot, meta)
     end
 
     function robot.listItems()
-
+        -- TODO [JM] implement
     end
 
     function robot.reserve(name, count)
+        name = name or meta.selectedName
+        count = count or 1
 
+        reservedSpaces[name] = (reservedSpaces[name] or 0) + count
     end
 
     function robot.free(name, count)
+        name = name or meta.selectedName
+        count = count or 1
 
+        reservedSpaces[name] = (reservedSpaces[name] or 0) - count
     end
 
     function robot.getReservedItemDetail(name)
+        name = name or meta.selectedName
+        local count = robot.getReservedItemCount(name)
 
+        if count > 0 then
+            return {
+                name = name,
+                count = count
+            }
+        end
+
+        return nil
     end
 
     function robot.getReservedItemCount(name)
         name = name or meta.selectedName
 
-        if not meta.reservedSpaces[name] then
+        if not reservedSpaces[name] then
             return 0
         end
 
-        return math.min(getPhysicalCount(name) - getEquipmentCount(name), meta.reservedSpaces[name])
+        return math.min(getPhysicalCount(name) - getEquipmentCount(name), reservedSpaces[name])
     end
 
     function robot.getReservedItemSpace(name)
         name = name or meta.selectedName
 
-        if not meta.reservedSpaces[name] then
+        if not reservedSpaces[name] then
             return 0
         end
 
-        return meta.reservedSpaces[name] - robot.getReservedItemCount(name)
+        return reservedSpaces[name] - robot.getReservedItemCount(name)
     end
 
     function robot.hasReservedItemCount(name)
@@ -263,7 +292,7 @@ return function(robot, meta)
     function robot.listReservedItems()
         local arr = {}
 
-        for name, _ in pairs(meta.reservedSpaces) do
+        for name, _ in pairs(reservedSpaces) do
             local count = robot.getReservedItemCount(name)
 
             if count > 0 then
@@ -276,4 +305,6 @@ return function(robot, meta)
 
         return arr
     end
+
+    robot.select("air")
 end

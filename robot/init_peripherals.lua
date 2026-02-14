@@ -41,8 +41,8 @@ return function(robot, meta)
 
         for name, constructor in pairs(constructors) do
             table.insert({
-                name,
-                constructor
+                name = name,
+                constructor = constructor
             })
         end
 
@@ -63,7 +63,6 @@ return function(robot, meta)
         -- custom chest implementation here
         -- TODO [JM] implement
     end)
-
     meta.addConstructor("minecraft:me_bridge", function(opts)
         -- custom me_bridge implementation here
         -- TODO [JM] implement
