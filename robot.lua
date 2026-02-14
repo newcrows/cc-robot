@@ -1998,7 +1998,7 @@ end
 --  that would make it trivial again
 -- -> because of side effects in other functions, we need to be careful with edge cases
 --  (i.E. suck must know how much space there is)
---  (i.E. equipment can only be unequipped if the inventory has a physicall AND virtually empty slot)
+--  (i.E. equipment can only be unequipped if the inventory has a physically AND virtually empty slot)
 --  (i.E. meta.compact, meta.listSlots, etc. must ALSO respect this, though they kinda already do)
 -- -> that's the last big thing we need to do for robot to be complete
 return robot
