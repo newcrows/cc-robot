@@ -109,7 +109,7 @@ local chest = robot.wrap()
 
 robot.reserve("minecraft:coal_block", 64)
 
-function restockFuel()
+local function restockFuel()
     robot.select("minecraft:coal_block")
     chest.export(64 - robot.getReservedItemCount())
 end
