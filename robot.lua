@@ -2002,4 +2002,6 @@ end
 --  (i.E. meta.compact, meta.listSlots, etc. must ALSO respect this, though they kinda already do)
 --  (i.E. things like chest.export() must ALSO respect this)
 -- -> that's the last big thing we need to do for robot to be complete
+
+-- NOTE: items always go into reserved space first and are taken from reserved space last!!!
 return robot
