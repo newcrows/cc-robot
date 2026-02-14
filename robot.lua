@@ -1884,6 +1884,8 @@ end
 -- how much space should be freed for item?
 -- essentially changes the "mini inventory" size for that reserved item,
 -- or deletes it if space = 0
+-- per default frees the full $item reserved space
+-- so it stays consistent with robot.drop()
 function robot.free(name, space)
     if not name then
         error("name must not be nil")
@@ -1904,6 +1906,8 @@ end
 -- how much space should be reserved for item?
 -- essentially creates a "mini inventory" only for that item,
 -- separate from both the normal inventory and the equipment inventory
+-- per default reserves the current amount of $item in inventory
+-- so it stays consistent with robot.suck behavior
 function robot.reserve(name, space)
     if not name then
         error("name must not be nil")
