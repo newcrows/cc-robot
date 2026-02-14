@@ -54,4 +54,4 @@ MISC = {
 }
 ]]--
 
-return robot
+return robot, meta, constants

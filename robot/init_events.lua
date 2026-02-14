@@ -1,8 +1,8 @@
-return function(robot, meta)
+return function(_, meta)
     local listeners = {}
     local nextId = 1
 
-    function robot.addEventListener(listener)
+    function meta.addEventListener(listener)
         assert(type(listener) == "table", "listener must be a table")
 
         local id = nextId
@@ -13,20 +13,20 @@ return function(robot, meta)
         return id
     end
 
-    function robot.removeEventListener(id)
+    function meta.removeEventListener(id)
         assert(type(id) == "number", "id must be a number")
 
         listeners[id] = nil
         return true
     end
 
-    function robot.getEventListener(id)
+    function meta.getEventListener(id)
         assert(type(id) == "number", "id must be a number")
 
         return listeners[id]
     end
 
-    function robot.listEventListeners()
+    function meta.listEventListeners()
         local arr = {}
 
         for id, listener in pairs(listeners) do
