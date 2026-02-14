@@ -133,15 +133,15 @@ return function(robot, meta)
         return emptySlotsWeNeed
     end
 
-    function meta.listSlots(name, limit, includeEquipment, includeReserved)
+    function meta.listSlots(name, limit, includeEquipment, includeReservedItems)
 
     end
 
-    function meta.getFirstSlot(name, includeEquipment, includeReserved)
+    function meta.getFirstSlot(name, includeEquipment, includeReservedItems)
 
     end
 
-    function meta.selectFirstSlot(name, includeEquipment, includeReserved)
+    function meta.selectFirstSlot(name, includeEquipment, includeReservedItems)
 
     end
 
@@ -157,7 +157,7 @@ return function(robot, meta)
 
     end
 
-    function meta.countItems(name, includeEquipment, includeReserved)
+    function meta.countItems(name, includeEquipment, includeReservedItems)
 
     end
 
