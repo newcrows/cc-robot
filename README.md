@@ -99,3 +99,20 @@ craftingTable.craft(pistonRecipe, 1)
 ```
 
 see [DOCS.md](./DOCS.md) for documentation.
+
+## coming soon: wrapping and reserved items
+```lua
+-- snippet assumes a chest in front of the turtle that may or may not contain coal blocks
+--  it also assumes the turtle has at least one additional chest in its inventory
+local chest = robot.wrap()
+robot.reserve("minecraft:coal_block", 64)
+
+function restockFuel()
+    robot.select("minecraft:coal_block")
+    chest.export(64 - robot.getReservedItemCount())
+end
+
+restockFuel()
+```
+
+see [DOCS.md](./DOCS.md) for documentation.
