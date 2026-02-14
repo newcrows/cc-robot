@@ -20,6 +20,12 @@ return function(robot, meta)
         return true
     end
 
+    function robot.getEventListener(id)
+        assert(type(id) == "number", "id must be a number")
+
+        return listeners[id]
+    end
+
     function robot.listEventListeners()
         local arr = {}
 
