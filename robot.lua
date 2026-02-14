@@ -1329,24 +1329,7 @@ function meta.setSlot(slotId, name, count, blacklist)
     return true
 end
 
-function meta.makeItemsVisible(name, count)
-    if not name then
-        error("name must not be nil")
-    end
-
-    if not count then
-        error("count must not be nil")
-    end
-
-    if not meta.hiddenItemCounts[name] then
-        meta.hiddenItemCounts[name] = 0
-    end
-
-    meta.hiddenItemCounts[name] = meta.hiddenItemCounts[name] - count
-    return true
-end
-
-function meta.makeItemsInvisible(name, count)
+function meta.reserveItems(name, count)
     if not name then
         error("name must not be nil")
     end
@@ -1360,6 +1343,23 @@ function meta.makeItemsInvisible(name, count)
     end
 
     meta.hiddenItemCounts[name] = meta.hiddenItemCounts[name] + count
+    return true
+end
+
+function meta.freeItems(name, count)
+    if not name then
+        error("name must not be nil")
+    end
+
+    if not count then
+        error("count must not be nil")
+    end
+
+    if not meta.hiddenItemCounts[name] then
+        meta.hiddenItemCounts[name] = 0
+    end
+
+    meta.hiddenItemCounts[name] = meta.hiddenItemCounts[name] - count
     return true
 end
 
