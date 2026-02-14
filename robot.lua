@@ -68,7 +68,7 @@ local meta = {
     equipProxies = {},
     equipSide = SIDES.right,
     peripheralConstructors = {},
-    hiddenItemCounts = {},
+    reservedItemCounts = {},
     eventListeners = {},
     nextEventListenerId = 1,
     wrapProxies = {}
@@ -1062,7 +1062,7 @@ function meta.listSlots(filter, limit, includeEquipment, includeHiddenItems)
             end
 
             if not includeHiddenItems then
-                local invisibleCount = meta.hiddenItemCounts[detail.name]
+                local invisibleCount = meta.reservedItemCounts[detail.name]
                 local seenInvisibleCount = seenInvisibleItems[detail.name] or 0
 
                 if invisibleCount and seenInvisibleCount < invisibleCount then
@@ -1870,11 +1870,11 @@ function robot.reserveItems(name, count)
         error("count must not be nil")
     end
 
-    if not meta.hiddenItemCounts[name] then
-        meta.hiddenItemCounts[name] = 0
+    if not meta.reservedItemCounts[name] then
+        meta.reservedItemCounts[name] = 0
     end
 
-    meta.hiddenItemCounts[name] = meta.hiddenItemCounts[name] + count
+    meta.reservedItemCounts[name] = meta.reservedItemCounts[name] + count
     return true
 end
 
@@ -1887,12 +1887,31 @@ function robot.freeItems(name, count)
         error("count must not be nil")
     end
 
-    if not meta.hiddenItemCounts[name] then
-        meta.hiddenItemCounts[name] = 0
+    if not meta.reservedItemCounts[name] then
+        meta.reservedItemCounts[name] = 0
     end
 
-    meta.hiddenItemCounts[name] = meta.hiddenItemCounts[name] - count
+    meta.reservedItemCounts[name] = meta.reservedItemCounts[name] - count
     return true
+end
+
+function robot.listReservedItems(detailed)
+    local arr = {}
+
+    for name, count in pairs(meta.reservedItemCounts) do
+        local reservedItem = {
+            name = name,
+            count = count
+        }
+
+        if detailed then
+            reservedItem.actualCount = meta.countItems(name, false, true)
+        end
+
+        table.insert(arr, reservedItem)
+    end
+
+    return arr
 end
 
 return robot

@@ -1687,7 +1687,7 @@ local function testMetaListSlots()
     end
 
     meta.equipProxies = {}
-    meta.hiddenItemCounts = {}
+    meta.reservedItemCounts = {}
 
     print("testMetaListSlots passed")
 end
@@ -1782,7 +1782,7 @@ local function testMetaGetFirstSlot()
     slot = meta.getFirstSlot()
     assert(slot.id == 3 and slot.name == "minecraft:chest" and slot.count == 2)
 
-    meta.hiddenItemCounts = {}
+    meta.reservedItemCounts = {}
 
     print("testMetaGetFirstSlot passed")
 end
@@ -1836,7 +1836,7 @@ local function testMetaSelectFirstSlot()
     meta.selectFirstSlot()
     assert(turtle.getSelectedSlot() == 3)
 
-    meta.hiddenItemCounts = {}
+    meta.reservedItemCounts = {}
 
     print("testMetaSelectFirstSlot passed")
 end
@@ -1871,7 +1871,7 @@ local function testMetaCountItems()
     assert(meta.countItems("minecraft:compass") == 1)
     assert(meta.countItems("minecraft:compass", nil, true) == 2)
 
-    meta.hiddenItemCounts = {}
+    meta.reservedItemCounts = {}
 
     print("testMetaCountItems passed")
 end
@@ -1925,24 +1925,24 @@ local function testMetaSetSlot()
 end
 
 local function testMetaMarkItemsVisible()
-    meta.hiddenItemCounts["minecraft:dirt"] = 100
+    meta.reservedItemCounts["minecraft:dirt"] = 100
 
     robot.freeItems("minecraft:dirt", 10)
-    assert(meta.hiddenItemCounts["minecraft:dirt"] == 90)
+    assert(meta.reservedItemCounts["minecraft:dirt"] == 90)
 
-    meta.hiddenItemCounts = {}
+    meta.reservedItemCounts = {}
 
     print("testMetaMarkItemsVisible passed")
 end
 
 local function testMetaMarkItemsHidden()
     robot.reserveItems("minecraft:dirt", 10)
-    assert(meta.hiddenItemCounts["minecraft:dirt"] == 10)
+    assert(meta.reservedItemCounts["minecraft:dirt"] == 10)
 
     robot.reserveItems("minecraft:dirt", 10)
-    assert(meta.hiddenItemCounts["minecraft:dirt"] == 20)
+    assert(meta.reservedItemCounts["minecraft:dirt"] == 20)
 
-    meta.hiddenItemCounts = {}
+    meta.reservedItemCounts = {}
 
     print("testMetaMarkItemsHidden passed")
 end
