@@ -42,7 +42,7 @@ return function(robot, meta, constants)
         return proxy
     end
 
-    local function getWrapName(side)
+    local function getPhysicalName(side)
         local inspectFunc = INSPECT_FUNCS[side]
 
         assert(inspectFunc, "it is NEVER possible to get wrap name for " .. side)
@@ -76,7 +76,7 @@ return function(robot, meta, constants)
     end
 
     local function wrap(side, wrapAs)
-        wrapAs = wrapAs or getWrapName(side)
+        wrapAs = wrapAs or getPhysicalName(side)
 
         if not wrapAs then
             return nil
