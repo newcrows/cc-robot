@@ -253,10 +253,7 @@ return function(robot, meta, constants)
                 return robot.drop(name, count, blocking)
             end,
             export = function(name, count, blocking)
-                if not helperChest then
-                    return 0, "export disabled, missing helper chest"
-                end
-
+                assert(helperChest, "missing helper chest, can't export")
                 local amount = 0
 
                 while true do
