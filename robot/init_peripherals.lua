@@ -312,7 +312,7 @@ return function(robot, meta, constants)
             local suckFuncs = {
                 front = robot.suck,
                 top = robot.suckUp,
-                bottom = robot.sockDown
+                bottom = robot.suckDown
             }
 
             local suckFunc = suckFuncs[opts.side]
