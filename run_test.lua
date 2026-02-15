@@ -1,2 +1,2 @@
-local test = require("test")
+local test = require("./test")
 test()
