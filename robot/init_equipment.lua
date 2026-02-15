@@ -453,7 +453,161 @@ return function(robot, meta, constants)
     end
 
     local craftToolConstructor = function(opts)
-        -- TODO [JM] implement
+        local target = opts.target
+
+        if not target then
+            return nil
+        end
+
+        local function moveEquipmentOutOfTheWay()
+            -- TODO [JM] fix this and impl
+            return true
+            --local lastEProxy = nil
+            --local eCount = 0
+            --
+            --for eName, eProxy in pairs(meta.equipProxies) do
+            --    local eSlot = meta.getFirstSlot(eName, true)
+            --
+            --    if eSlot then
+            --        lastEProxy = eProxy
+            --        eCount = eCount + eSlot.count
+            --    end
+            --end
+            --
+            --if eCount > 1 then
+            --    return false, "can't move equipment out of the way"
+            --end
+            --
+            --if lastEProxy then
+            --    local ok, err = lastEProxy.use()
+            --
+            --    if not ok then
+            --        return ok, err
+            --    end
+            --end
+            --
+            --return true
+        end
+
+        local function trim(recipe)
+            return recipe:gsub("^%s*(.-)%s*$", "%1")
+        end
+
+        local function splitLinesAndTrimEach(trimmedRecipe)
+            local lines = {}
+
+            for line in trimmedRecipe:gmatch("[^\r\n]+") do
+                line = trim(line)
+                table.insert(lines, line)
+            end
+
+            return lines
+        end
+
+        local function splitAndReplaceCells(line, recipe)
+            local cells = {}
+
+            for cell in line:gmatch("%S+") do
+                if recipe[cell] then
+                    cell = recipe[cell]
+                end
+
+                if cell == "_" then
+                    cell = "air"
+                end
+
+                table.insert(cells, cell)
+            end
+
+            return cells
+        end
+
+        local function parse(recipe)
+            local trimmed = trim(recipe.pattern)
+            local lines = splitLinesAndTrimEach(trimmed)
+            local counts = {}
+            local layout = {}
+
+            for i = 1, #lines do
+                local cells = splitAndReplaceCells(lines[i], recipe)
+
+                for k = 1, #cells do
+                    local slot = i * 4 + k - 4
+                    local name = cells[k]
+
+                    if name ~= "air" then
+                        if not counts[name] then
+                            counts[name] = 0
+                        end
+
+                        counts[name] = counts[name] + 1
+                        layout[slot] = name
+                    end
+                end
+            end
+
+            return {
+                counts = counts,
+                layout = layout
+            }
+        end
+
+        return {
+            craft = function(recipe, limit)
+                if not recipe then
+                    error("recipe must not be nil")
+                end
+
+                local unlimited = limit == nil
+
+                limit = limit or 64
+                local ok, err = moveEquipmentOutOfTheWay()
+
+                if not ok then
+                    return false, err
+                end
+
+                meta.arrangeSlots(function(setSlot)
+                    local parsed = parse(recipe)
+                    local blacklist = {}
+
+                    for ingredientSlot, ingredientName in pairs(parsed.layout) do
+                        local count = meta.countItems(ingredientName)
+
+                        if count < parsed.counts[ingredientName] * limit and not unlimited then
+                            return false, "missing " .. tostring(parsed.counts[ingredientName] * limit - count) .. " " .. ingredientName
+                        end
+
+                        if count < parsed.counts[ingredientName] and limit == 0 then
+                            return false, "missing " .. tostring(parsed.counts[ingredientName]) .. " " .. ingredientName
+                                    .. " to check whether the recipe is valid"
+                        end
+
+                        local amount = math.floor(count / parsed.counts[ingredientName])
+
+                        ok, err = setSlot(ingredientSlot, ingredientName, amount)
+
+                        if not ok then
+                            return false, err
+                        end
+
+                        blacklist[ingredientSlot] = true
+                    end
+
+                    for i = 1, 16 do
+                        if not blacklist[i] then
+                            ok, err = setSlot(i, nil, 0)
+
+                            if not ok then
+                                return false, err
+                            end
+                        end
+                    end
+                end)
+
+                return target.craft(limit)
+            end
+        }
     end
 
     -- generic constructors
