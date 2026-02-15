@@ -214,47 +214,103 @@ return function(robot, meta, constants)
     end
 
     meta.setPeripheralConstructor("minecraft:chest", function(opts)
+        local targetChest = opts.target
+        local targetName = peripheral.getName(targetChest)
         local helperChest
+        local hasPickaxe = meta.hasEquipment("minecraft:diamond_pickaxe")
 
-        meta.addEventListener({
-            wrap = function(side, name)
-                if name == "minecraft:chest" and side ~= "top" then
-                    robot.free("minecraft:chest", 1)
-                    robot.placeUp("minecraft:chest")
+        local function onAnyWrap(side, name)
+            if name == "minecraft:chest" and side ~= "top" then
+                robot.free("minecraft:chest", 1)
 
-                    os.sleep(1)
+                if hasPickaxe and robot.placeUp("minecraft:chest") then
+                    os.sleep(0.1)
                     helperChest = peripheral.wrap("top")
                 end
-            end,
-            soft_wrap = function(side, name)
-                if name == "minecraft:chest" and side ~= "top" then
-                    robot.free("minecraft:chest", 1)
-                    robot.placeUp("minecraft:chest")
-                end
-            end,
-            soft_unwrap = function(side, name)
-                if name == "minecraft:chest" and side ~= "top" then
-                    robot.digUp()
+            end
+        end
+
+        local function onAnyUnwrap(side, name)
+            if name == "minecraft:chest" and side ~= "top" then
+                if helperChest then
+                    robot.equip("minecraft:diamond_pickaxe").digUp()
                     robot.reserve("minecraft:chest", 1)
+
+                    helperChest = nil
                 end
             end
+        end
+
+        meta.addEventListener({
+            wrap = onAnyWrap,
+            unwrap = onAnyUnwrap,
+            soft_wrap = onAnyWrap,
+            soft_unwrap = onAnyUnwrap
         })
 
         return {
-            import = function(name, count)
-                return robot.drop(name, count)
+            import = function(name, count, blocking)
+                return robot.drop(name, count, blocking)
             end,
-            export = function(name, count)
-                -- TODO [JM] mus index the inventory of chest first
-                local amountHelperChest = helperChest.pullItems(peripheral.getName(opts.target), 1, 16)
-                return robot.suckUp(name, amountHelperChest)
+            export = function(name, count, blocking)
+                if not helperChest then
+                    return 0, "export disabled, missing helper chest"
+                end
+
+                local amount = 0
+
+                while true do
+                    for slot, detail in pairs(targetChest.list()) do
+                        if detail.name == name then
+                            local pullAmount = math.min(detail.count, count - amount)
+                            amount = amount + helperChest.pullItems(targetName, slot, pullAmount)
+                        end
+                    end
+
+                    if amount < count and blocking then
+                        os.sleep(1)
+                    else
+                        break
+                    end
+                end
+
+                return robot.suckUp(amount, blocking)
             end,
             getItemDetail = function(name)
-                -- TODO [JM] mus index the inventory of chest first
+                local count = 0
+
+                for _, detail in pairs(targetChest.list()) do
+                    if detail.name == name then
+                        count = count + detail.count
+                    end
+                end
+
+                return {
+                    name = name,
+                    count = count
+                }
             end,
             listItems = function()
-                -- TODO [JM] mus index the inventory of chest first
-                return opts.target.list()
+                local items = {}
+
+                for _, detail in pairs(targetChest.list()) do
+                    local item = items[detail.name]
+
+                    if not item then
+                        item = { name = detail.name, count = 0 }
+                        items[detail.name] = item
+                    end
+
+                    item.count = item.count + detail.count
+                end
+
+                local arr = {}
+
+                for _, item in pairs(items) do
+                    table.insert(arr, item)
+                end
+
+                return arr
             end
         }
     end)
