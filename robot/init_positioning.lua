@@ -83,7 +83,7 @@ return function(robot, meta, constants)
                 return
             else
                 if not warningDispatched then
-                    meta.dispatchEvent("auto_fuel_warning", requiredFuelLevel, turtle.getFuelLevel(), autoFuels)
+                    meta.dispatchEvent("auto_fuel_warning", turtle.getFuelLevel(), requiredFuelLevel, autoFuels)
                     warningDispatched = true
                 end
 
