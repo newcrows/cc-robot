@@ -106,9 +106,11 @@ return function(robot, utility)
         end)
 
         robot.meta.autoFuel(requiredLevel)
+        robot.removeAutoFuel("minecraft:stick", 4)
+
         assert(turtle.getItemCount(1) == stickCount - 4)
 
-        turtle.drop()
+        robot.drop("minecraft:stick")
         assert(turtle.getItemCount() == 0)
 
         for i = 1, 10 do
@@ -119,6 +121,38 @@ return function(robot, utility)
         assert(turtle.getFuelLevel() == level)
     end
 
+    local function testRefuel()
+        local level = turtle.getFuelLevel()
+
+        turtle.select(1)
+        utility.getStackFromChest("minecraft:stick")
+
+        local stickCount = robot.getItemCount("minecraft:stick")
+        assert(stickCount > 0)
+
+        robot.refuel("minecraft:stick", 4)
+        assert(turtle.getFuelLevel() == level + 20)
+        assert(robot.getItemCount("minecraft:stick") == stickCount - 4)
+
+        robot.drop("minecraft:stick")
+        assert(turtle.getItemCount() == 0)
+
+        for i = 1, 10 do
+            turtle.up()
+            turtle.down()
+        end
+
+        assert(turtle.getFuelLevel() == level)
+    end
+
+    local function testGetFuelLevel()
+        assert(robot.getFuelLevel() == turtle.getFuelLevel())
+    end
+
+    local function testGetFuelLimit()
+        assert(robot.getFuelLimit() == turtle.getFuelLimit())
+    end
+
     testForward()
     testBack()
     testUp()
@@ -126,6 +160,9 @@ return function(robot, utility)
     testTurnRight()
     testTurnLeft()
     testAutoFuel()
+    testRefuel()
+    testGetFuelLevel()
+    testGetFuelLimit()
 
     teardown()
     print("test_positioning passed")
