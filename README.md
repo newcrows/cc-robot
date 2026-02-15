@@ -150,10 +150,15 @@ you need:
 
 ### how to run the test:
 - place the turtle somewhere within the structure
-- `pastebin run 2tfVSk7r <install-dir>` ([pastebin link](https://pastebin.com/2tfVSk7r)) if robot is not installed yet
 - refuel the turtle, so it has more than `1000` fuel, but significantly LESS than `turtle.getFuelLimit()`
+- make sure there are no obstructions inside the structure (mobs, you, blocks)
+- `pastebin run 2tfVSk7r <install-dir>` ([pastebin link](https://pastebin.com/2tfVSk7r)) if robot is not installed yet
 - `cd <install-dir>` if not in the dir already
 - `run-test`
+- this takes a while and the turtle does stuff.
+
+### the output should look like this:
+![Setup Top Down View](images/test_output.png)
 
 if any `error` or `assertion failure` occurs, check your setup.
 
