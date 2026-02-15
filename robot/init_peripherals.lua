@@ -262,6 +262,19 @@ return function(robot, meta, constants)
                 return robot.drop(name, count, blocking)
             end,
             export = function(name, count, blocking)
+                if type(name) == "boolean" then
+                    blocking = name
+                    count = nil
+                    name = nil
+                elseif type(name) == "number" then
+                    blocking = count
+                    count = name
+                    name = nil
+                elseif type(name) == "string" and type("count") == "boolean" then
+                    blocking = count
+                    count = nil
+                end
+
                 assert(helperChest, "missing helper chest, can't export")
                 local amount = 0
 

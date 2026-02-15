@@ -1,16 +1,19 @@
 local robot = require("robot")
 local files = fs.list(...)
 local tests = {}
+local dots = {...}
 
-for _, file in ipairs(files) do
-    if file ~= "init.lua" then
-        local name = string.match(file, "(.+)%..+$")
-        local test = require((...) .. "/" .. name)
+local function loadAllTests()
+    for _, file in ipairs(files) do
+        if file ~= "init.lua" then
+            local name = string.match(file, "(.+)%..+$")
+            local test = require(table.unpack(dots) .. "/" .. name)
 
-        -- NOTE [JM] test development only
-        -- if name == "test_misc" then
+            -- NOTE [JM] test development only
+            -- if name == "test_misc" then
             table.insert(tests, test)
-        -- end
+            -- end
+        end
     end
 end
 
@@ -82,7 +85,7 @@ local function G_teardown()
     -- nop
 end
 
-return function()
+local function runAllTests()
     local utility = {}
 
     local function findEmptySlotInChest(chest)
@@ -133,3 +136,6 @@ return function()
 
     print("all tests passed")
 end
+
+loadAllTests()
+return runAllTests
