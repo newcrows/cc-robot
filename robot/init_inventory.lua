@@ -1,6 +1,7 @@
 return function(robot, meta)
     local selectedName = "air"
     local reservedSpaces = {}
+    local setSlotHolder = {}
 
     local function getPhysicalCount(name)
         local count = 0
@@ -159,6 +160,139 @@ return function(robot, meta)
         return emptySlotsWeNeed
     end
 
+    function setSlotHolder.setSlot(slotId, name, count, blacklist)
+        if not slotId then
+            error("slotId must not be nil")
+        end
+
+        if name == "air" then
+            name = nil
+        end
+
+        if not name then
+            count = 0
+        elseif not count then
+            count = meta.countItems(name, true, true)
+        end
+
+        if count == nil then
+            error("count must not be nil")
+        end
+
+        blacklist = blacklist or {}
+
+        local detail = turtle.getItemDetail(slotId)
+        local slot = {
+            name = detail and detail.name or nil,
+            count = turtle.getItemCount(slotId),
+            space = turtle.getItemSpace(slotId)
+        }
+
+        local sameSlots = {}
+        local candidateSlots = meta.listSlots(name, 16, true, true)
+
+        for i = 1, #candidateSlots do
+            local candidateSlot = candidateSlots[i]
+
+            if slotId ~= candidateSlot.id and not blacklist[candidateSlot.id] then
+                table.insert(sameSlots, candidateSlot)
+            end
+        end
+
+        if slot.name == name and slot.count > count then
+            turtle.select(slotId)
+
+            -- try to move surplus to slots holding the same item
+            local amount = 0
+            local surplusAmount = slot.count - count
+
+            for _, sameSlot in ipairs(sameSlots) do
+                local sameSpace = sameSlot.space
+                local movableAmount = math.min(surplusAmount - amount, sameSpace)
+
+                if movableAmount > 0 then
+                    if turtle.transferTo(sameSlot.id, movableAmount) then
+                        amount = amount + movableAmount
+                    end
+                end
+
+                if amount == surplusAmount then
+                    return true
+                end
+            end
+
+            -- try to move remaining surplus to the first non-blacklisted empty slot
+            -- DO NOT compact, this would ignore blacklist and could re-arrange the inventory in an unwanted way
+            local emptySlots = meta.listEmptySlots(16, true)
+            local emptySlot = nil
+
+            for _, candidateSlot in ipairs(emptySlots) do
+                if not blacklist[candidateSlot.id] then
+                    emptySlot = candidateSlot
+                    break
+                end
+            end
+
+            if not emptySlot then
+                return false, "no space in inventory to move surplus elsewhere"
+            end
+
+            if not turtle.transferTo(emptySlot.id, surplusAmount - amount) then
+                return false, "moving surplus to empty slot failed"
+            end
+
+            return true
+        end
+
+        if (slot.name == name or not slot.name) and slot.count < count then
+            if name and #candidateSlots == 0 then
+                return false, "no items found in inventory to move deficit from elsewhere"
+            end
+
+            local amount = 0
+            local deficitAmount = count - slot.count
+
+            for _, sameSlot in ipairs(sameSlots) do
+                local sameCount = sameSlot.count
+                local movableAmount = math.min(deficitAmount - amount, sameCount)
+
+                if movableAmount > 0 then
+                    turtle.select(sameSlot.id)
+
+                    if turtle.transferTo(slotId, movableAmount) then
+                        amount = amount + movableAmount
+                    end
+                end
+
+                if amount == deficitAmount then
+                    return true
+                end
+            end
+
+            return false, "not enough items in inventory to move deficit from elsewhere"
+        end
+
+        if slot.name ~= name then
+            if name and #candidateSlots == 0 then
+                return false, "item not found in inventory"
+            end
+
+            local _, err = setSlotHolder.setSlot(slotId, slot.name, 0, blacklist)
+
+            if err then
+                return false, "could not move other items elsewhere because there was not enough space in inventory"
+            end
+
+            _, err = setSlotHolder.setSlot(slotId, name, count, blacklist)
+
+            if err then
+                return false, err
+            end
+        end
+
+        return true
+    end
+
     function meta.listSlots(name, limit, includeEquipment, includeReservedItems)
         limit = limit or 16
 
@@ -284,14 +418,16 @@ return function(robot, meta)
         return count
     end
 
+    -- TODO [JM] fix bug in setSlot, right now this doesn't always work correctly
     function meta.arrangeSlots(layoutFunc)
-        local touchedSlots = {}
+        local blacklist = {}
         local setSlot = function(slotId, name, count)
-            if touchedSlots[slotId] then
+            if blacklist[slotId] then
                 error("slot " .. tostring(slotId) .. " was already set in current arrangeSlots() call")
             end
 
-            -- TODO [JM] implement
+            setSlotHolder.setSlot(slotId, name, count, blacklist)
+            blacklist[slotId] = true
 
             return true
         end
