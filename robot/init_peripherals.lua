@@ -214,8 +214,49 @@ return function(robot, meta, constants)
     end
 
     meta.setPeripheralConstructor("minecraft:chest", function(opts)
-        -- custom chest implementation here
-        -- TODO [JM] implement
+        local helperChest
+
+        meta.addEventListener({
+            wrap = function(side, name)
+                if name == "minecraft:chest" and side ~= "top" then
+                    robot.free("minecraft:chest", 1)
+                    robot.placeUp("minecraft:chest")
+
+                    os.sleep(1)
+                    helperChest = peripheral.wrap("top")
+                end
+            end,
+            soft_wrap = function(side, name)
+                if name == "minecraft:chest" and side ~= "top" then
+                    robot.free("minecraft:chest", 1)
+                    robot.placeUp("minecraft:chest")
+                end
+            end,
+            soft_unwrap = function(side, name)
+                if name == "minecraft:chest" and side ~= "top" then
+                    robot.digUp()
+                    robot.reserve("minecraft:chest", 1)
+                end
+            end
+        })
+
+        return {
+            import = function(name, count)
+                return robot.drop(name, count)
+            end,
+            export = function(name, count)
+                -- TODO [JM] mus index the inventory of chest first
+                local amountHelperChest = helperChest.pullItems(peripheral.getName(opts.target), 1, 16)
+                return robot.suckUp(name, amountHelperChest)
+            end,
+            getItemDetail = function(name)
+                -- TODO [JM] mus index the inventory of chest first
+            end,
+            listItems = function()
+                -- TODO [JM] mus index the inventory of chest first
+                return opts.target.list()
+            end
+        }
     end)
     meta.setPeripheralConstructor("advancedperipherals:me_bridge", function(opts)
         local side = opts.side
