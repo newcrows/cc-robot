@@ -98,9 +98,9 @@ return function(robot, meta)
     local function getEquipmentCount(name)
         name = name or meta.selectedName
 
-        local proxy = meta.equipProxies[name]
+        local equipment = meta.getEquipmentDetail(name)
 
-        if proxy and not proxy.target then
+        if equipment and not equipment.proxy.target then
             return 1
         end
 
@@ -110,9 +110,9 @@ return function(robot, meta)
     local function getEquipmentSpace(name)
         name = name or meta.selectedName
 
-        local proxy = meta.equipProxies[name]
+        local equipment = meta.getEquipmentDetail(name)
 
-        if proxy and proxy.target then
+        if equipment and equipment.proxy.target then
             return 1
         end
 
@@ -122,7 +122,8 @@ return function(robot, meta)
     local function countEmptySlotsNeededForEquipmentAndReserved()
         local itemsWeNeedSpaceFor = {}
 
-        for _, proxy in pairs(meta.equipProxies) do
+        for _, equipment in pairs(meta.listEquipment()) do
+            local proxy = equipment.proxy
             if proxy.target then
                 itemsWeNeedSpaceFor[proxy.name] = (itemsWeNeedSpaceFor[proxy.name] or 0) + 1
             end
