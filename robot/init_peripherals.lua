@@ -332,27 +332,31 @@ return function(robot, meta, constants)
         local oppFacing = OPPOSITE_FACINGS[facing]
 
         return {
-            import = function(name, count)
-                if not name then
-                    error("name must not be nil")
+            import = function(name, count, blocking)
+                assert(name, "name must not be nil")
+                local amount = 0
+
+                while true do
+                    local rCount = robot.getItemCount(name)
+
+                    if not count or rCount < count then
+                        count = rCount
+                    end
+
+                    if count == 0 and not blocking then
+                        return 0, name .. " not found in turtle inventory"
+                    end
+
+                    amount = amount + target.importItem({ name = name, count = count }, oppFacing)
+
+                    if amount == count or not blocking then
+                        return amount
+                    end
                 end
-
-                local rCount = robot.getItemCount(name)
-
-                if not count or rCount < count then
-                    count = rCount
-                end
-
-                if count == 0 then
-                    return 0, name .. " not found in turtle inventory"
-                end
-
-                return target.importItem({ name = name, count = count }, oppFacing)
             end,
-            export = function(name, count)
-                if not name then
-                    error("name must not be nil")
-                end
+            -- TODO [JM] impl blocking
+            export = function(name, count, blocking)
+                assert(name, "name must not be nil")
 
                 if not count then
                     local item = target.getItem({ name = name })
