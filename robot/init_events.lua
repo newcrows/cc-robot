@@ -23,7 +23,16 @@ return function(_, meta)
     function meta.getEventListener(id)
         assert(type(id) == "number", "id must be a number")
 
-        return listeners[id]
+        local listener = listeners[id]
+
+        if listener then
+            return {
+                id = id,
+                listener = listener
+            }
+        end
+
+        return nil
     end
 
     function meta.listEventListeners()

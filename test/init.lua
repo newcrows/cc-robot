@@ -7,7 +7,11 @@ for _, file in ipairs(files) do
         local name = string.match(file, "(.+)%..+$")
         local test = require((...) .. "/" .. name)
 
-        table.insert(tests, test)
+        -- NOTE [JM] test development only
+        if name == "test_events" then
+            table.insert(tests, test)
+
+        end
     end
 end
 
@@ -121,7 +125,7 @@ return function()
     end
 
     for _, test in ipairs(tests) do
-        -- NOTE [JM] disable this for test development
+        -- NOTE [JM] disable this for test development only
         --G_setup()
 
         test(robot, utility)

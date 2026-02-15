@@ -7,8 +7,8 @@ local function teardown()
 end
 
 return function(robot, utility)
-    local FACINGS = robot.constants.facings
     setup()
+    local FACINGS = robot.constants.facings
 
     robot.x, robot.y, robot.z = 0, 0, 0
     robot.facing = FACINGS.north
