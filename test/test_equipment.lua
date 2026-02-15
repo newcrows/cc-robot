@@ -19,7 +19,7 @@ local function teardown()
 end
 
 return function(robot, utility)
-    setup(_, utility)
+    setup(nil, utility)
 
     local pickaxe = robot.equip("minecraft:diamond_pickaxe", true)
     local axe = robot.equip("minecraft:diamond_axe")
