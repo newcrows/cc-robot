@@ -118,3 +118,40 @@ local torchCount = robot.getItemCount()
 robot.drop(torchCount - 64)
 ```
 see [DOCS.md](./DOCS.md) for documentation.
+
+
+## run_test example
+
+to make sure `robot` works as intended, you can run `run_test` from the `<install-dir>`.
+
+this requires a specific setup structure.
+
+you need:
+- 28x `cobblestone`
+- 1x `cobblestone_slab`
+- 2x `redstone_block`
+- 3x `chest`
+- 1x `pickaxe`
+- 1x `axe`
+- 1x `shovel`
+- 64x `stick`
+- 64x `coal`
+
+### build the structure like this:
+- it has a width of 3, a height of 2 and a length of 3.
+- place the blocks as seen in the picture.
+
+![Setup Top Down View](images/setup_from_top.png)
+
+### the chest to the right must contain the items in order as seen here:
+![Setup Top Down View](images/setup_right_chest_content.png)
+
+### the other chest must be empty
+
+### how to run the test:
+- place the turtle somewhere within the structure
+- refuel the turtle, so it has more than `1000` fuel, but significantly LESS than `turtle.getFuelLimit()`
+- `cd <install-dir>` if not in the dir already
+- `run-test`
+
+
