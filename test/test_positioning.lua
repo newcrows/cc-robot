@@ -92,7 +92,7 @@ return function(robot, utility)
         local requiredLevel = level + 20
         local stickCount
 
-        robot.addAutoFuel("minecraft:stick", 4)
+        robot.setAutoFuel("minecraft:stick", 4)
         robot.onAutoFuelWarning(function(_level, _requiredLevel, autoFuels)
             assert(_level == level)
             assert(_requiredLevel == requiredLevel)
@@ -106,7 +106,7 @@ return function(robot, utility)
         end)
 
         robot.meta.autoFuel(requiredLevel)
-        robot.removeAutoFuel("minecraft:stick", 4)
+        robot.removeAutoFuel()
 
         assert(turtle.getItemCount(1) == stickCount - 4)
 

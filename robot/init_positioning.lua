@@ -164,7 +164,7 @@ return function(robot, meta, constants)
         return true
     end
 
-    function robot.addAutoFuel(name, reserveCount)
+    function robot.setAutoFuel(name, reserveCount)
         if type(name) == "number" then
             reserveCount = name
             name = nil
@@ -173,24 +173,27 @@ return function(robot, meta, constants)
         name = name or robot.getSelectedName()
         reserveCount = reserveCount or 1
 
-        robot.reserve(name, reserveCount)
-        autoFuels[name] = (autoFuels[name] or 0) + reserveCount
+        if type(name) ~= "table" then
+            name = {
+                [name] = reserveCount
+            }
+        end
 
+        for _name, _reserveCount in pairs(name) do
+            print("reserve " .. _name .. ", " .. tostring(_reserveCount))
+            robot.reserve(_name, _reserveCount)
+        end
+
+        autoFuels = name
         return true
     end
 
-    function robot.removeAutoFuel(name, freeCount)
-        if type(name) == "number" then
-            freeCount = name
-            name = nil
+    function robot.removeAutoFuel()
+        for name, reserveCount in pairs(autoFuels) do
+            robot.free(name, reserveCount)
         end
 
-        name = name or robot.getSelectedName()
-        freeCount = freeCount or 1
-
-        autoFuels[name] = (autoFuels[name] or 0) - freeCount
-        robot.free(name, freeCount)
-
+        autoFuels = {}
         return true
     end
 
