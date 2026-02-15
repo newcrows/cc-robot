@@ -84,21 +84,49 @@ return function(robot, meta, constants)
     end
 
     function robot.place(name, blocking)
+        if type(name) == "boolean" then
+            blocking = name
+            name = nil
+        end
+
         name = name or robot.getSelectedName()
         return place(turtle.place, name, blocking)
     end
 
     function robot.placeUp(name, blocking)
+        if type(name) == "boolean" then
+            blocking = name
+            name = nil
+        end
+
         name = name or robot.getSelectedName()
         return place(turtle.placeUp, name, blocking)
     end
 
     function robot.placeDown(name, blocking)
+        if type(name) == "boolean" then
+            blocking = name
+            name = nil
+        end
+
         name = name or robot.getSelectedName()
         return place(turtle.placeDown, name, blocking)
     end
 
     function robot.drop(name, count, blocking)
+        if type(name) == "boolean" then
+            blocking = name
+            count = nil
+            name = nil
+        elseif type(name) == "number" then
+            blocking = count
+            count = name
+            name = nil
+        elseif type(name) == "string" and type("count") == "boolean" then
+            blocking = count
+            count = nil
+        end
+
         name = name or robot.getSelectedName()
         count = count or robot.getItemCount(name)
 
@@ -106,6 +134,19 @@ return function(robot, meta, constants)
     end
 
     function robot.dropUp(name, count, blocking)
+        if type(name) == "boolean" then
+            blocking = name
+            count = nil
+            name = nil
+        elseif type(name) == "number" then
+            blocking = count
+            count = name
+            name = nil
+        elseif type(name) == "string" and type("count") == "boolean" then
+            blocking = count
+            count = nil
+        end
+
         name = name or robot.getSelectedName()
         count = count or robot.getItemCount(name)
 
@@ -113,6 +154,19 @@ return function(robot, meta, constants)
     end
 
     function robot.dropDown(name, count, blocking)
+        if type(name) == "boolean" then
+            blocking = name
+            count = nil
+            name = nil
+        elseif type(name) == "number" then
+            blocking = count
+            count = name
+            name = nil
+        elseif type(name) == "string" and type("count") == "boolean" then
+            blocking = count
+            count = nil
+        end
+
         name = name or robot.getSelectedName()
         count = count or robot.getItemCount(name)
 
@@ -147,14 +201,29 @@ return function(robot, meta, constants)
     end
 
     function robot.suck(count, blocking)
+        if type(count) == "boolean" then
+            blocking = count
+            count = nil
+        end
+
         return suck(turtle.suck, count, blocking)
     end
 
     function robot.suckUp(count, blocking)
+        if type(count) == "boolean" then
+            blocking = count
+            count = nil
+        end
+
         return suck(turtle.suckUp, count, blocking)
     end
 
     function robot.suckDown(count, blocking)
+        if type(count) == "boolean" then
+            blocking = count
+            count = nil
+        end
+
         return suck(turtle.suckDown, count, blocking)
     end
 

@@ -310,7 +310,6 @@ return function(robot, meta, constants)
 
     function robot.unequip(name)
         name = name or robot.getSelectedName()
-
         local proxy = proxies[name]
 
         if proxy then

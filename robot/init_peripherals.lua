@@ -100,6 +100,11 @@ return function(robot, meta, constants)
     end
 
     function robot.wrap(side, wrapAs)
+        if side and not SIDES[side] then
+            wrapAs = side
+            side = nil
+        end
+
         side = side or SIDES.front
         return wrap(side, wrapAs)
     end

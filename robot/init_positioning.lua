@@ -165,6 +165,11 @@ return function(robot, meta, constants)
     end
 
     function robot.addAutoFuel(name, reserveCount)
+        if type(name) == "number" then
+            reserveCount = name
+            name = nil
+        end
+
         name = name or robot.getSelectedName()
         reserveCount = reserveCount or 1
 
@@ -175,6 +180,11 @@ return function(robot, meta, constants)
     end
 
     function robot.removeAutoFuel(name, freeCount)
+        if type(name) == "number" then
+            freeCount = name
+            name = nil
+        end
+
         name = name or robot.getSelectedName()
         freeCount = freeCount or 1
 

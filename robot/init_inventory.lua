@@ -476,14 +476,17 @@ return function(robot, meta)
     end
 
     function robot.hasItemCount(name)
+        name = name or robot.getSelectedName()
         return robot.hasItemCount(name) > 0
     end
 
     function robot.hasItemSpace(name)
+        name = name or robot.getSelectedName()
         return robot.hasItemSpace(name) > 0
     end
 
     function robot.hasItemSpaceForUnknown(stackSize)
+        stackSize = stackSize or 64
         return robot.getItemSpaceForUnknown(stackSize) > 0
     end
 
@@ -565,10 +568,12 @@ return function(robot, meta)
     end
 
     function robot.hasReservedItemCount(name)
+        name = name or robot.getSelectedName()
         return robot.getReservedItemCount(name) > 0
     end
 
     function robot.hasReservedItemSpace(name)
+        name = name or robot.getSelectedName()
         return robot.getReservedItemSpace(name) > 0
     end
 
