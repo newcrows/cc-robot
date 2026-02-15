@@ -3,6 +3,9 @@ return function(robot, meta, constants)
     local FACING_INDEX = constants.facing_index
     local FACINGS = constants.facings
     local OPPOSITE_FACINGS = constants.opposite_facings
+    local AUTO_FUEL_LOW_THRESHOLD = constants.auto_fuel_low_threshold
+    local AUTO_FUEL_HIGH_THRESHOLD = constants.auto_fuel_high_threshold
+    local autoFuels = {}
 
     robot.x, robot.y, robot.z = 0, 0, 0
     robot.facing = FACINGS.north
@@ -25,6 +28,67 @@ return function(robot, meta, constants)
         callAll(meta.unwrap)
     end
 
+    local function refuel(name, count, blocking, includeReservedItems)
+        local amount = 0
+
+        while amount < count do
+            local ok, err = meta.selectFirstSlot(name, false, includeReservedItems)
+
+            if not ok and blocking then
+                os.sleep(1)
+            elseif not ok then
+                return amount, err
+            end
+
+            local itemCount = turtle.getItemCount()
+            local dropCount = math.min(count - amount, itemCount)
+
+            ok, err = turtle.refuel(dropCount)
+
+            if not ok and blocking then
+                os.sleep(1)
+            elseif not ok or turtle.getFuelLevel() == turtle.getFuelLimit() then
+                return amount, err
+            end
+
+            local dropAmount = itemCount - turtle.getItemCount()
+            amount = amount + dropAmount
+        end
+
+        return amount
+    end
+
+    local function autoFuel()
+        local anyAutoFuelSeen = false
+        local warningDispatched = false
+
+        while true do
+            for name, count in pairs(autoFuels) do
+                anyAutoFuelSeen = true
+                refuel(name, count, false, true)
+
+                if turtle.getFuelLevel() >= AUTO_FUEL_HIGH_THRESHOLD then
+                    if warningDispatched then
+                        meta.dispatchEvent("fuelWarningCleared")
+                    end
+
+                    return
+                end
+            end
+
+            if not anyAutoFuelSeen then
+                break
+            else
+                if not warningDispatched then
+                    meta.dispatchEvent("fuelWarning", turtle.getFuelLevel(), autoFuels)
+                    warningDispatched = true
+                end
+
+                os.sleep(1)
+            end
+        end
+    end
+
     local function step(moveFunc, blocking)
         if blocking then
             while not moveFunc() do
@@ -39,6 +103,10 @@ return function(robot, meta, constants)
 
     local function move(moveFunc, blocking, delta)
         softUnwrapAll()
+
+        if turtle.getFuelLevel() < AUTO_FUEL_LOW_THRESHOLD then
+            autoFuel()
+        end
 
         local ok, err = step(moveFunc, blocking)
 
@@ -92,8 +160,26 @@ return function(robot, meta, constants)
         return true
     end
 
+    function robot.addAutoFuel(name, reserveCount)
+        name = name or robot.getSelectedName()
+
+        robot.reserve(name, reserveCount)
+        autoFuels[name] = (autoFuels[name] or 0) + reserveCount
+
+        return true
+    end
+
+    function robot.removeAutoFuel(name, freeCount)
+        name = name or robot.getSelectedName()
+
+        autoFuels[name] = (autoFuels[name] or 0) - freeCount
+        robot.free(name, freeCount)
+
+        return true
+    end
+
     function robot.refuel(name, count, blocking)
-        -- TODO [JM] implement
+        return refuel(name, count, blocking)
     end
 
     function robot.getFuelLevel()
