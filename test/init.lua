@@ -8,10 +8,10 @@ for _, file in ipairs(files) do
         local test = require((...) .. "/" .. name)
 
         -- NOTE [JM] test development only
-        if name == "test_events" then
+        --if name == "test_peripherals" then
             table.insert(tests, test)
 
-        end
+        --end
     end
 end
 
@@ -126,7 +126,7 @@ return function()
 
     for _, test in ipairs(tests) do
         -- NOTE [JM] disable this for test development only
-        --G_setup()
+        G_setup()
 
         test(robot, utility)
         G_teardown()
