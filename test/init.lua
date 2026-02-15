@@ -8,7 +8,7 @@ for _, file in ipairs(files) do
         local test = require((...) .. "/" .. name)
 
         -- NOTE [JM] test development only
-        --if name == "test_peripherals" then
+        --if name == "test_equipment" then
             table.insert(tests, test)
 
         --end
@@ -87,7 +87,7 @@ return function()
     local utility = {}
 
     local function findEmptySlotInChest(chest)
-        for i = 1, 16 do
+        for i = 1, 9 * 3 do
             if not chest.getItemDetail(i) then
                 return i
             end
