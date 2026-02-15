@@ -111,7 +111,7 @@ return function(robot, meta, constants)
                 swapProxy.side = nil
                 swapProxy.target = nil
 
-                meta.dispatchEvent("unwrap", swapProxy.name, swapSide, true)
+                meta.dispatchEvent("unwrap", swapSide, swapProxy.name, true)
             end
         end
 
@@ -177,7 +177,7 @@ return function(robot, meta, constants)
         proxy.side = nil
         proxy.target = nil
 
-        meta.dispatchEvent("unwrap", proxy.name, side)
+        meta.dispatchEvent("unwrap", side, proxy.name)
 
         return true
     end

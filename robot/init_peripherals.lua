@@ -185,7 +185,7 @@ return function(robot, meta, constants)
 
         if proxy and not proxy.target then
             proxy.target = peripheral.wrap(side)
-            meta.dispatchEvent("soft_wrap", proxy.name, side)
+            meta.dispatchEvent("soft_wrap", side, proxy.name)
         end
 
         return true
@@ -197,10 +197,20 @@ return function(robot, meta, constants)
 
         if proxy and proxy.target then
             proxy.target = nil
-            meta.dispatchEvent("soft_unwrap", proxy.name, side)
+            meta.dispatchEvent("soft_unwrap", side, proxy.name)
         end
 
         return true
+    end
+
+    function meta.unwrap(side)
+        assert(side, "side must not be nil")
+        local proxy = proxies[side]
+
+        if proxy then
+            proxies[side] = nil
+            meta.dispatchEvent("unwrap", side, proxy.name)
+        end
     end
 
     meta.setPeripheralConstructor("minecraft:chest", function(opts)

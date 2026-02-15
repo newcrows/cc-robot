@@ -58,7 +58,7 @@ return function(robot, meta, constants)
         return amount
     end
 
-    local function autoFuel(requiredFuel)
+    local function autoFuel(requiredFuelLevel)
         local anyAutoFuelSeen = false
         local warningDispatched = false
 
@@ -70,7 +70,7 @@ return function(robot, meta, constants)
 
                 refuel(name, count, false, true)
 
-                if turtle.getFuelLevel() >= requiredFuel then
+                if turtle.getFuelLevel() >= requiredFuelLevel then
                     if warningDispatched then
                         meta.dispatchEvent("auto_fuel_warning_cleared")
                     end
@@ -83,7 +83,7 @@ return function(robot, meta, constants)
                 return
             else
                 if not warningDispatched then
-                    meta.dispatchEvent("auto_fuel_warning", turtle.getFuelLevel(), autoFuels)
+                    meta.dispatchEvent("auto_fuel_warning", requiredFuelLevel, turtle.getFuelLevel(), autoFuels)
                     warningDispatched = true
                 end
 
@@ -126,9 +126,9 @@ return function(robot, meta, constants)
         return ok, err
     end
 
-    function meta.autoFuel(requiredFuel)
-        if turtle.getFuelLevel() < requiredFuel then
-            autoFuel(requiredFuel)
+    function meta.autoFuel(requiredFuelLevel)
+        if turtle.getFuelLevel() < requiredFuelLevel then
+            autoFuel(requiredFuelLevel)
         end
     end
 
