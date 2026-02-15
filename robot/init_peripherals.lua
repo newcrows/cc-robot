@@ -1,5 +1,7 @@
 return function(robot, meta, constants)
     local RAW_PROPERTIES = constants.raw_properties
+    local FACINGS = constants.facings
+    local OPPOSITE_FACINGS = constants.opposite_facings
     local SIDES = constants.sides
     local INSPECT_FUNCS = {
         [SIDES.front] = turtle.inspect,
@@ -205,8 +207,71 @@ return function(robot, meta, constants)
         -- custom chest implementation here
         -- TODO [JM] implement
     end)
-    meta.setPeripheralConstructor("minecraft:me_bridge", function(opts)
-        -- custom me_bridge implementation here
-        -- TODO [JM] implement
+    meta.setPeripheralConstructor("advancedperipherals:me_bridge", function(opts)
+        local side = opts.side
+        local target = opts.target
+        local facings = {
+            front = robot.facing,
+            top = FACINGS.up,
+            bottom = FACINGS.down
+        }
+
+        if not target then
+            return nil
+        end
+
+        local facing = facings[side]
+        local oppFacing = OPPOSITE_FACINGS[facing]
+
+        return {
+            import = function(name, count)
+                if not name then
+                    error("name must not be nil")
+                end
+
+                local rCount = robot.getItemCount(name)
+
+                if not count or rCount < count then
+                    count = rCount
+                end
+
+                if count == 0 then
+                    return 0, name .. " not found in turtle inventory"
+                end
+
+                return target.importItem({ name = name, count = count }, oppFacing)
+            end,
+            export = function(name, count)
+                if not name then
+                    error("name must not be nil")
+                end
+
+                if not count then
+                    local item = target.getItem({ name = name })
+
+                    if item then
+                        count = item.count
+                    else
+                        return 0, name .. " not found in me_network"
+                    end
+                end
+
+                if robot.getItemSpace(name) < count then
+                    meta.compact()
+                end
+
+                return target.exportItem({ name = name, count = count }, oppFacing)
+            end,
+            getItemDetail = function(name)
+                if not name then
+                    error("name must not be nil")
+                end
+
+                return target.getItem({ name = name })
+            end,
+            listItems = function()
+                return target.getItems()
+            end
+        }
     end)
 end
