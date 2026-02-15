@@ -58,16 +58,19 @@ return function(robot, meta, constants)
         return amount
     end
 
-    local function autoFuel()
+    local function autoFuel(requiredFuel)
         local anyAutoFuelSeen = false
         local warningDispatched = false
 
         while true do
             for name, count in pairs(autoFuels) do
-                anyAutoFuelSeen = true
+                if count > 0 then
+                    anyAutoFuelSeen = true
+                end
+
                 refuel(name, count, false, true)
 
-                if turtle.getFuelLevel() >= AUTO_FUEL_HIGH_THRESHOLD then
+                if turtle.getFuelLevel() >= requiredFuel then
                     if warningDispatched then
                         meta.dispatchEvent("fuelWarningCleared")
                     end
@@ -77,7 +80,7 @@ return function(robot, meta, constants)
             end
 
             if not anyAutoFuelSeen then
-                break
+                return
             else
                 if not warningDispatched then
                     meta.dispatchEvent("fuelWarning", turtle.getFuelLevel(), autoFuels)
@@ -105,7 +108,7 @@ return function(robot, meta, constants)
         softUnwrapAll()
 
         if turtle.getFuelLevel() < AUTO_FUEL_LOW_THRESHOLD then
-            autoFuel()
+            meta.autoFuel(AUTO_FUEL_HIGH_THRESHOLD)
         end
 
         local ok, err = step(moveFunc, blocking)
@@ -121,6 +124,12 @@ return function(robot, meta, constants)
         end
 
         return ok, err
+    end
+
+    function meta.autoFuel(requiredFuel)
+        if turtle.getFuelLevel() < requiredFuel then
+            autoFuel(requiredFuel)
+        end
     end
 
     function robot.forward(blocking)
@@ -176,6 +185,12 @@ return function(robot, meta, constants)
         robot.free(name, freeCount)
 
         return true
+    end
+
+    function robot.onFuelWarning(fuelWarningCallback)
+        meta.addEventListener({
+            fuelWarning = fuelWarningCallback
+        })
     end
 
     function robot.refuel(name, count, blocking)
