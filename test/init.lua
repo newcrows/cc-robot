@@ -8,10 +8,9 @@ for _, file in ipairs(files) do
         local test = require((...) .. "/" .. name)
 
         -- NOTE [JM] test development only
-        --if name == "test_equipment" then
+        -- if name == "test_misc" then
             table.insert(tests, test)
-
-        --end
+        -- end
     end
 end
 

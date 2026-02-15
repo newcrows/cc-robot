@@ -6,6 +6,7 @@ return function(robot, meta, constants)
     local AUTO_FUEL_LOW_THRESHOLD = constants.auto_fuel_low_threshold
     local AUTO_FUEL_HIGH_THRESHOLD = constants.auto_fuel_high_threshold
     local autoFuels = {}
+    local autoFuelWarningListenerId
 
     robot.x, robot.y, robot.z = 0, 0, 0
     robot.facing = FACINGS.north
@@ -184,7 +185,14 @@ return function(robot, meta, constants)
     end
 
     function robot.onAutoFuelWarning(callback)
-        meta.addEventListener({
+        if not callback and autoFuelWarningListenerId then
+            meta.removeEventListener(autoFuelWarningListenerId)
+            autoFuelWarningListenerId = nil
+
+            return
+        end
+
+        autoFuelWarningListenerId = meta.addEventListener({
             auto_fuel_warning = callback
         })
     end
