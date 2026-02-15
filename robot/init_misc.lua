@@ -41,6 +41,48 @@ return function(robot, meta, constants)
         return amount
     end
 
+    local function compare(inspectFunc, name)
+        local blockExists, blockDetail = inspectFunc()
+
+        if blockExists and blockDetail.name == name then
+            return true
+        elseif not blockExists and name == "air" then
+            return true
+        end
+
+        return false
+    end
+
+    local function suck(suckFunc, count, blocking)
+        count = count or 9999
+        local amount = 0
+
+        while amount < count do
+            local rawCount = meta.countItems(nil, true, true)
+            local suckCount = math.min(count - amount, 64)
+
+            local ok, err = suckFunc(suckCount)
+
+            if not ok and blocking then
+                if count == 9999 and amount > 0 then
+                    return amount
+                end
+
+                os.sleep(1)
+            elseif not ok then
+                if count == 9999 then
+                    return amount
+                end
+
+                return amount, err
+            end
+
+            amount = amount + meta.countItems(nil, true, true) - rawCount
+        end
+
+        return amount
+    end
+
     function robot.place(name, blocking)
         name = name or robot.getSelectedName()
         return place(turtle.place, name, blocking)
@@ -90,27 +132,30 @@ return function(robot, meta, constants)
     end
 
     function robot.compare(name)
-        -- TODO [JM] implement
+        name = name or robot.getSelectedName()
+        return compare(turtle.inspect, name)
     end
 
     function robot.compareUp(name)
-        -- TODO [JM] implement
+        name = name or robot.getSelectedName()
+        return compare(turtle.inspectUp, name)
     end
 
     function robot.compareDown(name)
-        -- TODO [JM] implement
+        name = name or robot.getSelectedName()
+        return compare(turtle.inspectDown, name)
     end
 
     function robot.suck(count, blocking)
-        -- TODO [JM] implement
+        return suck(turtle.suck, count, blocking)
     end
 
     function robot.suckUp(count, blocking)
-        -- TODO [JM] implement
+        return suck(turtle.suckUp, count, blocking)
     end
 
     function robot.suckDown(count, blocking)
-        -- TODO [JM] implement
+        return suck(turtle.suckDown, count, blocking)
     end
 
     function robot.inspect()
