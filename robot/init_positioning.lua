@@ -180,7 +180,6 @@ return function(robot, meta, constants)
         end
 
         for _name, _reserveCount in pairs(name) do
-            print("reserve " .. _name .. ", " .. tostring(_reserveCount))
             robot.reserve(_name, _reserveCount)
         end
 
