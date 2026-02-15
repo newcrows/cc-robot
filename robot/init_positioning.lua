@@ -72,7 +72,7 @@ return function(robot, meta, constants)
 
                 if turtle.getFuelLevel() >= requiredFuel then
                     if warningDispatched then
-                        meta.dispatchEvent("fuelWarningCleared")
+                        meta.dispatchEvent("auto_fuel_warning_cleared")
                     end
 
                     return
@@ -83,7 +83,7 @@ return function(robot, meta, constants)
                 return
             else
                 if not warningDispatched then
-                    meta.dispatchEvent("fuelWarning", turtle.getFuelLevel(), autoFuels)
+                    meta.dispatchEvent("auto_fuel_warning", turtle.getFuelLevel(), autoFuels)
                     warningDispatched = true
                 end
 
@@ -187,9 +187,9 @@ return function(robot, meta, constants)
         return true
     end
 
-    function robot.onFuelWarning(fuelWarningCallback)
+    function robot.onAutoFuelWarning(callback)
         meta.addEventListener({
-            fuelWarning = fuelWarningCallback
+            auto_fuel_warning = callback
         })
     end
 

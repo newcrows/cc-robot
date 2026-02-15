@@ -183,7 +183,7 @@ return function(robot, meta, constants)
 
         if proxy and not proxy.target then
             proxy.target = peripheral.wrap(side)
-            meta.dispatchEvent("softWrap", proxy.name, side)
+            meta.dispatchEvent("soft_wrap", proxy.name, side)
         end
 
         return true
@@ -195,7 +195,7 @@ return function(robot, meta, constants)
 
         if proxy and proxy.target then
             proxy.target = nil
-            meta.dispatchEvent("softUnwrap", proxy.name, side)
+            meta.dispatchEvent("soft_unwrap", proxy.name, side)
         end
 
         return true
