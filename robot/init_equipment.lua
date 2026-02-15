@@ -287,7 +287,7 @@ return function(robot, meta, constants)
     end
 
     function robot.equip(name, pinned)
-        name = name or meta.selectedName
+        name = name or robot.getSelectedName()
         local proxy = proxies[name]
 
         if not proxy then
@@ -309,7 +309,7 @@ return function(robot, meta, constants)
     end
 
     function robot.unequip(name)
-        name = name or meta.selectedName
+        name = name or robot.getSelectedName()
 
         local proxy = proxies[name]
 
@@ -341,7 +341,7 @@ return function(robot, meta, constants)
     end
 
     function meta.getEquipmentDetail(name)
-        name = name or meta.selectedName
+        name = name or robot.getSelectedName()
         local proxy = proxies[name]
 
         if proxy then
@@ -355,7 +355,7 @@ return function(robot, meta, constants)
     end
 
     function meta.hasEquipment(name)
-        name = name or meta.selectedName
+        name = name or robot.getSelectedName()
         return meta.getEquipmentDetail(name) and true or false
     end
 

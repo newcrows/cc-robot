@@ -1,4 +1,5 @@
 return function(robot, meta)
+    local selectedName = "air"
     local reservedSpaces = {}
 
     local function getPhysicalCount(name)
@@ -96,7 +97,7 @@ return function(robot, meta)
     end
 
     local function getEquipmentCount(name)
-        name = name or meta.selectedName
+        name = name or robot.getSelectedName()
 
         local equipment = meta.getEquipmentDetail(name)
 
@@ -108,7 +109,7 @@ return function(robot, meta)
     end
 
     local function getEquipmentSpace(name)
-        name = name or meta.selectedName
+        name = name or robot.getSelectedName()
 
         local equipment = meta.getEquipmentDetail(name)
 
@@ -300,15 +301,15 @@ return function(robot, meta)
 
     function robot.select(name)
         assert(name, "name must not be nil")
-        meta.selectedName = name
+        selectedName = name
     end
 
     function robot.getSelectedName()
-        return meta.selectedName
+        return selectedName
     end
 
     function robot.getItemDetail(name)
-        name = name or meta.selectedName
+        name = name or robot.getSelectedName()
         local count = robot.getItemCount(name)
 
         if count > 0 then
@@ -322,12 +323,12 @@ return function(robot, meta)
     end
 
     function robot.getItemCount(name)
-        name = name or meta.selectedName
+        name = name or robot.getSelectedName()
         return getPhysicalCount(name) - getEquipmentCount(name) - robot.getReservedItemCount(name)
     end
 
     function robot.getItemSpace(name)
-        name = name or meta.selectedName
+        name = name or robot.getSelectedName()
         return getPhysicalSpace(name) - getEquipmentSpace(name) - robot.getReservedItemSpace(name)
     end
 
@@ -380,21 +381,21 @@ return function(robot, meta)
     end
 
     function robot.reserve(name, count)
-        name = name or meta.selectedName
+        name = name or robot.getSelectedName()
         count = count or 1
 
         reservedSpaces[name] = (reservedSpaces[name] or 0) + count
     end
 
     function robot.free(name, count)
-        name = name or meta.selectedName
+        name = name or robot.getSelectedName()
         count = count or 1
 
         reservedSpaces[name] = (reservedSpaces[name] or 0) - count
     end
 
     function robot.getReservedItemDetail(name)
-        name = name or meta.selectedName
+        name = name or robot.getSelectedName()
         local count = robot.getReservedItemCount(name)
 
         if count > 0 then
@@ -408,7 +409,7 @@ return function(robot, meta)
     end
 
     function robot.getReservedItemCount(name)
-        name = name or meta.selectedName
+        name = name or robot.getSelectedName()
 
         if not reservedSpaces[name] then
             return 0
@@ -418,7 +419,7 @@ return function(robot, meta)
     end
 
     function robot.getReservedItemSpace(name)
-        name = name or meta.selectedName
+        name = name or robot.getSelectedName()
 
         if not reservedSpaces[name] then
             return 0
@@ -451,6 +452,4 @@ return function(robot, meta)
 
         return arr
     end
-
-    robot.select("air")
 end
