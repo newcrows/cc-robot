@@ -3,6 +3,27 @@ return function(robot, meta, constants)
     local SIDES = constants.sides
     local OPPOSITE_SIDES = constants.opposite_sides
     local proxies = {}
+    local currentSide = SIDES.right
+
+    local function wrap(side, name)
+        local target = peripheral.wrap(side)
+        local detail = meta.getPeripheralConstructorDetail(name)
+
+        if detail then
+            local opts = {
+                robot = robot,
+                meta = meta,
+                constants = constants,
+                name = name,
+                side = side,
+                target = target
+            }
+
+            target = detail.constructor(opts)
+        end
+
+        return target
+    end
 
     local function getPhysicalEquippedName(side)
         local getEquippedFuncs = {
@@ -33,7 +54,7 @@ return function(robot, meta, constants)
             return true
         end
 
-        if meta.getWrappedPeripheral(side) then
+        if meta.getPeripheral(side) then
             return false, name .. " can not be equipped because a peripheral is bound on " .. side
         end
 
@@ -97,9 +118,11 @@ return function(robot, meta, constants)
         local proxy = proxies[name]
 
         proxy.side = side
-        proxy.target = meta.wrap(name, side, true)
+        proxy.target = wrap(side, name)
 
-        meta.equipSide = OPPOSITE_SIDES[meta.equipSide]
+        currentSide = OPPOSITE_SIDES[currentSide]
+
+        meta.dispatchEvent("wrap", side, name)
         return true
     end
 
@@ -154,7 +177,7 @@ return function(robot, meta, constants)
         proxy.side = nil
         proxy.target = nil
 
-        meta.dispatchEvent("unwrap", proxy.name, side, true)
+        meta.dispatchEvent("unwrap", proxy.name, side)
 
         return true
     end
@@ -182,7 +205,47 @@ return function(robot, meta, constants)
             return true
         end
 
-        -- TODO [JM] impl proxy.use here
+        function proxy.use(wrapOnly)
+            if proxy.target then
+                return true
+            end
+
+            if name == getPhysicalEquippedName(SIDES.right) then
+                proxy.side = SIDES.right
+                proxy.target = wrap(SIDES.right, name)
+
+                currentSide = SIDES.left
+                meta.dispatchEvent("wrap", SIDES.right, name)
+            elseif name == getPhysicalEquippedName(SIDES.left) then
+                proxy.side = SIDES.left
+                proxy.target = wrap(SIDES.left, name, true)
+
+                currentSide = SIDES.right
+                meta.dispatchEvent("wrap", SIDES.left, name)
+            end
+
+            if wrapOnly then
+                return false
+            end
+
+            if not getPhysicalEquippedName(SIDES.right) then
+                currentSide = SIDES.right
+            elseif not getPhysicalEquippedName(SIDES.left) then
+                currentSide = SIDES.left
+            end
+
+            if canEquip(name, currentSide) then
+                return equip(name, currentSide)
+            end
+
+            currentSide = OPPOSITE_SIDES[currentSide]
+
+            if canEquip(name, currentSide) then
+                return equip(name, currentSide)
+            end
+
+            return false, "could not equip " .. name
+        end
 
         function proxy.unuse()
             if not proxy.target then
@@ -247,7 +310,34 @@ return function(robot, meta, constants)
 
     function robot.unequip(name)
         name = name or meta.selectedName
-        -- TODO [JM] implement
+
+        local proxy = proxies[name]
+
+        if proxy then
+            local pinned = proxy.pinned
+
+            if pinned then
+                proxy.unpin()
+            end
+
+            local ok, err = proxy.unuse()
+
+            if pinned and not ok then
+                proxy.pin(true)
+            end
+
+            if not ok then
+                return ok, err
+            end
+
+            proxy.use = nil
+            proxies[name] = nil
+
+            meta.dispatchEvent("unequip", name)
+            return true
+        end
+
+        return true
     end
 
     function meta.getEquipmentDetail(name)
@@ -367,14 +457,14 @@ return function(robot, meta, constants)
     end
 
     -- generic constructors
-    meta.setWrapConstructor("dig_tool", digToolConstructor)
-    meta.setWrapConstructor("attack_tool", attackToolConstructor)
-    meta.setWrapConstructor("craft_tool", craftToolConstructor)
+    meta.setPeripheralConstructor("dig_tool", digToolConstructor)
+    meta.setPeripheralConstructor("attack_tool", attackToolConstructor)
+    meta.setPeripheralConstructor("craft_tool", craftToolConstructor)
 
     -- specific constructors
-    meta.setWrapConstructor("minecraft:diamond_pickaxe", digToolConstructor)
-    meta.setWrapConstructor("minecraft:diamond_axe", digToolConstructor)
-    meta.setWrapConstructor("minecraft:diamond_shovel", digToolConstructor)
-    meta.setWrapConstructor("minecraft:diamond_sword", attackToolConstructor)
-    meta.setWrapConstructor("minecraft:crafting_table", craftToolConstructor)
+    meta.setPeripheralConstructor("minecraft:diamond_pickaxe", digToolConstructor)
+    meta.setPeripheralConstructor("minecraft:diamond_axe", digToolConstructor)
+    meta.setPeripheralConstructor("minecraft:diamond_shovel", digToolConstructor)
+    meta.setPeripheralConstructor("minecraft:diamond_sword", attackToolConstructor)
+    meta.setPeripheralConstructor("minecraft:crafting_table", craftToolConstructor)
 end

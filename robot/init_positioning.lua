@@ -8,7 +8,7 @@ return function(robot, meta, constants)
     robot.facing = FACINGS.north
 
     local function callAll(callFunc)
-        for _, wrappedPeripheral in pairs(meta.listWrappedPeripherals()) do
+        for _, wrappedPeripheral in pairs(meta.listPeripherals()) do
             callFunc(wrappedPeripheral.side)
         end
     end

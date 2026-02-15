@@ -71,7 +71,7 @@ return function(robot, meta, constants)
         local proxy = createWrapProxy(name, side, target)
         proxies[side] = proxy
 
-        meta.dispatchEvent("wrap", name, side)
+        meta.dispatchEvent("wrap", side, name)
         return proxy
     end
 
@@ -110,7 +110,7 @@ return function(robot, meta, constants)
         return wrap(SIDES.bottom, wrapAs)
     end
 
-    function meta.getWrappedPeripheral(side)
+    function meta.getPeripheral(side)
         side = side or SIDES.front
         local proxy = proxies[side]
 
@@ -122,7 +122,7 @@ return function(robot, meta, constants)
         end
     end
 
-    function meta.listWrappedPeripherals()
+    function meta.listPeripherals()
         local arr = {}
 
         for side, proxy in pairs(proxies) do
@@ -135,7 +135,7 @@ return function(robot, meta, constants)
         return arr
     end
 
-    function meta.setWrapConstructor(name, constructor)
+    function meta.setPeripheralConstructor(name, constructor)
         assert(name, "name must not be nil")
         assert(type(constructor) == "function", "constructor must be of type function")
 
@@ -143,14 +143,14 @@ return function(robot, meta, constants)
         return true
     end
 
-    function meta.removeWrapConstructor(name)
+    function meta.removePeripheralConstructor(name)
         assert(name, "name must not be nil")
 
         constructors[name] = nil
         return true
     end
 
-    function meta.getWrapConstructorDetail(name)
+    function meta.getPeripheralConstructorDetail(name)
         assert(name, "name must not be nil")
         local constructor = constructors[name]
 
@@ -164,12 +164,7 @@ return function(robot, meta, constants)
         return nil
     end
 
-    function meta.hasWrapConstructor(name)
-        assert(name, "name must not be nil")
-        return meta.getWrapConstructorDetail(name) and true or false
-    end
-
-    function meta.listWrapConstructors()
+    function meta.listPeripheralConstructors()
         local arr = {}
 
         for name, constructor in pairs(constructors) do
@@ -206,11 +201,11 @@ return function(robot, meta, constants)
         return true
     end
 
-    meta.setWrapConstructor("minecraft:chest", function(opts)
+    meta.setPeripheralConstructor("minecraft:chest", function(opts)
         -- custom chest implementation here
         -- TODO [JM] implement
     end)
-    meta.setWrapConstructor("minecraft:me_bridge", function(opts)
+    meta.setPeripheralConstructor("minecraft:me_bridge", function(opts)
         -- custom me_bridge implementation here
         -- TODO [JM] implement
     end)
