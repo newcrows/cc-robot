@@ -40,6 +40,8 @@ return function(_, meta)
     end
 
     function meta.dispatchEvent(name, ...)
+        assert(name, "name must not be nil")
+
         for _, listener in pairs(listeners) do
             if listener[name] then
                 listener[name](...)

@@ -1,20 +1,141 @@
-return function(robot, meta)
+return function(robot, meta, constants)
+    local RAW_PROPERTIES = constants.raw_properties
+    local SIDES = constants.sides
+    local INSPECT_FUNCS = {
+        [SIDES.front] = turtle.inspect,
+        [SIDES.top] = turtle.inspectUp,
+        [SIDES.bottom] = turtle.inspectDown
+    }
+
     local constructors = {}
+    local proxies = {}
+
+    local function createWrapProxy(name, side, target)
+        local proxy = {
+            name = name,
+            side = side,
+            target = target
+        }
+
+        local metatable = {
+            __index = function(_, key)
+                if RAW_PROPERTIES[key] then
+                    return rawget(proxy, key)
+                end
+
+                return function(...)
+                    if not proxy.target then
+                        error("wrapped block is no longer accessible")
+                    end
+
+                    return proxy.target[key](...)
+                end
+            end,
+            __newindex = function(_, key, value)
+                if RAW_PROPERTIES[key] then
+                    rawset(proxy, key, value)
+                end
+            end
+        }
+
+        setmetatable(proxy, metatable)
+        return proxy
+    end
+
+    local function getWrapName(side)
+        local inspectFunc = INSPECT_FUNCS[side]
+
+        assert(inspectFunc, "it is NEVER possible to get wrap name for " .. side)
+
+        local ok, detail = inspectFunc()
+        return ok and detail.name or nil
+    end
+
+    local function wrap_0(side, name)
+        local target = peripheral.wrap(side)
+        local constructor = constructors[name]
+
+        if constructor then
+            local opts = {
+                robot = robot,
+                meta = meta,
+                constants = constants,
+                name = name,
+                side = side,
+                target = target
+            }
+
+            target = constructor(opts)
+        end
+
+        local proxy = createWrapProxy(name, side, target)
+        proxies[side] = proxy
+
+        meta.dispatchEvent("wrap", name, side)
+        return proxy
+    end
+
+    local function wrap(side, wrapAs)
+        wrapAs = wrapAs or getWrapName(side)
+
+        if not wrapAs then
+            return nil
+        end
+
+        local equipments = meta.listEquipment()
+
+        for _, equipment in pairs(equipments) do
+            local proxy = equipment.proxy
+
+            if proxy.target and proxy.side == side then
+                if not proxy.unuse() then
+                    error("could not unequip tool on " .. side)
+                end
+            end
+        end
+
+        return wrap_0(side, wrapAs)
+    end
 
     function robot.wrap(side, wrapAs)
-        -- TODO [JM] implement
+        side = side or SIDES.front
+        return wrap(side, wrapAs)
     end
 
     function robot.wrapUp(wrapAs)
-        -- TODO [JM] implement
+        return wrap(SIDES.top, wrapAs)
     end
 
     function robot.wrapDown(wrapAs)
-        -- TODO [JM] implement
+        return wrap(SIDES.bottom, wrapAs)
     end
 
-    -- NOTE [JM] moved to meta because writing custom peripherals is definitely meta
-    function meta.setConstructor(name, constructor)
+    function meta.getWrappedPeripheral(side)
+        side = side or SIDES.front
+        local proxy = proxies[side]
+
+        if proxy then
+            return {
+                side = side,
+                proxy = proxy
+            }
+        end
+    end
+
+    function meta.listWrappedPeripherals()
+        local arr = {}
+
+        for side, proxy in pairs(proxies) do
+            table.insert(arr, {
+                side = side,
+                proxy = proxy
+            })
+        end
+
+        return arr
+    end
+
+    function meta.setWrapConstructor(name, constructor)
         assert(name, "name must not be nil")
         assert(type(constructor) == "function", "constructor must be of type function")
 
@@ -22,15 +143,14 @@ return function(robot, meta)
         return true
     end
 
-    -- NOTE [JM] moved to meta because writing custom peripherals is definitely meta
-    function meta.removeConstructor(name)
+    function meta.removeWrapConstructor(name)
         assert(name, "name must not be nil")
 
         constructors[name] = nil
         return true
     end
 
-    function meta.getConstructorDetail(name)
+    function meta.getWrapConstructorDetail(name)
         assert(name, "name must not be nil")
         local constructor = constructors[name]
 
@@ -44,12 +164,12 @@ return function(robot, meta)
         return nil
     end
 
-    function meta.hasConstructor(name)
-        return meta.getConstructorDetail(name) and true or false
+    function meta.hasWrapConstructor(name)
+        assert(name, "name must not be nil")
+        return meta.getWrapConstructorDetail(name) and true or false
     end
 
-    -- NOTE [JM] moved to meta because writing custom peripherals is definitely meta
-    function meta.listConstructors()
+    function meta.listWrapConstructors()
         local arr = {}
 
         for name, constructor in pairs(constructors) do
@@ -62,21 +182,35 @@ return function(robot, meta)
         return arr
     end
 
-    -- NOTE [JM] exposed because custom peripherals that break blocks or move the turtle might need to softWrap
     function meta.softWrap(side)
-        -- TODO [JM] implement
+        assert(side, "side must not be nil")
+        local proxy = proxies[side]
+
+        if proxy and not proxy.target then
+            proxy.target = peripheral.wrap(side)
+            meta.dispatchEvent("softWrap", proxy.name, side)
+        end
+
+        return true
     end
 
-    -- NOTE [JM] exposed because custom peripherals that break blocks or move the turtle might need to softUnwrap
     function meta.softUnwrap(side)
-        -- TODO [JM] implement
+        assert(side, "side must not be nil")
+        local proxy = proxies[side]
+
+        if proxy and proxy.target then
+            proxy.target = nil
+            meta.dispatchEvent("softUnwrap", proxy.name, side)
+        end
+
+        return true
     end
 
-    meta.addConstructor("minecraft:chest", function(opts)
+    meta.setWrapConstructor("minecraft:chest", function(opts)
         -- custom chest implementation here
         -- TODO [JM] implement
     end)
-    meta.addConstructor("minecraft:me_bridge", function(opts)
+    meta.setWrapConstructor("minecraft:me_bridge", function(opts)
         -- custom me_bridge implementation here
         -- TODO [JM] implement
     end)

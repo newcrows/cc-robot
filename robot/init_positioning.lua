@@ -1,28 +1,31 @@
-return function(robot, _, constants)
+return function(robot, meta, constants)
+    local DELTAS = constants.deltas
+    local FACING_INDEX = constants.facing_index
     local FACINGS = constants.facings
+    local OPPOSITE_FACINGS = constants.opposite_facings
 
     robot.x, robot.y, robot.z = 0, 0, 0
     robot.facing = FACINGS.north
 
-    local function softWrapAll()
-        for side, _ in pairs(meta.peripheralProxies) do
-            meta.softWrap(side)
+    local function callAll(callFunc)
+        for _, wrappedPeripheral in pairs(meta.listWrappedPeripherals()) do
+            callFunc(wrappedPeripheral.side)
         end
+    end
+
+    local function softWrapAll()
+        callAll(meta.softWrap)
     end
 
     local function softUnwrapAll()
-        for side, _ in pairs(meta.peripheralProxies) do
-            meta.softUnwrap(side)
-        end
+        callAll(meta.softUnwrap)
     end
 
     local function unwrapAll()
-        for side, _ in pairs(meta.peripheralProxies) do
-            meta.unwrap(side)
-        end
+        callAll(meta.unwrap)
     end
 
-    local function move_0(moveFunc, blocking)
+    local function step(moveFunc, blocking)
         if blocking then
             while not moveFunc() do
                 sleep(1)
@@ -34,15 +37,14 @@ return function(robot, _, constants)
         return moveFunc()
     end
 
-    local function move(moveFunc, blocking)
+    local function move(moveFunc, blocking, delta)
         softUnwrapAll()
 
-        local ok, err = move_0(moveFunc, blocking)
+        local ok, err = step(moveFunc, blocking)
 
         if ok then
-            local delta = DELTAS[robot.facing]
-
             robot.x = robot.x + delta.x
+            robot.y = robot.y + delta.y
             robot.z = robot.z + delta.z
 
             unwrapAll()
@@ -54,32 +56,39 @@ return function(robot, _, constants)
     end
 
     function robot.forward(blocking)
-        return move(turtle.forward, blocking)
+        return move(turtle.forward, blocking, DELTAS[robot.facing])
     end
 
     function robot.back(blocking)
-        return move(turtle.back, blocking)
+        local oppositeFacing = OPPOSITE_FACINGS[robot.facing]
+        return move(turtle.back, blocking, DELTAS[oppositeFacing])
     end
 
     function robot.up(blocking)
-        return move(turtle.up, blocking)
+        return move(turtle.up, blocking, DELTAS.up)
     end
 
     function robot.down(blocking)
-        return move(turtle.down, blocking)
+        return move(turtle.down, blocking, DELTAS.down)
     end
 
     function robot.turnRight()
         turtle.turnRight()
-        unwrapAll()
 
+        local facingI = (FACING_INDEX[robot.facing] + 1) % 4
+        robot.facing = FACING_INDEX[facingI]
+
+        unwrapAll()
         return true
     end
 
     function robot.turnLeft()
         turtle.turnLeft()
-        unwrapAll()
 
+        local facingI = (FACING_INDEX[robot.facing] + 3) % 4
+        robot.facing = FACING_INDEX[facingI]
+
+        unwrapAll()
         return true
     end
 
