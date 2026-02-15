@@ -155,4 +155,12 @@ you need:
 - `cd <install-dir>` if not in the dir already
 - `run-test`
 
+if any `error` or `assertion failure` occurs, check your setup.
+
+if the error persists, this might mean that there is a bug in the current `robot` version.
+
+please report it in this case, so I can fix it for us!
+
+## Thank you and have fun!
+
 
