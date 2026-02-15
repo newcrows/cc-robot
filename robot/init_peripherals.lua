@@ -219,6 +219,10 @@ return function(robot, meta, constants)
         local helperChest
         local hasPickaxe = meta.hasEquipment("minecraft:diamond_pickaxe")
 
+        if not targetChest then
+            return nil
+        end
+
         local function onAnyWrap(side, name)
             if name == "minecraft:chest" and side ~= "top" then
                 robot.free("minecraft:chest", 1)
