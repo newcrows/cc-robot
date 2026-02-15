@@ -165,6 +165,7 @@ return function(robot, meta, constants)
 
     function robot.addAutoFuel(name, reserveCount)
         name = name or robot.getSelectedName()
+        reserveCount = reserveCount or 1
 
         robot.reserve(name, reserveCount)
         autoFuels[name] = (autoFuels[name] or 0) + reserveCount
@@ -174,6 +175,7 @@ return function(robot, meta, constants)
 
     function robot.removeAutoFuel(name, freeCount)
         name = name or robot.getSelectedName()
+        freeCount = freeCount or 1
 
         autoFuels[name] = (autoFuels[name] or 0) - freeCount
         robot.free(name, freeCount)
