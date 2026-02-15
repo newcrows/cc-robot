@@ -17,12 +17,8 @@ see [DOCS.md](./DOCS.md) for documentation.
 
 requires `CC:Tweaked 1.116.0` or higher.
 
-download from [pastebin](https://pastebin.com/3yTuFc8q)
-
-`pastebin get 3yTuFc8q robot.lua`
-
-or checkout this repo, it includes `test.lua` that tests the complete `robot api`
-on a live turtle.
+simply run `pastebin run 2tfVSk7r <install-dir>` ([pastebin link](https://pastebin.com/2tfVSk7r))
+or checkout this repo.
 
 get a `robot` instance using `require()`
 ```lua
