@@ -126,12 +126,6 @@ return function(robot, meta, constants)
         return ok, err
     end
 
-    function meta.autoFuel(requiredFuelLevel)
-        if turtle.getFuelLevel() < requiredFuelLevel then
-            autoFuel(requiredFuelLevel)
-        end
-    end
-
     function robot.forward(blocking)
         return move(turtle.forward, blocking, DELTAS[robot.facing])
     end
@@ -203,5 +197,11 @@ return function(robot, meta, constants)
 
     function robot.getFuelLimit()
         return turtle.getFuelLimit()
+    end
+
+    function meta.autoFuel(requiredFuelLevel)
+        if turtle.getFuelLevel() < requiredFuelLevel then
+            autoFuel(requiredFuelLevel)
+        end
     end
 end
