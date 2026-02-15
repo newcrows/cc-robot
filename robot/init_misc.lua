@@ -23,7 +23,7 @@ return function(robot, meta, constants)
                 return amount, err
             end
 
-            local itemCount = turtle.getItemCount()
+            local itemCount = robot.getItemCount(name)
             local dropCount = math.min(count - amount, itemCount)
 
             ok, err = dropFunc(dropCount)
@@ -34,7 +34,7 @@ return function(robot, meta, constants)
                 return amount, err
             end
 
-            local dropAmount = itemCount - turtle.getItemCount()
+            local dropAmount = itemCount - robot.getItemCount(name)
             amount = amount + dropAmount
         end
 
