@@ -6,7 +6,8 @@
 
 main features:
 - equip any number of tools at once (up to 18)
-- manage the inventory by item names instead of slots
+- auto-fuel your turtles, never need to track `turtle.getFuelLevel()`
+- manage the inventory by item names, never need to interact with slots
 - always know the (relative) position and facing of your turtle
 - wrap your peripherals however you like
 - pure lua, this is not a minecraft mod
@@ -43,7 +44,54 @@ sword.attack()
 
 -- yes, we have four tools equipped at once. so what?
 ```
+see [DOCS.md](./DOCS.md) for documentation.
 
+## crafting example
+```lua
+-- this snippet assumes the inventory only contains items required to craft pistons
+local robot = require("robot")
+local craftingTable = robot.equip("minecraft:crafting_table")
+
+local pistonRecipe = {
+    p = "minecraft:oak_planks",
+    c = "minecraft:cobblestone",
+    i = "minecraft:iron_ingot",
+    r = "minecraft:redstone",
+    pattern = [[
+        p p p
+        c i c
+        c r c
+    ]]
+}
+
+-- craft one piston
+craftingTable.craft(pistonRecipe, 1)
+```
+see [DOCS.md](./DOCS.md) for documentation.
+
+## auto-fuel example
+
+auto-fuel is a feature that automatically consumes fuel when needed, i.E. when moving and low on fuel.
+
+to auto-fuel, you simply need to specify which fuel(s) you want
+and how much `robot` should stockpile of that fuel.
+
+stockpiled / reserved items are never dropped or exported by `robot`.
+
+```lua
+-- snippet assumes a non-full chest in front of the turtle
+local robot = require("robot")
+local chest = robot.wrap()
+
+robot.setAutoFuel("minecraft:coal_block", 64)
+
+local function restockFuel()
+    robot.select("minecraft:coal_block")
+    chest.export(64 - robot.getReservedItemCount())
+end
+
+restockFuel()
+```
 see [DOCS.md](./DOCS.md) for documentation.
 
 ## inventory example
@@ -69,48 +117,4 @@ robot.select("minecraft:torch")
 local torchCount = robot.getItemCount()
 robot.drop(torchCount - 64)
 ```
-
-see [DOCS.md](./DOCS.md) for documentation.
-
-## crafting example
-```lua
--- this snippet assumes the inventory only contains items required to craft pistons
-local robot = require("robot")
-local craftingTable = robot.equip("minecraft:crafting_table")
-
-local pistonRecipe = {
-    p = "minecraft:oak_planks",
-    c = "minecraft:cobblestone",
-    i = "minecraft:iron_ingot",
-    r = "minecraft:redstone",
-    pattern = [[
-        p p p
-        c i c
-        c r c
-    ]]
-}
-
--- craft one piston
-craftingTable.craft(pistonRecipe, 1)
-```
-
-see [DOCS.md](./DOCS.md) for documentation.
-
-## coming soon: wrapping and reserved items
-```lua
--- snippet assumes a chest in front of the turtle and no block above the turtle
--- it also assumes the turtle has at least one additional chest in its inventory
-local robot = require("robot")
-local chest = robot.wrap()
-
-robot.reserve("minecraft:coal_block", 64)
-
-local function restockFuel()
-    robot.select("minecraft:coal_block")
-    chest.export(64 - robot.getReservedItemCount())
-end
-
-restockFuel()
-```
-
 see [DOCS.md](./DOCS.md) for documentation.
