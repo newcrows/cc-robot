@@ -352,6 +352,8 @@ return function(robot, meta, constants)
                     if amount == count or not blocking then
                         return amount
                     end
+
+                    os.sleep(1)
                 end
             end,
             -- TODO [JM] impl blocking
