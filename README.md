@@ -152,7 +152,7 @@ you need:
 - refuel the turtle, so it has more than `100` fuel, but significantly LESS than `turtle.getFuelLimit()`
 - make sure there are no obstructions inside the structure (mobs, you, blocks)
 - `pastebin run 2tfVSk7r` ([pastebin link](https://pastebin.com/2tfVSk7r)) if robot is not installed yet
-- `run-test`
+- `run_test`
 - this takes a while and the turtle does stuff.
 
 ### the output should look like this:
