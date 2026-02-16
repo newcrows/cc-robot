@@ -1,4 +1,4 @@
-local args = {...}
+local args = { ... }
 local destination = args[1]
 local config = args[3]
 
@@ -16,7 +16,8 @@ end
 
 local function replaceInstallDirPlaceholders()
     for _, file in ipairs(config.files) do
-        replaceInFile(file, "%%INSTALL_DIR%%", destination == "/" and "" or destination)
+        local absFile = destination .. "/" .. file
+        replaceInFile(absFile, "%%INSTALL_DIR%%", destination == "/" and "" or destination)
     end
 end
 
