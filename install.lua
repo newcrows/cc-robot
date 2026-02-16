@@ -20,7 +20,7 @@ local function readableSize(numBytes)
 end
 
 local function download(relPath)
-    local response = http.get(baseUrl .. "/" .. branch .. "/" .. relPath .. "?t=" .. os.epoch("utc"))
+    local response = http.get(baseUrl .. "/" .. branch .. "/" .. relPath)
     local content = response.readAll()
 
     return content
