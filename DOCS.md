@@ -39,7 +39,7 @@
 
 requires `CC:Tweaked 1.116.0` or higher.
 
-simply run `pastebin run 2tfVSk7r <install-dir>` ([pastebin link](https://pastebin.com/2tfVSk7r))
+simply run `pastebin run 2tfVSk7r` ([pastebin link](https://pastebin.com/2tfVSk7r))
 or checkout this repo.
 
 get a `robot` instance using `require()`

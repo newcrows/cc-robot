@@ -18,7 +18,7 @@ see [DOCS.md](./DOCS.md) for documentation.
 
 requires `CC:Tweaked 1.116.0` or higher.
 
-simply run `pastebin run 2tfVSk7r <install-dir>` ([pastebin link](https://pastebin.com/2tfVSk7r))
+simply run `pastebin run 2tfVSk7r` ([pastebin link](https://pastebin.com/2tfVSk7r))
 or checkout this repo.
 
 get a `robot` instance using `require()`
@@ -122,7 +122,7 @@ see [DOCS.md](./DOCS.md) for documentation.
 
 ## run_test example
 
-to make sure `robot` works as intended, you can run `run_test` from the `<install-dir>`.
+to make sure `robot` works as intended, you can run `run_test`.
 
 this requires a specific setup structure.
 
@@ -152,8 +152,7 @@ you need:
 - place the turtle somewhere within the structure
 - refuel the turtle, so it has more than `100` fuel, but significantly LESS than `turtle.getFuelLimit()`
 - make sure there are no obstructions inside the structure (mobs, you, blocks)
-- `pastebin run 2tfVSk7r <install-dir>` ([pastebin link](https://pastebin.com/2tfVSk7r)) if robot is not installed yet
-- `cd <install-dir>` if not in the dir already
+- `pastebin run 2tfVSk7r` ([pastebin link](https://pastebin.com/2tfVSk7r)) if robot is not installed yet
 - `run-test`
 - this takes a while and the turtle does stuff.
 
