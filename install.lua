@@ -1,6 +1,7 @@
-local baseUrl = "https://raw.githubusercontent.com/newcrows/cc-robot/refs/heads/main"
-local args = {...}
+local baseUrl = "https://raw.githubusercontent.com/newcrows/cc-robot/refs/heads"
+local args = { ... }
 local destination = args[1] or "."
+local branch = args[2] or "main"
 
 local function readableSize(numBytes)
     if numBytes < 1024 then
@@ -18,33 +19,65 @@ local function readableSize(numBytes)
     error("numBytes is too big")
 end
 
+local function download(relPath)
+    local response = http.get(baseUrl .. "/" .. branch .. "/" .. relPath)
+    local content = response.readAll()
+
+    return content
+end
+
 local function downloadConfig()
     print("download config..")
 
-    local response = http.get(baseUrl .. "/install.config.json")
-    local content = response.readAll()
+    local content = download("install.config.json")
+    local config = textutils.deserializeJSON(content)
 
-    return textutils.deserializeJSON(content)
+    if config.pre_install and #config.pre_install > 0 then
+        local preInstallContent = download(config.pre_install)
+        local preInstallFunc = load(preInstallContent)
+
+        if not preInstallFunc then
+            preInstallFunc = function()
+                error("load pre_install script failed")
+            end
+        end
+
+        config.pre_install = preInstallFunc
+    else
+        config.pre_install = function()  end
+    end
+
+    if config.post_install and #config.post_install > 0 then
+        local postInstallContent = download(config.post_install)
+        local postInstallFunc = load(postInstallContent)
+
+        if not postInstallFunc then
+            postInstallFunc = function()
+                error("load post_install script failed")
+            end
+        end
+
+        config.post_install = postInstallFunc
+    else
+        config.post_install = function()  end
+    end
+
+    return config
 end
 
 local function downloadFile(file)
     write(file)
 
-    local response = http.get(baseUrl .. "/" .. file)
-    local content = response.readAll()
-
+    local content = download(file)
     print(" (" .. readableSize(#content) .. ")")
 
     local localFile = fs.open(destination .. "/" .. file, "w")
-
     localFile.write(content)
     localFile.close()
 end
 
-local function downloadFiles(files)
-    print("download files..")
-
-    for _, file in pairs(files) do
+local function downloadFiles(config)
+    for _, file in pairs(config.files) do
         downloadFile(file)
     end
 end
@@ -52,6 +85,7 @@ end
 local function install()
     print("install robot..")
 
+    print("download config..")
     local ok, config = pcall(downloadConfig)
 
     if not ok then
@@ -59,10 +93,27 @@ local function install()
         return
     end
 
-    ok = pcall(downloadFiles, config.files)
+    print("run pre install script..")
+    ok = pcall(config.pre_install, destination, branch, config)
+
+    if not ok then
+        print("..run pre install script failed")
+        return
+    end
+
+    print("download files..")
+    ok = pcall(downloadFiles, config)
 
     if not ok then
         print("..download files failed")
+        return
+    end
+
+    print("run post install script..")
+    ok = pcall(config.post_install, destination, branch, config)
+
+    if not ok then
+        print("..run post install script failed")
         return
     end
 
