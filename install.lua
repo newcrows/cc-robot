@@ -4,17 +4,7 @@ local destination = args[1] or ""
 local branch = args[2] or "main"
 
 if string.sub(destination, 1, 1) ~= "/" then
-    if string.sub(destination, -1) == "/" then
-        destination = string.gsub(destination, "/$", "")
-    end
-
-    local shellDir = "/" .. shell.dir()
-
-    if shellDir == "/" then
-        shellDir = ""
-    end
-
-    destination = shellDir .. "/" .. destination
+    destination = "/" .. fs.combine(shell.dir(), destination)
 end
 
 local function readableSize(numBytes)
