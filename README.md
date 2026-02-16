@@ -125,7 +125,7 @@ see [DOCS.md](./DOCS.md) for documentation.
 
 ## run_test example
 
-to make sure `robot` works as intended, you can run `run_test`.
+to make sure `robot` works as intended, you can run `<install-dir>/example/run_test`.
 
 this requires a specific setup structure.
 
