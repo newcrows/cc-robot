@@ -223,7 +223,7 @@ return function(robot, meta)
 
             -- try to move remaining surplus to the first non-blacklisted empty slot
             -- DO NOT compact, this would ignore blacklist and could re-arrange the inventory in an unwanted way
-            local emptySlots = meta.listEmptySlots(16, true)
+            local emptySlots = meta.listEmptySlots(16)
             local emptySlot = nil
 
             for _, candidateSlot in ipairs(emptySlots) do

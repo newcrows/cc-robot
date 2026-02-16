@@ -569,6 +569,7 @@ return function(robot, meta, constants)
                 meta.arrangeSlots(function(setSlot)
                     local parsed = parse(recipe)
                     local blacklist = {}
+                    local offset = 0
 
                     for ingredientSlot, ingredientName in pairs(parsed.layout) do
                         local count = meta.countItems(ingredientName)
@@ -583,6 +584,11 @@ return function(robot, meta, constants)
                         end
 
                         local amount = math.floor(count / parsed.counts[ingredientName])
+
+                        if (count - offset) % amount > 0 then
+                            amount = amount + 1
+                            offset = offset + 1
+                        end
 
                         ok, err = setSlot(ingredientSlot, ingredientName, amount)
 
@@ -608,11 +614,6 @@ return function(robot, meta, constants)
             end
         }
     end
-
-    -- generic constructors
-    meta.setPeripheralConstructor("dig_tool", digToolConstructor)
-    meta.setPeripheralConstructor("attack_tool", attackToolConstructor)
-    meta.setPeripheralConstructor("craft_tool", craftToolConstructor)
 
     -- specific constructors
     meta.setPeripheralConstructor("minecraft:diamond_pickaxe", digToolConstructor)
