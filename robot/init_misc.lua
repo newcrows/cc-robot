@@ -2,7 +2,7 @@ return function(robot, meta, constants)
     local function place(placeFunc, name, blocking)
         if blocking then
             while not meta.selectFirstSlot(name) or not placeFunc() do
-                sleep(1)
+                os.sleep(1)
             end
 
             return true

@@ -36,6 +36,10 @@ return function(robot, meta, constants)
             local ok, err = meta.selectFirstSlot(name, false, includeReservedItems)
 
             if not ok and blocking then
+                if type(blocking) == "function" then
+                    blocking()
+                end
+
                 os.sleep(1)
             elseif not ok then
                 return amount, err
@@ -96,7 +100,11 @@ return function(robot, meta, constants)
     local function step(moveFunc, blocking)
         if blocking then
             while not moveFunc() do
-                sleep(1)
+                if type(blocking) == "function" then
+                    blocking()
+                end
+
+                os.sleep(1)
             end
 
             return true
@@ -105,43 +113,81 @@ return function(robot, meta, constants)
         return moveFunc()
     end
 
-    local function move(moveFunc, blocking, delta)
-        softUnwrapAll()
+    local function move(moveFunc, count, blocking, delta)
+        local amount = 0
+        local didUnwrap = false
 
-        if turtle.getFuelLevel() < AUTO_FUEL_LOW_THRESHOLD then
-            meta.autoFuel(AUTO_FUEL_HIGH_THRESHOLD)
+        while amount < count do
+            if amount == 0 then
+                softUnwrapAll()
+            end
+
+            if turtle.getFuelLevel() < AUTO_FUEL_LOW_THRESHOLD then
+                meta.autoFuel(AUTO_FUEL_HIGH_THRESHOLD)
+            end
+
+            local ok, err = step(moveFunc, blocking)
+
+            if ok then
+                robot.x = robot.x + delta.x
+                robot.y = robot.y + delta.y
+                robot.z = robot.z + delta.z
+
+                if not didUnwrap then
+                    unwrapAll()
+                    didUnwrap = true
+                end
+
+                amount = amount + 1
+            else
+                if amount == 0 then
+                    softWrapAll()
+                end
+
+                if not blocking then
+                    return amount, err
+                end
+            end
         end
 
-        local ok, err = step(moveFunc, blocking)
+        return amount
+    end
 
-        if ok then
-            robot.x = robot.x + delta.x
-            robot.y = robot.y + delta.y
-            robot.z = robot.z + delta.z
-
-            unwrapAll()
-        else
-            softWrapAll()
+    function robot.forward(count, blocking)
+        if type(count) == "boolean" or type(count) == "function" then
+            blocking = count
+            count = 1
         end
 
-        return ok, err
+        return move(turtle.forward, count, blocking, DELTAS[robot.facing])
     end
 
-    function robot.forward(blocking)
-        return move(turtle.forward, blocking, DELTAS[robot.facing])
-    end
+    function robot.back(count, blocking)
+        if type(count) == "boolean" or type(count) == "function" then
+            blocking = count
+            count = 1
+        end
 
-    function robot.back(blocking)
         local oppositeFacing = OPPOSITE_FACINGS[robot.facing]
-        return move(turtle.back, blocking, DELTAS[oppositeFacing])
+        return move(turtle.back, count, blocking, DELTAS[oppositeFacing])
     end
 
-    function robot.up(blocking)
-        return move(turtle.up, blocking, DELTAS.up)
+    function robot.up(count, blocking)
+        if type(count) == "boolean" or type(count) == "function" then
+            blocking = count
+            count = 1
+        end
+
+        return move(turtle.up, count, blocking, DELTAS.up)
     end
 
-    function robot.down(blocking)
-        return move(turtle.down, blocking, DELTAS.down)
+    function robot.down(count, blocking)
+        if type(count) == "boolean" or type(count) == "function" then
+            blocking = count
+            count = 1
+        end
+
+        return move(turtle.down, count, blocking, DELTAS.down)
     end
 
     function robot.turnRight()
@@ -161,6 +207,66 @@ return function(robot, meta, constants)
         robot.facing = FACING_INDEX[facingI]
 
         unwrapAll()
+        return true
+    end
+
+    function robot.move(dx, dy, dz, blocking)
+        local t = {
+            { is = "x", num = dx },
+            { is = "y", num = dy },
+            { is = "z", num = dz }
+        }
+
+        table.sort(t, function(a, b)
+            return math.abs(a.num) < math.abs(b.num)
+        end)
+
+        for _, entry in ipairs(t) do
+            local func = robot.forward
+
+            if entry.is == "x" then
+                local facing = entry.num >= 0 and FACINGS.east or FACINGS.west
+                robot.face(facing)
+            elseif entry.is == "y" then
+                func = entry.num >= 0 and robot.up or robot.down
+            elseif entry.is == "z" then
+                local facing = entry.num < 0 and FACINGS.north or FACINGS.south
+                robot.face(facing)
+            end
+
+            local ok = func(math.abs(entry.num), blocking)
+
+            if not ok and not blocking then
+                return false
+            end
+        end
+
+        return true
+    end
+
+    function robot.face(facing)
+        facing = facing or robot.facing
+
+        if not FACINGS[facing] then
+            error("invalid facing " .. facing)
+        end
+
+        local currentI = FACING_INDEX[robot.facing]
+        local rightFacing = FACING_INDEX[(currentI + 1) % 4]
+        local leftFacing = FACING_INDEX[(currentI - 1) % 4]
+
+        if facing == robot.facing then
+            return true
+        elseif facing == rightFacing then
+            robot.turnRight()
+            return true
+        elseif facing == leftFacing then
+            robot.turnLeft()
+        else
+            robot.turnRight()
+            robot.turnRight()
+        end
+
         return true
     end
 
@@ -210,6 +316,19 @@ return function(robot, meta, constants)
     end
 
     function robot.refuel(name, count, blocking)
+        if type(name) == "boolean" or type(name) == "function" then
+            blocking = name
+            count = nil
+            name = nil
+        elseif type(name) == "number" then
+            blocking = count
+            count = name
+            name = nil
+        elseif type(name) == "string" and type("count") == "boolean" then
+            blocking = count
+            count = nil
+        end
+
         return refuel(name, count, blocking)
     end
 

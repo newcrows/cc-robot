@@ -375,7 +375,7 @@ return function(robot, meta, constants)
         local function dig_0(digFunc, blocking)
             if blocking then
                 while not digFunc() do
-                    sleep(1)
+                    os.sleep(1)
                 end
 
                 return true
@@ -415,7 +415,7 @@ return function(robot, meta, constants)
         local function attack_0(attackFunc, blocking)
             if blocking then
                 while not attackFunc() do
-                    sleep(1)
+                    os.sleep(1)
                 end
 
                 return true
