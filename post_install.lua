@@ -22,7 +22,7 @@ local function replaceInstallDirPlaceholders()
 end
 
 local function printWhatNext()
-    local exampleDir = (destination == "/" and "" or destination) .. "/example"
+    local exampleDir = (destination == "/" and "" or destination) .. "/examples"
 
     print("---- WHAT NEXT? ----")
     print("check out the examples in:")
