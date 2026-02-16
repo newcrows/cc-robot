@@ -44,7 +44,7 @@ or checkout this repo.
 
 get a `robot` instance using `require()`
 ```lua
-local robot = require("robot")
+local robot = require("/robot")
 ```
 
 ## important differences to vanilla turtles

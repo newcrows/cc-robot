@@ -23,14 +23,14 @@ or checkout this repo.
 
 get a `robot` instance using `require()`
 ```lua
-local robot = require("robot")
+local robot = require("/robot")
 ```
 
 ## multiple tools example
 ```lua
 -- this snippet assumes you have a pickaxe, an axe, a shovel
 -- and a sword somewhere in the turtle's inventory
-local robot = require("robot")
+local robot = require("/robot")
 
 local pickaxe = robot.equip("minecraft:diamond_pickaxe")
 local axe = robot.equip("minecraft:diamond_axe")
@@ -49,7 +49,7 @@ see [DOCS.md](./DOCS.md) for documentation.
 ## crafting example
 ```lua
 -- this snippet assumes the inventory only contains items required to craft pistons
-local robot = require("robot")
+local robot = require("/robot")
 local craftingTable = robot.equip("minecraft:crafting_table")
 
 local pistonRecipe = {
@@ -80,7 +80,7 @@ stockpiled / reserved items are never dropped or exported by `robot`.
 
 ```lua
 -- snippet assumes a non-full chest in front of the turtle
-local robot = require("robot")
+local robot = require("/robot")
 local chest = robot.wrap()
 
 robot.setAutoFuel("minecraft:coal_block", 64)
@@ -97,7 +97,7 @@ see [DOCS.md](./DOCS.md) for documentation.
 ## inventory example
 ```lua
 -- this snippet assumes a chest (or items floating in the world) in front of the turtle
-local robot = require("robot")
+local robot = require("/robot")
 
 -- suck as much as we can from the chest into the turtle
 robot.suck()
@@ -118,7 +118,6 @@ local torchCount = robot.getItemCount()
 robot.drop(torchCount - 64)
 ```
 see [DOCS.md](./DOCS.md) for documentation.
-
 
 ## run_test example
 
