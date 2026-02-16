@@ -39,7 +39,7 @@
 
 requires `CC:Tweaked 1.116.0` or higher.
 
-run the installer `pastebin run 2tfVSk7r` ([pastebin link](https://pastebin.com/2tfVSk7r)).
+run the installer `pastebin run tfVJuZaE` ([pastebin link](https://pastebin.com/tfVJuZaE)).
 
 get a `robot` instance using `require()`.
 ```lua

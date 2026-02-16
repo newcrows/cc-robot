@@ -18,7 +18,9 @@ see [DOCS.md](./DOCS.md) for documentation.
 
 requires `CC:Tweaked 1.116.0` or higher.
 
-run the installer `pastebin run 2tfVSk7r` ([pastebin link](https://pastebin.com/2tfVSk7r)).
+run the installer `pastebin run tfVJuZaE <install-dir> <branch>` ([pastebin link](https://pastebin.com/tfVJuZaE)).
+
+both `<install-dir>` and `<branch>` are optional.
 
 get a `robot` instance using `require()`.
 ```lua
