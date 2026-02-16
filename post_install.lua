@@ -24,10 +24,12 @@ end
 local function printWhatNext()
     local exampleDir = (destination == "/" and "" or destination) .. "/example"
 
+    print("---- WHAT NEXT? ----")
     print("check out the examples in:")
     print(exampleDir)
-
+    print()
     print("happy coding!")
+    print("--------------------")
 end
 
 replaceInstallDirPlaceholders()
