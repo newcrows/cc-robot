@@ -1,2 +1,2 @@
-local test = require("./test")
+local test = require("%INSTALL_DIR%/test")
 test()

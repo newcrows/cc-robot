@@ -1,6 +1,6 @@
 local baseUrl = "https://raw.githubusercontent.com/newcrows/cc-robot/refs/heads"
 local args = { ... }
-local destination = args[1] or "."
+local destination = args[1] or "/"
 local branch = args[2] or "main"
 
 local function readableSize(numBytes)

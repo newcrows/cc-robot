@@ -1,4 +1,4 @@
-local robot = require("robot")
+local robot = require("%INSTALL_DIR%/robot")
 local files = fs.list(...)
 local tests = {}
 local dots = {...}

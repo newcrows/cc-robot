@@ -16,7 +16,7 @@ end
 
 local function replaceInstallDirPlaceholders()
     for _, file in ipairs(config.files) do
-        replaceInFile(file, "%%INSTALL_DIR%%", destination)
+        replaceInFile(file, "%%INSTALL_DIR%%", destination == "/" and "" or destination)
     end
 end
 
