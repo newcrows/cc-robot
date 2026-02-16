@@ -18,10 +18,9 @@ see [DOCS.md](./DOCS.md) for documentation.
 
 requires `CC:Tweaked 1.116.0` or higher.
 
-simply run `pastebin run 2tfVSk7r` ([pastebin link](https://pastebin.com/2tfVSk7r))
-or checkout this repo.
+run the installer `pastebin run 2tfVSk7r` ([pastebin link](https://pastebin.com/2tfVSk7r)).
 
-get a `robot` instance using `require()`
+get a `robot` instance using `require()`.
 ```lua
 local robot = require("/robot")
 ```

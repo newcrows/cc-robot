@@ -1,0 +1,21 @@
+{
+  "pre_install": "",
+  "post_install": "post_install.lua",
+  "files": [
+    "example/run_test.lua",
+    "robot/init.lua",
+    "robot/init_equipment.lua",
+    "robot/init_events.lua",
+    "robot/init_inventory.lua",
+    "robot/init_misc.lua",
+    "robot/init_peripherals.lua",
+    "robot/init_positioning.lua",
+    "test/init.lua",
+    "test/test_equipment.lua",
+    "test/test_events.lua",
+    "test/test_inventory.lua",
+    "test/test_misc.lua",
+    "test/test_peripherals.lua",
+    "test/test_positioning.lua"
+  ]
+}

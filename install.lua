@@ -1,24 +1,11 @@
-local baseUrl = "https://raw.githubusercontent.com/newcrows/cc-robot/refs/heads/main"
-local files = {
-    "robot/init.lua",
-    "robot/init_equipment.lua",
-    "robot/init_events.lua",
-    "robot/init_inventory.lua",
-    "robot/init_misc.lua",
-    "robot/init_peripherals.lua",
-    "robot/init_positioning.lua",
-    "test/init.lua",
-    "test/test_equipment.lua",
-    "test/test_events.lua",
-    "test/test_inventory.lua",
-    "test/test_misc.lua",
-    "test/test_peripherals.lua",
-    "test/test_positioning.lua",
-    --"run_test.lua" write manually depending on download dir
-}
+local baseUrl = "https://raw.githubusercontent.com/newcrows/cc-robot/refs/heads"
+local args = { ... }
+local destination = args[1] or ""
+local branch = args[2] or "main"
 
-local args = {...}
-local destination = args[1] or "."
+if string.sub(destination, 1, 1) ~= "/" then
+    destination = "/" .. fs.combine(shell.dir(), destination)
+end
 
 local function readableSize(numBytes)
     if numBytes < 1024 then
@@ -36,53 +23,105 @@ local function readableSize(numBytes)
     error("numBytes is too big")
 end
 
+local function download(relPath)
+    local response = http.get(baseUrl .. "/" .. branch .. "/" .. relPath)
+    local content = response.readAll()
+
+    return content
+end
+
+local function downloadConfig()
+    local content = download("install.config.json")
+    local config = textutils.unserializeJSON(content)
+
+    if config.pre_install and #config.pre_install > 0 then
+        local preInstallContent = download(config.pre_install)
+        local preInstallFunc = load(preInstallContent)
+
+        if not preInstallFunc then
+            preInstallFunc = function()
+                error("load pre_install script failed")
+            end
+        end
+
+        config.pre_install = preInstallFunc
+    else
+        config.pre_install = function()
+        end
+    end
+
+    if config.post_install and #config.post_install > 0 then
+        local postInstallContent = download(config.post_install)
+        local postInstallFunc = load(postInstallContent)
+
+        if not postInstallFunc then
+            postInstallFunc = function()
+                error("load post_install script failed")
+            end
+        end
+
+        config.post_install = postInstallFunc
+    else
+        config.post_install = function()
+        end
+    end
+
+    return config
+end
+
 local function downloadFile(file)
     write(file)
 
-    local response = http.get(baseUrl .. "/" .. file)
-    local content = response.readAll()
-
+    local content = download(file)
     print(" (" .. readableSize(#content) .. ")")
 
     local localFile = fs.open(destination .. "/" .. file, "w")
-
     localFile.write(content)
     localFile.close()
 end
 
-local function downloadFiles()
-    print("downloading files..")
-    for _, file in pairs(files) do
+local function downloadFiles(config)
+    for _, file in pairs(config.files) do
         downloadFile(file)
     end
 end
 
-local function createRunTestFile()
-    print("creating " .. destination .. "/run_test.lua..")
+local function install()
+    print("install robot..")
 
-    local rtFile = fs.open(destination .. "/run_test.lua", "w")
-    rtFile.write("local test = require(\"" .. destination .. "/test\")\r\ntest()\r\n")
-    rtFile.close()
-end
-
-local function installRobot()
-    print("installing robot..")
-
-    local ok = pcall(downloadFiles)
+    print("download config..")
+    local ok, config = pcall(downloadConfig)
 
     if not ok then
-        print("..install failed")
+        print("..download config failed")
         return
     end
 
-    ok = pcall(createRunTestFile)
+    print("run pre install script..")
+    ok = pcall(config.pre_install, destination, branch, config)
 
     if not ok then
-        print("..install failed")
+        print("..run pre install script failed")
+        return
+    end
+
+    print("download files..")
+    ok = pcall(downloadFiles, config)
+
+    if not ok then
+        print("..download files failed")
+        return
+    end
+
+    print("run post install script..")
+    ok = pcall(config.post_install, destination, branch, config)
+
+    if not ok then
+        print("..run post install script failed")
         return
     end
 
     print("..install ok")
 end
 
-installRobot()
+install()
