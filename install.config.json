@@ -2,6 +2,10 @@
   "pre_install": "",
   "post_install": "post_install.lua",
   "files": [
+    "example/auto_fuel.lua",
+    "example/crafting.lua",
+    "example/inventory.lua",
+    "example/multiple_tools.lua",
     "example/run_test.lua",
     "robot/init.lua",
     "robot/init_equipment.lua",
