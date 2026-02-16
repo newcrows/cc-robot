@@ -27,10 +27,8 @@ local function download(relPath)
 end
 
 local function downloadConfig()
-    print("download config..")
-
     local content = download("install.config.json")
-    local config = textutils.deserializeJSON(content)
+    local config = textutils.unserializeJSON(content)
 
     if config.pre_install and #config.pre_install > 0 then
         local preInstallContent = download(config.pre_install)

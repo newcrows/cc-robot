@@ -1,6 +1,6 @@
 {
-  "pre_install": "pre_install.lua",
-  "post_install": "post_install.lua",
+  "pre_install": "",
+  "post_install": "",
   "files": [
     "example/run_test.lua",
     "robot/init.lua",
