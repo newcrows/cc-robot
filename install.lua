@@ -1,7 +1,21 @@
 local baseUrl = "https://raw.githubusercontent.com/newcrows/cc-robot/refs/heads"
 local args = { ... }
-local destination = args[1] or "/"
+local destination = args[1] or ""
 local branch = args[2] or "main"
+
+-- if it is a relative path, convert to absloute path
+if string.sub(destination, 1, 1) ~= "/" then
+    -- remove any trailing slash
+    if string.sub(destination, -1) == "/" then
+        destination = string.gsub(destination, "/$", "")
+    end
+
+    -- convert to absolute path
+    destination = "/" .. shell.dir() .. "/" .. destination
+end
+
+print(destination)
+error("done")
 
 local function readableSize(numBytes)
     if numBytes < 1024 then
@@ -42,7 +56,8 @@ local function downloadConfig()
 
         config.pre_install = preInstallFunc
     else
-        config.pre_install = function()  end
+        config.pre_install = function()
+        end
     end
 
     if config.post_install and #config.post_install > 0 then
@@ -57,7 +72,8 @@ local function downloadConfig()
 
         config.post_install = postInstallFunc
     else
-        config.post_install = function()  end
+        config.post_install = function()
+        end
     end
 
     return config
