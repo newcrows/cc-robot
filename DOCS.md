@@ -43,7 +43,7 @@ run the installer `pastebin run 2tfVSk7r` ([pastebin link](https://pastebin.com/
 
 get a `robot` instance using `require()`.
 ```lua
-local robot = require("/robot")
+local robot = require("robot")
 ```
 
 ## important differences to vanilla turtles
