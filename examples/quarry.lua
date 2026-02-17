@@ -26,11 +26,11 @@ end
 local function handleFuelWarning(level, requiredLevel, autoFuels, recurrent)
     if not recurrent then
         moveToStartPosition()
-    end
 
-    print("low on fuel, waiting for refuel!")
-    print("level = " .. level .. ", requiredLevel = " .. requiredLevel)
-    print("autoFuels = " .. textutils.serialize(autoFuels))
+        print("[" .. os.date("%Y-%m-%d %H:%M:%S") .. "] fuel warning!")
+        print("level = " .. level .. ", requiredLevel = " .. requiredLevel)
+        print("autoFuels = " .. textutils.serialize(autoFuels))
+    end
 end
 
 local function handleFuelWarningCleared()
