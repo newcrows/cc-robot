@@ -26,16 +26,17 @@ end
 local function handleFuelWarning(level, requiredLevel, autoFuels, recurrent)
     if not recurrent then
         moveToStartPosition()
-
-        print("[" .. os.date("%Y-%m-%d %H:%M:%S") .. "] fuel warning!")
-        print("level = " .. level .. ", requiredLevel = " .. requiredLevel)
-        print("autoFuels = " .. textutils.serialize(autoFuels))
     end
+
+    print("[" .. os.date("%Y-%m-%d %H:%M:%S") .. "] fuel warning!")
+    print("level = " .. level .. ", requiredLevel = " .. requiredLevel)
 end
 
 local function handleFuelWarningCleared()
+    print("[" .. os.date("%Y-%m-%d %H:%M:%S") .. "] fuel warning cleared!")
+
     robot.face(FACINGS.east)
-    robot.move(lastX, lastY, -robot.z, function(delta)
+    robot.move(-lastX, lastY, -robot.z, function(delta)
         if delta.y > 0 then
             pickaxe.digUp()
         elseif delta.y < 0 then
