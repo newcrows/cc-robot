@@ -127,7 +127,7 @@ return function(robot, meta, constants)
 
             while not moveFunc() do
                 if type(blocking) == "function" then
-                    blocking(delta)
+                    blocking(delta.x, delta.y, delta.z)
                 end
 
                 if firstTry then

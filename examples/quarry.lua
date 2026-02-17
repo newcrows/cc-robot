@@ -12,10 +12,10 @@ local function moveToStartPosition()
     lastFacing = robot.facing
 
     robot.face(FACINGS.west)
-    robot.move(robot.x, -robot.y, robot.z, function(delta)
-        if delta.y > 0 then
+    robot.move(robot.x, -robot.y, robot.z, function(_, dy, _)
+        if dy > 0 then
             pickaxe.digUp()
-        elseif delta.y < 0 then
+        elseif dy < 0 then
             pickaxe.digDown()
         else
             pickaxe.dig()
