@@ -1,13 +1,12 @@
 return function(robot, meta, constants)
     local DELTAS = constants.deltas
-    local FACING_INDEX = constants.facing_index
     local FACINGS = constants.facings
     local OPPOSITE_FACINGS = constants.opposite_facings
 
     robot.x, robot.y, robot.z = 0, 0, 0
     robot.facing = FACINGS.north
 
-    local function move(moveFunc, delta, count, blocking)
+    local function moveHelper(moveFunc, delta, count, blocking)
         if type(count) == "function" or type(count) == "boolean" then
             blocking = count
             count = 1
@@ -44,7 +43,7 @@ return function(robot, meta, constants)
         return moved, nil
     end
 
-    local function turn(turnFunc, direction, count)
+    local function turnHelper(turnFunc, direction, count)
         count = count or 1
 
         for i = 1, count do
@@ -56,28 +55,28 @@ return function(robot, meta, constants)
     end
 
     function robot.forward(count, blocking)
-        return move(turtle.forward, DELTAS[robot.facing], count, blocking)
+        return moveHelper(turtle.forward, DELTAS[robot.facing], count, blocking)
     end
 
     function robot.back(count, blocking)
         local opposite = OPPOSITE_FACINGS[robot.facing]
-        return move(turtle.back, DELTAS[opposite], count, blocking)
+        return moveHelper(turtle.back, DELTAS[opposite], count, blocking)
     end
 
     function robot.up(count, blocking)
-        return move(turtle.up, DELTAS.up, count, blocking)
+        return moveHelper(turtle.up, DELTAS.up, count, blocking)
     end
 
     function robot.down(count, blocking)
-        return move(turtle.down, DELTAS.down, count, blocking)
+        return moveHelper(turtle.down, DELTAS.down, count, blocking)
     end
 
     function robot.turnRight(count)
-        return turn(turtle.turnRight, 1, count)
+        return turnHelper(turtle.turnRight, 1, count)
     end
 
     function robot.turnLeft(count)
-        return turn(turtle.turnLeft, -1, count)
+        return turnHelper(turtle.turnLeft, -1, count)
     end
 
     function robot.move(dfb, dud, drl, blocking)
@@ -130,6 +129,61 @@ return function(robot, meta, constants)
         local m_drl = drl > 0 and forward(drl, drlBlocking) or -forward(-drl, drlBlocking)
 
         return m_dfb, m_dud, m_drl
+    end
+
+    function robot.goTo(x, y, z, blocking)
+        local dx = (x or robot.x) - robot.x
+        local dy = (y or robot.y) - robot.y
+        local dz = (z or robot.z) - robot.z
+
+        local function wrap()
+            if type(blocking) ~= "function" then
+                return blocking
+            end
+
+            return function(dfb, dud)
+                if dud ~= 0 then
+                    return blocking(0, dud > 0 and 1 or -1, 0)
+                end
+
+                if dfb > 0 then
+                    local d = constants.deltas[robot.facing]
+                    return blocking(d.x, 0, d.z)
+                end
+            end
+        end
+
+        local moveBlocking = wrap()
+        local forward = robot.forward
+        local move = robot.move
+        local face = robot.face
+
+        if dx ~= 0 then
+            face(dx > 0 and FACINGS.east or FACINGS.west)
+
+            local moved = forward(math.abs(dx), moveBlocking)
+            if moved ~= math.abs(dx) then
+                return robot.x, robot.y, robot.z
+            end
+        end
+
+        if dy ~= 0 then
+            local _, m_dud = move(0, dy, 0, moveBlocking)
+            if m_dud ~= dy then
+                return robot.x, robot.y, robot.z
+            end
+        end
+
+        if dz ~= 0 then
+            face(dz > 0 and FACINGS.south or FACINGS.north)
+
+            local moved = forward(math.abs(dz), moveBlocking)
+            if moved ~= math.abs(dz) then
+                return robot.x, robot.y, robot.z
+            end
+        end
+
+        return robot.x, robot.y, robot.z
     end
 
     function robot.face(targetFacing)
