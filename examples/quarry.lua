@@ -36,7 +36,7 @@ local function handleFuelWarningCleared()
     print("[" .. os.date("%Y-%m-%d %H:%M:%S") .. "] fuel warning cleared!")
 
     robot.face(FACINGS.east)
-    robot.move(-lastX, lastY, -robot.z, function(delta)
+    robot.move(lastX, lastY, -robot.z, function(delta)
         if delta.y > 0 then
             pickaxe.digUp()
         elseif delta.y < 0 then
@@ -45,6 +45,8 @@ local function handleFuelWarningCleared()
             pickaxe.dig()
         end
     end)
+
+    robot.face(lastFacing)
 end
 
 local function digLine(length)
