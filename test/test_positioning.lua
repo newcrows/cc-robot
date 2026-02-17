@@ -93,7 +93,7 @@ return function(robot, utility)
         local stickCount
 
         robot.setAutoFuel("minecraft:stick", 4)
-        robot.onAutoFuelWarning(function(_level, _requiredLevel, autoFuels)
+        robot.onFuelWarning(function(_level, _requiredLevel, autoFuels)
             assert(_level == level)
             assert(_requiredLevel == requiredLevel)
             assert(autoFuels["minecraft:stick"] and autoFuels["minecraft:stick"] == 4)

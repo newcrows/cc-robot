@@ -372,22 +372,40 @@ return function(robot, meta, constants)
     end
 
     local digToolConstructor = function()
-        local function dig_0(digFunc, blocking)
+        local function dig_0(digFunc, inspectFunc, ignore, blocking)
             if blocking then
-                while not digFunc() do
+                while true do
+                    if ignore then
+                        local _, detail = inspectFunc()
+
+                        if detail and not ignore[detail.name] then
+                            if digFunc() then
+                                return true
+                            end
+                        end
+                    elseif digFunc() then
+                        return true
+                    end
+
                     os.sleep(1)
                 end
+            end
 
-                return true
+            if ignore then
+                local _, detail = inspectFunc()
+
+                if detail and ignore[detail.name] then
+                    return false, "ignored block"
+                end
             end
 
             return digFunc()
         end
 
-        local function dig(digFunc, blocking, side)
+        local function dig(digFunc, inspectFunc, ignore, blocking, side)
             meta.softUnwrap(side)
 
-            local ok, err = dig_0(digFunc, blocking)
+            local ok, err = dig_0(digFunc, inspectFunc, ignore, blocking)
 
             if ok then
                 meta.unwrap(side)
@@ -399,14 +417,29 @@ return function(robot, meta, constants)
         end
 
         return {
-            dig = function(blocking)
-                return dig(turtle.dig, blocking, SIDES.front)
+            dig = function(ignore, blocking)
+                if type(ignore) == "boolean" or type(ignore) == "function" then
+                    blocking = ignore
+                    ignore = nil
+                end
+
+                return dig(turtle.dig, turtle.inspect, ignore, blocking, SIDES.front)
             end,
-            digUp = function(blocking)
-                return dig(turtle.digUp, blocking, SIDES.top)
+            digUp = function(ignore, blocking)
+                if type(ignore) == "boolean" or type(ignore) == "function" then
+                    blocking = ignore
+                    ignore = nil
+                end
+
+                return dig(turtle.digUp, turtle.inspectUp, ignore, blocking, SIDES.top)
             end,
-            digDown = function(blocking)
-                return dig(turtle.digDown, blocking, SIDES.bottom)
+            digDown = function(ignore, blocking)
+                if type(ignore) == "boolean" or type(ignore) == "function" then
+                    blocking = ignore
+                    ignore = nil
+                end
+
+                return dig(turtle.digDown, turtle.inspectDown, ignore, blocking, SIDES.bottom)
             end
         }
     end

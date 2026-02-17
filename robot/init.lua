@@ -8,7 +8,7 @@ local initMisc = require((...) .. "/init_misc")
 local robot = {}
 local meta = {}
 local constants = {
-    auto_fuel_low_threshold = turtle.getFuelLimit() / 20,
+    auto_fuel_low_threshold = turtle.getFuelLimit() / 10 * 2,
     auto_fuel_high_threshold = turtle.getFuelLimit() / 10 * 8,
     deltas = {
         north = { x = 0, y = 0, z = -1 },

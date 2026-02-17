@@ -6,7 +6,8 @@ return function(robot, meta, constants)
     local AUTO_FUEL_LOW_THRESHOLD = constants.auto_fuel_low_threshold
     local AUTO_FUEL_HIGH_THRESHOLD = constants.auto_fuel_high_threshold
     local autoFuels = {}
-    local autoFuelWarningListenerId
+    local fuelWarningListenerId
+    local fuelWarningClearedListenerId
 
     robot.x, robot.y, robot.z = 0, 0, 0
     robot.facing = FACINGS.north
@@ -46,9 +47,9 @@ return function(robot, meta, constants)
             end
 
             local itemCount = turtle.getItemCount()
-            local dropCount = math.min(count - amount, itemCount)
+            local refuelCount = math.min(count - amount, itemCount)
 
-            ok, err = turtle.refuel(dropCount)
+            ok, err = turtle.refuel(refuelCount)
 
             if not ok and blocking then
                 os.sleep(1)
@@ -77,7 +78,7 @@ return function(robot, meta, constants)
 
                 if turtle.getFuelLevel() >= requiredFuelLevel then
                     if warningDispatched then
-                        meta.dispatchEvent("auto_fuel_warning_cleared")
+                        meta.dispatchEvent("fuel_warning_cleared")
                     end
 
                     return
@@ -85,26 +86,55 @@ return function(robot, meta, constants)
             end
 
             if not anyAutoFuelSeen then
-                return
-            else
-                if not warningDispatched then
-                    meta.dispatchEvent("auto_fuel_warning", turtle.getFuelLevel(), requiredFuelLevel, autoFuels)
+                while turtle.getFuelLevel() < requiredFuelLevel do
+                    meta.dispatchEvent(
+                            "fuel_warning",
+                            turtle.getFuelLevel(),
+                            requiredFuelLevel,
+                            autoFuels,
+                            warningDispatched --recurrent and not cleared since
+                    )
+
+                    if warningDispatched then
+                        os.sleep(1)
+                    end
+
                     warningDispatched = true
                 end
 
-                os.sleep(1)
+                return
+            else
+                meta.dispatchEvent(
+                        "fuel_warning",
+                        turtle.getFuelLevel(),
+                        requiredFuelLevel,
+                        autoFuels,
+                        warningDispatched --recurrent and not cleared since
+                )
+
+                if warningDispatched then
+                    os.sleep(1)
+                end
+
+                warningDispatched = true
             end
         end
     end
 
-    local function step(moveFunc, blocking)
+    local function step(moveFunc, blocking, delta)
         if blocking then
+            local firstTry = true
+
             while not moveFunc() do
                 if type(blocking) == "function" then
-                    blocking()
+                    blocking(delta)
                 end
 
-                os.sleep(1)
+                if firstTry then
+                    firstTry = false
+                else
+                    os.sleep(1)
+                end
             end
 
             return true
@@ -126,7 +156,7 @@ return function(robot, meta, constants)
                 meta.autoFuel(AUTO_FUEL_HIGH_THRESHOLD)
             end
 
-            local ok, err = step(moveFunc, blocking)
+            local ok, err = step(moveFunc, blocking, delta)
 
             if ok then
                 robot.x = robot.x + delta.x
@@ -159,6 +189,7 @@ return function(robot, meta, constants)
             count = 1
         end
 
+        count = count or 1
         return move(turtle.forward, count, blocking, DELTAS[robot.facing])
     end
 
@@ -167,6 +198,8 @@ return function(robot, meta, constants)
             blocking = count
             count = 1
         end
+
+        count = count or 1
 
         local oppositeFacing = OPPOSITE_FACINGS[robot.facing]
         return move(turtle.back, count, blocking, DELTAS[oppositeFacing])
@@ -178,6 +211,7 @@ return function(robot, meta, constants)
             count = 1
         end
 
+        count = count or 1
         return move(turtle.up, count, blocking, DELTAS.up)
     end
 
@@ -187,61 +221,82 @@ return function(robot, meta, constants)
             count = 1
         end
 
+        count = count or 1
         return move(turtle.down, count, blocking, DELTAS.down)
     end
 
-    function robot.turnRight()
-        turtle.turnRight()
+    function robot.turnRight(count)
+        count = count or 1
 
-        local facingI = (FACING_INDEX[robot.facing] + 1) % 4
-        robot.facing = FACING_INDEX[facingI]
+        while count > 0 do
+            turtle.turnRight()
+            local facingI = (FACING_INDEX[robot.facing] + 1) % 4
 
-        unwrapAll()
-        return true
-    end
-
-    function robot.turnLeft()
-        turtle.turnLeft()
-
-        local facingI = (FACING_INDEX[robot.facing] + 3) % 4
-        robot.facing = FACING_INDEX[facingI]
-
-        unwrapAll()
-        return true
-    end
-
-    function robot.move(dx, dy, dz, blocking)
-        local t = {
-            { is = "x", num = dx },
-            { is = "y", num = dy },
-            { is = "z", num = dz }
-        }
-
-        table.sort(t, function(a, b)
-            return math.abs(a.num) < math.abs(b.num)
-        end)
-
-        for _, entry in ipairs(t) do
-            local func = robot.forward
-
-            if entry.is == "x" then
-                local facing = entry.num >= 0 and FACINGS.east or FACINGS.west
-                robot.face(facing)
-            elseif entry.is == "y" then
-                func = entry.num >= 0 and robot.up or robot.down
-            elseif entry.is == "z" then
-                local facing = entry.num < 0 and FACINGS.north or FACINGS.south
-                robot.face(facing)
-            end
-
-            local ok = func(math.abs(entry.num), blocking)
-
-            if not ok and not blocking then
-                return false
-            end
+            robot.facing = FACING_INDEX[facingI]
+            count = count - 1
         end
 
+        unwrapAll()
         return true
+    end
+
+    function robot.turnLeft(count)
+        count = count or 1
+
+        while count > 0 do
+            turtle.turnLeft()
+            local facingI = (FACING_INDEX[robot.facing] + 3) % 4
+
+            robot.facing = FACING_INDEX[facingI]
+            count = count - 1
+        end
+
+        unwrapAll()
+        return true
+    end
+
+    function robot.move(dfb, dud, drl, blocking)
+        local fbAmount = 0
+        local dudAmount = 0
+        local drlAmount = 0
+        local err
+
+        if dfb > 0 then
+            fbAmount, err = robot.forward(dfb, blocking)
+        elseif dfb < 0 then
+            fbAmount, err = robot.back(-dfb, blocking)
+            fbAmount = -fbAmount
+        end
+
+        if fbAmount ~= dfb then
+            return fbAmount, dudAmount, drlAmount, err
+        end
+
+        if dud > 0 then
+            dudAmount, err = robot.up(dud, blocking)
+        elseif dud < 0 then
+            dudAmount, err = robot.down(-dud, blocking)
+            dudAmount = -dudAmount
+        end
+
+        if dudAmount ~= dud then
+            return fbAmount, dudAmount, drlAmount, err
+        end
+
+        if drl > 0 then
+            robot.turnRight()
+            drlAmount, err = robot.forward(drl, blocking)
+        elseif drl < 0 then
+            robot.turnLeft()
+            drlAmount, err = robot.forward(-drl, blocking)
+            drlAmount = -drlAmount
+        end
+
+        if drlAmount ~= drl then
+            return fbAmount, dudAmount, drlAmount, err
+        end
+
+        return fbAmount, dudAmount, drlAmount
     end
 
     function robot.face(facing)
@@ -302,16 +357,29 @@ return function(robot, meta, constants)
         return true
     end
 
-    function robot.onAutoFuelWarning(callback)
-        if not callback and autoFuelWarningListenerId then
-            meta.removeEventListener(autoFuelWarningListenerId)
-            autoFuelWarningListenerId = nil
+    function robot.onFuelWarning(callback)
+        if not callback and fuelWarningListenerId then
+            meta.removeEventListener(fuelWarningListenerId)
+            fuelWarningListenerId = nil
 
             return
         end
 
-        autoFuelWarningListenerId = meta.addEventListener({
-            auto_fuel_warning = callback
+        fuelWarningListenerId = meta.addEventListener({
+            fuel_warning = callback
+        })
+    end
+
+    function robot.onFuelWarningCleared(callback)
+        if not callback and fuelWarningClearedListenerId then
+            meta.removeEventListener(fuelWarningClearedListenerId)
+            fuelWarningClearedListenerId = nil
+
+            return
+        end
+
+        fuelWarningClearedListenerId = meta.addEventListener({
+            fuel_warning_cleared = callback
         })
     end
 
