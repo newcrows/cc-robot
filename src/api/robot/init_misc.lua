@@ -134,7 +134,6 @@ return function(robot, meta)
             local success = suckFunc(nextAmount)
 
             if success then
-                -- Bestandsaufnahme nach dem Saugen zur Ermittlung der Differenz
                 local after = physicalCountAll()
                 local amount = after - before
 
@@ -144,13 +143,7 @@ return function(robot, meta)
                 if count and totalSucked >= count then
                     return totalSucked
                 end
-
-                -- Falls success true war, aber 0 Items kamen (sehr selten, aber möglich):
-                if amount == 0 and not blocking then
-                    return totalSucked
-                end
             else
-                -- Nichts eingesaugt (Kiste leer oder kein freier Slot mehr verfügbar)
                 if blocking then
                     if countEmptySlots() <= 0 then
                         return totalSucked
