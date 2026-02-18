@@ -141,6 +141,10 @@ return function(robot, meta, constants)
         return m_dfb, m_dud, m_drl
     end
 
+    local function clamp(val)
+        return math.max(-1, math.min(1, val))
+    end
+
     function meta.requireFuelLevel(requiredLevel)
         if not next(acceptedFuels) then
             error("no accepted fuels configured! use robot.setFuel() first.", 0)
@@ -198,9 +202,26 @@ return function(robot, meta, constants)
         return turnHelper(turtle.turnLeft, -1, count)
     end
 
-    -- TODO [JM] must also support args = {x=x,y=y,z=z}, blocking!
-    -- -> that way, it works with wrapped peripherals as well!
     function robot.moveTo(x, y, z, blocking)
+        if type(x) == "table" then
+            local name = x.name
+
+            blocking = y
+            x, y, z = x.x, x.y, x.z
+
+            if name then
+                local ox, oy, oz = x - robot.x, y - robot.y, z - robot.z
+
+                if ox ~= 0 then
+                    x = x - clamp(ox)
+                elseif oy ~= 0 then
+                    y = y - clamp(oy)
+                elseif oz ~= 0 then
+                    z = z - clamp(oz)
+                end
+            end
+        end
+
         local dx = (x or robot.x) - robot.x
         local dy = (y or robot.y) - robot.y
         local dz = (z or robot.z) - robot.z
