@@ -229,6 +229,8 @@ return function(robot, meta, constants)
         return arr
     end
 
+    -- NOTE [JM] should use meta.softUnwrapAll for better performance, peripherals auto-soft-wrap anyway
+    -- this function just exists for consistency
     function meta.softUnwrap(side)
         side = side or SIDES.front
 
