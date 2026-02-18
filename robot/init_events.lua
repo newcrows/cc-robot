@@ -20,7 +20,7 @@ return function(_, meta)
         return true
     end
 
-    function meta.getEventListener(id)
+    function meta.getEventListenerDetail(id)
         assert(type(id) == "number", "id must be a number")
 
         local listener = listeners[id]
