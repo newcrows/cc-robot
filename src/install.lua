@@ -1,4 +1,4 @@
-local baseUrl = "https://raw.githubusercontent.com/newcrows/cc-robot/refs/heads"
+local baseUrl = "https://raw.githubusercontent.com/newcrows/cc-robot/refs/heads/src"
 local args = { ... }
 local destination = args[1] or ""
 local branch = args[2] or "main"
@@ -31,7 +31,7 @@ local function download(relPath)
 end
 
 local function downloadConfig()
-    local content = download("src/install.config.json")
+    local content = download("install.config.json")
     local config = textutils.unserializeJSON(content)
 
     if config.pre_install and #config.pre_install > 0 then
