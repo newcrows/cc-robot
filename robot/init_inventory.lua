@@ -68,6 +68,11 @@ return function(robot, meta)
         local waited = false
 
         while not check() do
+            if waited then
+                compact()
+                os.sleep(1)
+            end
+
             meta.dispatchEvent("space_warning", check, waited)
             waited = true
         end
