@@ -1,11 +1,11 @@
 local baseUrl = "https://raw.githubusercontent.com/newcrows/cc-robot/refs/heads/src"
+
+local args = { ... }
 local flags
 local destination
 local branch
 
 local function parseArgs()
-    local args = { ... }
-
     if args[1] and string.sub(args[1], 1, 1) == "-" then
         flags = {}
 
