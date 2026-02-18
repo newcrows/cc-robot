@@ -1,4 +1,4 @@
-local robot = require("%INSTALL_DIR%/robot")
+local robot = require("%INSTALL_DIR%/api/robot")
 
 local FACINGS = robot.constants.facings
 local OPPOSITE_FACINGS = robot.constants.opposite_facings

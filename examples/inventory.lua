@@ -1,5 +1,5 @@
 -- this snippet assumes a chest (or items floating in the world) in front of the turtle
-local robot = require("%INSTALL_DIR%/robot")
+local robot = require("%INSTALL_DIR%/api/robot")
 
 -- suck as much as we can from the chest into the turtle
 robot.suck()
