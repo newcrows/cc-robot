@@ -248,8 +248,8 @@ return function(robot, meta, constants)
         return robot.x, robot.y, robot.z
     end
 
-    function robot.face(targetFacing)
-        local diff = (FACING_INDEX[targetFacing] - FACING_INDEX[robot.facing]) % 4
+    function robot.face(facing)
+        local diff = (FACING_INDEX[facing] - FACING_INDEX[robot.facing]) % 4
 
         if diff == 1 then
             turtle.turnRight()
@@ -260,7 +260,7 @@ return function(robot, meta, constants)
             turtle.turnLeft()
         end
 
-        robot.facing = targetFacing
+        robot.facing = facing
     end
 
     function robot.setFuel(name, reserveCount)
