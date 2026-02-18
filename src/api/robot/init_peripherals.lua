@@ -7,6 +7,18 @@ return function(robot, meta, constants)
     local constructors = {}
     local proxies = {}
 
+    local function loadConstructors()
+        local dir = "%INSTALL_DIR%/peripherals"
+        local files = fs.list(dir)
+
+        for _, file in ipairs(files) do
+            local cleanFile = string.gsub(file, "%.lua$", "")
+            local detail = require(fs.combine(dir, cleanFile))
+
+            constructors[detail.name] = detail.constructor
+        end
+    end
+
     local function getNameFor(side)
         local inspectFunc = ({
             front = turtle.inspect,
@@ -55,18 +67,6 @@ return function(robot, meta, constants)
 
         -- go / moveTo either aliases or I decide which of both later on
         -- probably should use one of them only, so there is no bloat
-    end
-
-    local function loadConstructors()
-        local dir = "%INSTALL_DIR%/peripherals"
-        local files = fs.list(dir)
-
-        for _, file in ipairs(files) do
-            local cleanFile = string.gsub(file, "%.lua$", "")
-            local detail = require(fs.combine(dir, cleanFile))
-
-            constructors[detail.name] = detail.constructor
-        end
     end
 
     function meta.getPeripheralConstructorDetail(name)
