@@ -85,60 +85,7 @@ return function(robot, meta, constants)
         return false
     end
 
-    function meta.requireFuelLevel(requiredLevel)
-        if not next(acceptedFuels) then
-            error("No accepted fuels configured! Use robot.setFuel() first.", 0)
-        end
-
-        local level = turtle.getFuelLevel()
-        local waited = false
-
-        while level < requiredLevel do
-            if refuelTo(requiredLevel) then
-                if waited then
-                    meta.dispatchEvent("fuel_warning_cleared")
-                end
-
-                return
-            end
-
-            if waited then
-                os.sleep(1)
-            end
-
-            level = turtle.getFuelLevel()
-            meta.dispatchEvent("fuel_warning", level, requiredLevel, acceptedFuels, waited)
-
-            waited = true
-        end
-    end
-
-    function robot.forward(count, blocking)
-        return moveHelper(turtle.forward, DELTAS[robot.facing], count, blocking)
-    end
-
-    function robot.back(count, blocking)
-        local opposite = OPPOSITE_FACINGS[robot.facing]
-        return moveHelper(turtle.back, DELTAS[opposite], count, blocking)
-    end
-
-    function robot.up(count, blocking)
-        return moveHelper(turtle.up, DELTAS.up, count, blocking)
-    end
-
-    function robot.down(count, blocking)
-        return moveHelper(turtle.down, DELTAS.down, count, blocking)
-    end
-
-    function robot.turnRight(count)
-        return turnHelper(turtle.turnRight, 1, count)
-    end
-
-    function robot.turnLeft(count)
-        return turnHelper(turtle.turnLeft, -1, count)
-    end
-
-    function robot.move(dfb, dud, drl, blocking)
+    local function move(dfb, dud, drl, blocking)
         if type(dfb) == "function" or type(dfb) == "boolean" then
             blocking, dfb, dud, drl = dfb, 0, 0, 0
         elseif type(dud) == "function" or type(dud) == "boolean" then
@@ -190,7 +137,64 @@ return function(robot, meta, constants)
         return m_dfb, m_dud, m_drl
     end
 
-    function robot.goTo(x, y, z, blocking)
+    function meta.requireFuelLevel(requiredLevel)
+        if not next(acceptedFuels) then
+            error("no accepted fuels configured! use robot.setFuel() first.", 0)
+        end
+
+        if requiredLevel > turtle.getFuelLimit() then
+            error("requiredLevel is bigger than turtle.getFuelLimit()!", 0)
+        end
+
+        local level = turtle.getFuelLevel()
+        local waited = false
+
+        while level < requiredLevel do
+            if refuelTo(requiredLevel) then
+                if waited then
+                    meta.dispatchEvent("fuel_warning_cleared")
+                end
+
+                return
+            end
+
+            if waited then
+                os.sleep(1)
+            end
+
+            level = turtle.getFuelLevel()
+            meta.dispatchEvent("fuel_warning", level, requiredLevel, acceptedFuels, waited)
+
+            waited = true
+        end
+    end
+
+    function robot.forward(count, blocking)
+        return moveHelper(turtle.forward, DELTAS[robot.facing], count, blocking)
+    end
+
+    function robot.back(count, blocking)
+        local opposite = OPPOSITE_FACINGS[robot.facing]
+        return moveHelper(turtle.back, DELTAS[opposite], count, blocking)
+    end
+
+    function robot.up(count, blocking)
+        return moveHelper(turtle.up, DELTAS.up, count, blocking)
+    end
+
+    function robot.down(count, blocking)
+        return moveHelper(turtle.down, DELTAS.down, count, blocking)
+    end
+
+    function robot.turnRight(count)
+        return turnHelper(turtle.turnRight, 1, count)
+    end
+
+    function robot.turnLeft(count)
+        return turnHelper(turtle.turnLeft, -1, count)
+    end
+
+    function robot.go(x, y, z, blocking)
         local dx = (x or robot.x) - robot.x
         local dy = (y or robot.y) - robot.y
         local dz = (z or robot.z) - robot.z
@@ -214,7 +218,6 @@ return function(robot, meta, constants)
 
         local moveBlocking = wrap()
         local forward = robot.forward
-        local move = robot.move
         local face = robot.face
 
         if dx ~= 0 then
