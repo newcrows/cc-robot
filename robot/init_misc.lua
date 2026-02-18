@@ -10,7 +10,7 @@ return function(robot, meta, constants)
     end
 
     local function countEmptySlots()
-        return #meta.listEmptySlots(nil, false)
+        return #meta.listEmptySlots()
     end
 
     local function placeHelper(placeFunc, name, blocking)
@@ -68,7 +68,7 @@ return function(robot, meta, constants)
         local waited = false
 
         while remaining > 0 do
-            local slotInfo = meta.selectFirstSlot(name, false)
+            local slotInfo = meta.selectFirstSlot(name)
             local amountToDrop = 0
 
             if slotInfo then
