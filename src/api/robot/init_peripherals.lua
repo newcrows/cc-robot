@@ -46,6 +46,15 @@ return function(robot, meta, constants)
         local x, y, z = getPeripheralPosition(side)
 
         -- TODO [JM] peripheral proxy creation here
+
+        -- maybe robot.go(peripheral) should just work?
+        -- going to peripherals directly is probably a nice feature without bloating the api
+
+        -- like robot.go(chest_1) -> robot moves next to chest_1?
+        -- like robot.moveTo(chest_1) -> robot moves next to chest_1?
+
+        -- go / moveTo either aliases or I decide which of both later on
+        -- probably should use one of them only, so there is no bloat
     end
 
     local function loadConstructors()
