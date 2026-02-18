@@ -9,6 +9,8 @@
     "examples/quarry.lua",
     "examples/run_test.lua",
     "examples/trash.lua",
+    "peripherals/chest.lua",
+    "peripherals/me_bridge.lua",
     "robot/init.lua",
     "robot/init_equipment.lua",
     "robot/init_events.lua",
