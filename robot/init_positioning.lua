@@ -86,6 +86,10 @@ return function(robot, meta, constants)
     end
 
     function meta.requireFuelLevel(requiredLevel)
+        if not next(acceptedFuels) then
+            error("No accepted fuels configured! Use robot.setFuel() first.", 0)
+        end
+
         local level = turtle.getFuelLevel()
         local waited = false
 
@@ -257,6 +261,10 @@ return function(robot, meta, constants)
     end
 
     function robot.setFuel(name, reserveCount)
+        for _name, _reserveCount in pairs(acceptedFuels) do
+            robot.free(_name, _reserveCount)
+        end
+
         acceptedFuels = ({
             ["nil"] = function()
                 return {}
@@ -268,6 +276,10 @@ return function(robot, meta, constants)
                 return name
             end
         })[type(name)]()
+
+        for _name, _reserveCount in pairs(acceptedFuels) do
+            robot.reserve(_name, _reserveCount)
+        end
     end
 
     function robot.onFuelWarning(callback)
