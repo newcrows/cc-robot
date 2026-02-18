@@ -31,7 +31,7 @@ local function download(relPath)
 end
 
 local function downloadConfig()
-    local content = download("install.config.json")
+    local content = download("src/install.config.json")
     local config = textutils.unserializeJSON(content)
 
     if config.pre_install and #config.pre_install > 0 then
