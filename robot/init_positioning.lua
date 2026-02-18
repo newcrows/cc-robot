@@ -47,7 +47,7 @@ return function(robot, meta, constants)
             moved = moved + 1
         end
 
-        return moved, nil
+        return moved
     end
 
     local function turnHelper(turnFunc, direction, count)
@@ -64,7 +64,7 @@ return function(robot, meta, constants)
     end
 
     local function refuel(name, count)
-        local slot = meta.selectFirstSlot(name, false, true)
+        local slot = meta.selectFirstSlot(name, true)
 
         if slot then
             local cappedCount = math.min(turtle.getItemCount(), count)
