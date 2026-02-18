@@ -136,7 +136,7 @@ return function(robot, meta)
                     reservedUsedForSpace[detail.name] = alreadyBlockedSpace + blockInSlot
                 end
 
-                -- Slot aufnehmen, wenn er freien Count ODER freien Space bietet
+                -- TODO [JM] is using includeReservedItems as condition correct here?
                 if includeReservedItems or count > 0 or usableSpace > 0 then
                     table.insert(slots, {
                         id = i,
