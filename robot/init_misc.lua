@@ -1,16 +1,4 @@
 return function(robot, meta, constants)
-    local function place(placeFunc, name, blocking)
-        if blocking then
-            while not meta.selectFirstSlot(name) or not placeFunc() do
-                os.sleep(1)
-            end
-
-            return true
-        end
-
-        return meta.selectFirstSlot(name) and placeFunc()
-    end
-
     local function drop(dropFunc, name, count, blocking)
         local amount = 0
 
@@ -83,34 +71,63 @@ return function(robot, meta, constants)
         return amount
     end
 
-    function robot.place(name, blocking)
-        if type(name) == "boolean" then
-            blocking = name
-            name = nil
+    local function placeHelper(placeFunc, name, blocking)
+        if not name then
+            error("name must not be nil", 0)
         end
 
-        name = name or robot.getSelectedName()
-        return place(turtle.place, name, blocking)
+        local success = false
+        local waited = false
+
+        while not success do
+            success = meta.selectFirstSlot(name)
+
+            if success then
+                success = placeFunc()
+            end
+
+            if not success then
+                if blocking then
+                    if waited then
+                        os.sleep(1)
+                    end
+
+                    if type(blocking) == "function" then
+                        blocking()
+                    end
+
+                    waited = true
+                else
+                    return false
+                end
+            end
+        end
+
+        return true
+    end
+
+    function robot.place(name, blocking)
+        if type(name) == "boolean" or type(name) == "function" then
+            blocking, name = name, robot.getSelectedName()
+        end
+
+        return placeHelper(turtle.place, name, blocking)
     end
 
     function robot.placeUp(name, blocking)
-        if type(name) == "boolean" then
-            blocking = name
-            name = nil
+        if type(name) == "boolean" or type(name) == "function" then
+            blocking, name = name, robot.getSelectedName()
         end
 
-        name = name or robot.getSelectedName()
-        return place(turtle.placeUp, name, blocking)
+        return placeHelper(turtle.placeUp, name, blocking)
     end
 
     function robot.placeDown(name, blocking)
-        if type(name) == "boolean" then
-            blocking = name
-            name = nil
+        if type(name) == "boolean" or type(name) == "function" then
+            blocking, name = name, robot.getSelectedName()
         end
 
-        name = name or robot.getSelectedName()
-        return place(turtle.placeDown, name, blocking)
+        return placeHelper(turtle.placeDown, name, blocking)
     end
 
     function robot.drop(name, count, blocking)
