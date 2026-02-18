@@ -247,11 +247,10 @@ return function(robot, meta)
 
     function robot.getItemSpace(name)
         local space = 0
-        local stackSize = 64
+        local stackSize = getStackSize(name)
 
         for _, slot in ipairs(meta.listSlots(name, nil, false)) do
             space = space + slot.space
-            stackSize = getStackSize(name)
         end
 
         space = space + robot.getItemSpaceForUnknown(stackSize)
