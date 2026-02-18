@@ -74,10 +74,6 @@ return function(robot, meta, constants)
         return SIDE_INDEX[sideI]
     end
 
-    local function isSoftWrapped(key)
-        return softProxies[key] and true or false
-    end
-
     local function softWrap(key, proxy)
         local dx, dy, dz = proxy.x - robot.x, proxy.y - robot.y, proxy.z - robot.z
         local deltaKey = getPositionKey(dx, dy, dz)
