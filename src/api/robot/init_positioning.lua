@@ -194,7 +194,9 @@ return function(robot, meta, constants)
         return turnHelper(turtle.turnLeft, -1, count)
     end
 
-    function robot.go(x, y, z, blocking)
+    -- TODO [JM] must also support args = {x=x,y=y,z=z}, blocking!
+    -- -> that way, it works with wrapped peripherals as well!
+    function robot.moveTo(x, y, z, blocking)
         local dx = (x or robot.x) - robot.x
         local dy = (y or robot.y) - robot.y
         local dz = (z or robot.z) - robot.z
