@@ -1,344 +1,102 @@
 return function(robot, meta)
-    local selectedName = "air"
+    local selectedName
     local reservedSpaces = {}
-    local setSlotHolder = {}
 
-    local function getPhysicalCount(name)
-        local count = 0
+    local function compact()
+        for targetSlot = 1, 15 do
+            local space = turtle.getItemSpace(targetSlot)
 
-        for i = 1, 16 do
-            local detail = turtle.getItemDetail(i)
+            if space > 0 then
+                local target = turtle.getItemDetail(targetSlot)
 
-            if detail and detail.name == name then
-                count = count + detail.count
-            end
-        end
+                for sourceSlot = 16, targetSlot + 1, -1 do
+                    local source = turtle.getItemDetail(sourceSlot)
 
-        return count
-    end
-
-    local function getPhysicalSpace(name)
-        local space = 0
-        local emptySlots = 0
-        local stackSize
-
-        for i = 1, 16 do
-            local detail = turtle.getItemDetail(i)
-
-            if detail and detail.name == name then
-                local slotSpace = turtle.getItemSpace(i)
-
-                if not stackSize then
-                    stackSize = detail.count + slotSpace
-                end
-
-                space = space + slotSpace
-            elseif not detail then
-                emptySlots = emptySlots + 1
-            end
-        end
-
-        if not stackSize then
-            stackSize = 64
-        end
-
-        return space + emptySlots * stackSize
-    end
-
-    local function getPhysicalStackSize(name)
-        for i = 1, 16 do
-            local detail = turtle.getItemDetail(i)
-
-            if detail and detail.name == name then
-                return detail.count + turtle.getItemSpace(i)
-            end
-        end
-
-        return 64
-    end
-
-    local function countPhysicalEmptySlots()
-        local emptySlots = 0
-
-        for i = 1, 16 do
-            local detail = turtle.getItemDetail(i)
-
-            if not detail then
-                emptySlots = emptySlots + 1
-            end
-        end
-
-        return emptySlots
-    end
-
-    local function compactPhysical()
-        local slots = meta.listSlots(nil, nil, true, true)
-
-        for i = #slots, 1, -1 do
-            local slot = slots[i]
-            local likeSlots = meta.listSlots(slot.name, nil, true, true)
-
-            for k = #likeSlots, 1, -1 do
-                local likeSlot = likeSlots[k]
-
-                if slot.id > likeSlot.id then
-                    local likeSpace = likeSlot.space
-
-                    if likeSpace > 0 then
-                        turtle.select(slot.id)
-                        turtle.transferTo(likeSlot.id, likeSpace)
-
-                        if turtle.getItemCount() == 0 then
-                            break
+                    if source then
+                        if not target or source.name == target.name then
+                            turtle.select(sourceSlot)
+                            if turtle.transferTo(targetSlot) then
+                                target = turtle.getItemDetail(targetSlot)
+                                space = turtle.getItemSpace(targetSlot)
+                            end
                         end
                     end
-                end
-            end
-        end
-    end
 
-    local function getEquipmentCount(name)
-        name = name or robot.getSelectedName()
-
-        local equipment = meta.getEquipmentDetail(name)
-
-        if equipment and not equipment.proxy.target then
-            return 1
-        end
-
-        return 0
-    end
-
-    local function getEquipmentSpace(name)
-        name = name or robot.getSelectedName()
-
-        local equipment = meta.getEquipmentDetail(name)
-
-        if equipment and equipment.proxy.target then
-            return 1
-        end
-
-        return 0
-    end
-
-    local function countEmptySlotsNeededForEquipmentAndReserved()
-        local itemsWeNeedSpaceFor = {}
-
-        for _, equipment in pairs(meta.listEquipment()) do
-            local proxy = equipment.proxy
-            if proxy.target then
-                itemsWeNeedSpaceFor[proxy.name] = (itemsWeNeedSpaceFor[proxy.name] or 0) + 1
-            end
-        end
-
-        local itemsWeHaveCountOf = {}
-        local itemsWeHaveSpaceFor = {}
-
-        for i = 1, 16 do
-            local detail = turtle.getItemDetail(i)
-
-            if detail then
-                local space = turtle.getItemSpace(i)
-
-                itemsWeHaveCountOf[detail.name] = (itemsWeHaveCountOf[detail.name] or 0) + detail.count
-                itemsWeHaveSpaceFor[detail.name] = (itemsWeHaveSpaceFor[detail.name] or 0) + space
-            end
-        end
-
-        for name, space in pairs(reservedSpaces) do
-            local additionalSpaceWeNeed = math.max(space - (itemsWeHaveCountOf[name] or 0), 0)
-            itemsWeNeedSpaceFor[name] = (itemsWeNeedSpaceFor[name] or 0) + additionalSpaceWeNeed
-        end
-
-        local emptySlotsWeNeed = 0
-
-        for name, space in pairs(itemsWeNeedSpaceFor) do
-            local stackSize = getPhysicalStackSize(name)
-            emptySlotsWeNeed = emptySlotsWeNeed + math.ceil(space / stackSize)
-        end
-
-        return emptySlotsWeNeed
-    end
-
-    function setSlotHolder.setSlot(slotId, name, count, blacklist)
-        if not slotId then
-            error("slotId must not be nil")
-        end
-
-        if name == "air" then
-            name = nil
-        end
-
-        if not name then
-            count = 0
-        elseif not count then
-            count = meta.countItems(name, true, true)
-        end
-
-        if count == nil then
-            error("count must not be nil")
-        end
-
-        blacklist = blacklist or {}
-
-        local detail = turtle.getItemDetail(slotId)
-        local slot = {
-            name = detail and detail.name or nil,
-            count = turtle.getItemCount(slotId),
-            space = turtle.getItemSpace(slotId)
-        }
-
-        local sameSlots = {}
-        local candidateSlots = meta.listSlots(name, 16, true, true)
-
-        for i = 1, #candidateSlots do
-            local candidateSlot = candidateSlots[i]
-
-            if slotId ~= candidateSlot.id and not blacklist[candidateSlot.id] then
-                table.insert(sameSlots, candidateSlot)
-            end
-        end
-
-        if slot.name == name and slot.count > count then
-            turtle.select(slotId)
-
-            -- try to move surplus to slots holding the same item
-            local amount = 0
-            local surplusAmount = slot.count - count
-
-            for _, sameSlot in ipairs(sameSlots) do
-                local sameSpace = sameSlot.space
-                local movableAmount = math.min(surplusAmount - amount, sameSpace)
-
-                if movableAmount > 0 then
-                    if turtle.transferTo(sameSlot.id, movableAmount) then
-                        amount = amount + movableAmount
+                    if space == 0 then
+                        break
                     end
                 end
-
-                if amount == surplusAmount then
-                    return true
-                end
-            end
-
-            -- try to move remaining surplus to the first non-blacklisted empty slot
-            -- DO NOT compact, this would ignore blacklist and could re-arrange the inventory in an unwanted way
-            local emptySlots = meta.listEmptySlots(16)
-            local emptySlot = nil
-
-            for _, candidateSlot in ipairs(emptySlots) do
-                if not blacklist[candidateSlot.id] then
-                    emptySlot = candidateSlot
-                    break
-                end
-            end
-
-            if not emptySlot then
-                return false, "no space in inventory to move surplus elsewhere"
-            end
-
-            if not turtle.transferTo(emptySlot.id, surplusAmount - amount) then
-                return false, "moving surplus to empty slot failed"
-            end
-
-            return true
-        end
-
-        if (slot.name == name or not slot.name) and slot.count < count then
-            if name and #candidateSlots == 0 then
-                return false, "no items found in inventory to move deficit from elsewhere"
-            end
-
-            local amount = 0
-            local deficitAmount = count - slot.count
-
-            for _, sameSlot in ipairs(sameSlots) do
-                local sameCount = sameSlot.count
-                local movableAmount = math.min(deficitAmount - amount, sameCount)
-
-                if movableAmount > 0 then
-                    turtle.select(sameSlot.id)
-
-                    if turtle.transferTo(slotId, movableAmount) then
-                        amount = amount + movableAmount
-                    end
-                end
-
-                if amount == deficitAmount then
-                    return true
-                end
-            end
-
-            return false, "not enough items in inventory to move deficit from elsewhere"
-        end
-
-        if slot.name ~= name then
-            if name and #candidateSlots == 0 then
-                return false, "item not found in inventory"
-            end
-
-            local _, err = setSlotHolder.setSlot(slotId, slot.name, 0, blacklist)
-
-            if err then
-                return false, "could not move other items elsewhere because there was not enough space in inventory"
-            end
-
-            _, err = setSlotHolder.setSlot(slotId, name, count, blacklist)
-
-            if err then
-                return false, err
             end
         end
-
-        return true
     end
 
-    function meta.listSlots(name, limit, includeEquipment, includeReservedItems)
+    local function getStackSize(name)
+        local slot = meta.getFirstSlot(name, true)
+        return slot and slot.count + slot.space or 64
+    end
+
+    local function countReservedEmptySlots()
+        local reservedEmptySlots = 0
+
+        for name, reservedTotal in pairs(reservedSpaces) do
+            local currentCount = meta.countItems(name, true)
+            local missing = reservedTotal - currentCount
+
+            if missing > 0 then
+                local existingSpace = 0
+                local slots = meta.listSlots(name, nil, true)
+
+                for _, slot in ipairs(slots) do
+                    existingSpace = existingSpace + slot.space
+                end
+
+                local overflow = missing - existingSpace
+
+                if overflow > 0 then
+                    local stackSize = getStackSize(name)
+                    reservedEmptySlots = reservedEmptySlots + math.ceil(overflow / stackSize)
+                end
+            end
+        end
+
+        return reservedEmptySlots
+    end
+
+    function meta.listSlots(name, limit, includeReservedItems)
         limit = limit or 16
 
         local slots = {}
-        local seenEquipment = {}
-        local seenReservedItems = {}
+        local seenReserved = {}
 
         for i = 1, 16 do
             local detail = turtle.getItemDetail(i)
 
-            if detail and not name or detail and detail.name == name then
-                local countOffset = 0
-
-                if not includeEquipment and not seenEquipment[detail.name] then
-                    local equipment = meta.getEquipmentDetail(detail.name)
-
-                    if equipment and not equipment.proxy.target then
-                        countOffset = -1
-                        seenEquipment[detail.name] = true
-                    end
-                end
+            if detail and (not name or detail.name == name) then
+                local count = detail.count
+                local space = turtle.getItemSpace(i)
 
                 if not includeReservedItems then
-                    local invisibleCount = reservedSpaces[detail.name]
-                    local seenInvisibleCount = seenReservedItems[detail.name] or 0
+                    local totalReserved = reservedSpaces[detail.name] or 0
+                    local alreadySeen = seenReserved[detail.name] or 0
 
-                    if invisibleCount and seenInvisibleCount < invisibleCount then
-                        local invisibleCountOffset = -math.min(detail.count + countOffset, invisibleCount - seenInvisibleCount)
+                    if alreadySeen < totalReserved then
+                        local reservedInSlot = math.min(count, totalReserved - alreadySeen)
 
-                        countOffset = countOffset + invisibleCountOffset
-                        seenReservedItems[detail.name] = seenInvisibleCount - invisibleCountOffset
+                        count = count - reservedInSlot
+                        seenReserved[detail.name] = alreadySeen + reservedInSlot
                     end
                 end
 
-                local adjustedCount = turtle.getItemCount(i) + countOffset
-
-                if adjustedCount > 0 then
+                if count > 0 then
                     table.insert(slots, {
                         id = i,
                         name = detail.name,
-                        count = adjustedCount,
-                        space = turtle.getItemSpace(i)
+                        count = count,
+                        space = space
                     })
                 end
 
-                if #slots == limit then
+                if #slots >= limit then
                     return slots
                 end
             end
@@ -347,13 +105,13 @@ return function(robot, meta)
         return slots
     end
 
-    function meta.getFirstSlot(name, includeEquipment, includeReservedItems)
-        local slots = meta.listSlots(name, 1, includeEquipment, includeReservedItems)
+    function meta.getFirstSlot(name, includeReservedItems)
+        local slots = meta.listSlots(name, 1, includeReservedItems)
         return slots[1]
     end
 
-    function meta.selectFirstSlot(name, includeEquipment, includeReservedItems)
-        local slot = meta.getFirstSlot(name, includeEquipment, includeReservedItems)
+    function meta.selectFirstSlot(name, includeReservedItems)
+        local slot = meta.getFirstSlot(name, includeReservedItems)
 
         if slot then
             turtle.select(slot.id)
@@ -363,32 +121,37 @@ return function(robot, meta)
         return false
     end
 
-    function meta.listEmptySlots(limit, compact)
-        local neededEmptySlotCount = countEmptySlotsNeededForEquipmentAndReserved()
-        local slots = {}
+    function meta.listEmptySlots(limit, shouldCompact)
+        limit = limit or 16
 
-        if compact then
-            compactPhysical()
+        if shouldCompact then
+            compact()
         end
+
+        local reservedEmptySlotCount = countReservedEmptySlots()
+        local emptySlots = {}
+        local emptyFound = 0
 
         for i = 1, 16 do
             if turtle.getItemCount(i) == 0 then
-                if neededEmptySlotCount == 0 then
-                    table.insert(slots, {
-                        id = i,
-                        count = 0
-                    })
-                else
-                    neededEmptySlotCount = neededEmptySlotCount - 1
-                end
+                emptyFound = emptyFound + 1
 
-                if #slots == limit then
-                    return slots
+                if emptyFound > reservedEmptySlotCount then
+                    table.insert(emptySlots, {
+                        id = i,
+                        name = nil,
+                        count = 0,
+                        space = 64
+                    })
                 end
+            end
+
+            if #emptySlots >= limit then
+                break
             end
         end
 
-        return slots
+        return emptySlots
     end
 
     function meta.getFirstEmptySlot(compact)
@@ -407,18 +170,17 @@ return function(robot, meta)
         return false
     end
 
-    function meta.countItems(name, includeEquipment, includeReservedItems)
+    function meta.countItems(name, includeReservedItems)
         local count = 0
-        local slots = meta.listSlots(name, 16, includeEquipment, includeReservedItems)
+        local slots = meta.listSlots(name, nil, includeReservedItems)
 
-        for i = 1, #slots do
-            count = count + slots[i].count
+        for _, slot in ipairs(slots) do
+            count = count + slot.count
         end
 
         return count
     end
 
-    -- TODO [JM] fix bug in setSlot, right now this doesn't always work correctly
     function meta.arrangeSlots(layoutFunc)
         local blacklist = {}
         local setSlot = function(slotId, name, count)
@@ -436,7 +198,6 @@ return function(robot, meta)
     end
 
     function robot.select(name)
-        assert(name, "name must not be nil")
         selectedName = name
     end
 
@@ -445,152 +206,123 @@ return function(robot, meta)
     end
 
     function robot.getItemDetail(name)
-        name = name or robot.getSelectedName()
-        local count = robot.getItemCount(name)
+        local count = meta.countItems(name, false)
 
-        if count > 0 then
-            return {
-                name = name,
-                count = count
-            }
+        if count == 0 then
+            return nil
         end
 
-        return nil
+        return {
+            name = name,
+            count = count
+        }
     end
 
     function robot.getItemCount(name)
-        name = name or robot.getSelectedName()
-        return getPhysicalCount(name) - getEquipmentCount(name) - robot.getReservedItemCount(name)
+        return meta.countItems(name, false)
+    end
+
+    function robot.hasItemCount(name, count)
+        return robot.getItemCount(name) >= (count or 1)
     end
 
     function robot.getItemSpace(name)
-        name = name or robot.getSelectedName()
-        return getPhysicalSpace(name) - getEquipmentSpace(name) - robot.getReservedItemSpace(name)
+        local space = 0
+        local stackSize = 64
+
+        for _, slot in ipairs(meta.listSlots(name, nil, false)) do
+            space = space + slot.space
+            stackSize = slot.count + slot.space
+        end
+
+        space = space + robot.getItemSpaceForUnknown(stackSize)
+        return space
+    end
+
+    function robot.hasItemSpace(name, count)
+        return robot.getItemSpace(name) >= (count or 1)
     end
 
     function robot.getItemSpaceForUnknown(stackSize)
-        stackSize = stackSize or 64
-
-        local availableEmptySlots = countPhysicalEmptySlots() - countEmptySlotsNeededForEquipmentAndReserved()
-        return availableEmptySlots * stackSize
+        local emptySlots = meta.listEmptySlots(nil, false)
+        return #emptySlots * (stackSize or 64)
     end
 
-    function robot.hasItemCount(name)
-        name = name or robot.getSelectedName()
-        return robot.hasItemCount(name) > 0
-    end
-
-    function robot.hasItemSpace(name)
-        name = name or robot.getSelectedName()
-        return robot.hasItemSpace(name) > 0
-    end
-
-    function robot.hasItemSpaceForUnknown(stackSize)
-        stackSize = stackSize or 64
-        return robot.getItemSpaceForUnknown(stackSize) > 0
+    function robot.hasItemSpaceForUnknown()
+        return #meta.listEmptySlots(nil, false) > 0
     end
 
     function robot.listItems()
-        local slots = meta.listSlots()
+        local slots = meta.listSlots(nil, nil, false)
+        local names = {}
+
+        for _, slot in pairs(slots) do
+            local detail = turtle.getItemDetail(slot.id)
+
+            if detail then
+                names[detail.name] = true
+            end
+        end
+
         local items = {}
 
-        for i = 1, #slots do
-            local slot = slots[i]
-            local item = items[slot.name]
+        for name, _ in pairs(names) do
+            local detail = robot.getItemDetail(name)
 
-            if not item then
-                item = {
-                    name = slot.name,
-                    count = 0
-                }
-
-                items[slot.name] = item
+            if detail then
+                table.insert(items, detail)
             end
-
-            item.count = item.count + slot.count
         end
 
-        local arr = {}
-
-        for _, item in pairs(items) do
-            table.insert(arr, item)
-        end
-
-        return arr
+        return items
     end
 
     function robot.reserve(name, count)
-        name = name or robot.getSelectedName()
-        count = count or 1
-
-        reservedSpaces[name] = (reservedSpaces[name] or 0) + count
+        reservedSpaces[name] = (reservedSpaces[name] or 0) + (count or 64)
     end
 
     function robot.free(name, count)
-        name = name or robot.getSelectedName()
-        count = count or 1
-
-        reservedSpaces[name] = (reservedSpaces[name] or 0) - count
+        reservedSpaces[name] = (reservedSpaces[name] or 0) - (count or 64)
     end
 
     function robot.getReservedItemDetail(name)
-        name = name or robot.getSelectedName()
         local count = robot.getReservedItemCount(name)
 
-        if count > 0 then
-            return {
-                name = name,
-                count = count
-            }
+        if count == 0 then
+            return nil
         end
 
-        return nil
+        return { name = name, count = count }
     end
 
     function robot.getReservedItemCount(name)
-        name = name or robot.getSelectedName()
+        local total = meta.countItems(name, true)
+        local free = meta.countItems(name, false)
 
-        if not reservedSpaces[name] then
-            return 0
-        end
+        return total - free
+    end
 
-        return math.min(getPhysicalCount(name) - getEquipmentCount(name), reservedSpaces[name])
+    function robot.hasReservedItemCount(name, count)
+        return robot.getReservedItemCount(name) >= (count or 1)
     end
 
     function robot.getReservedItemSpace(name)
-        name = name or robot.getSelectedName()
-
-        if not reservedSpaces[name] then
-            return 0
-        end
-
-        return reservedSpaces[name] - robot.getReservedItemCount(name)
+        local count = robot.getReservedItemCount(name)
+        return reservedSpaces[name] - count
     end
 
-    function robot.hasReservedItemCount(name)
-        name = name or robot.getSelectedName()
-        return robot.getReservedItemCount(name) > 0
-    end
-
-    function robot.hasReservedItemSpace(name)
-        name = name or robot.getSelectedName()
-        return robot.getReservedItemSpace(name) > 0
+    function robot.hasReservedItemSpace(name, count)
+        return robot.getReservedItemSpace(name) >= (count or 1)
     end
 
     function robot.listReservedItems()
-        local arr = {}
-
+        local list = {}
         for name, _ in pairs(reservedSpaces) do
             local count = robot.getReservedItemCount(name)
-
             if count > 0 then
-                table.insert({
-                    name = name,
-                    count = count
-                })
+                list[name] = count
             end
         end
-
-        return arr
+        return list
     end
 end
