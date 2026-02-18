@@ -106,9 +106,9 @@ return function(robot, meta, constants)
             error("name must not be nil", 0)
         end
 
-        local _, detail = inspectFunc()
+        local ok, detail = inspectFunc()
 
-        if detail then
+        if ok then
             return detail.name == name
         else
             return name == "air" or name == "minecraft:air"
