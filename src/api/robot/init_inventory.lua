@@ -310,7 +310,6 @@ return function(robot, meta)
             setSlot(id)
         end
 
-        -- Führe das Layout aus
         return layoutFunc(setSlot, clearSlot)
     end
 
