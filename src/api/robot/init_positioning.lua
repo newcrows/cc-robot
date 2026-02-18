@@ -46,7 +46,7 @@ return function(robot, meta, constants)
             robot.z = robot.z + delta.z
 
             moved = moved + 1
-            meta.softUnwrap()
+            meta.softUnwrapAll()
         end
 
         return moved
@@ -62,7 +62,7 @@ return function(robot, meta, constants)
         local facingI = (FACING_INDEX[robot.facing] + (direction * count)) % 4
 
         robot.facing = FACING_INDEX[facingI]
-        meta.softUnwrap()
+        meta.softUnwrapAll()
 
         return count
     end

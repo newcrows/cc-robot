@@ -62,7 +62,7 @@ return function(robot, meta, constants)
         return robot.x + delta.x, robot.y + delta.y, robot.z + delta.z
     end
 
-    local function getPositionKey(x, y, z)
+    local function getKeyFor(x, y, z)
         return x .. "|" .. y .. "|" .. z
     end
 
@@ -76,7 +76,7 @@ return function(robot, meta, constants)
 
     local function softWrap(key, proxy)
         local dx, dy, dz = proxy.x - robot.x, proxy.y - robot.y, proxy.z - robot.z
-        local deltaKey = getPositionKey(dx, dy, dz)
+        local deltaKey = getKeyFor(dx, dy, dz)
         local facing = FACING_INDEX[deltaKey]
 
         if not facing then
@@ -106,7 +106,7 @@ return function(robot, meta, constants)
     end
 
     local function createProxy(x, y, z, name)
-        local key = getPositionKey(x, y, z)
+        local key = getKeyFor(x, y, z)
         local proxy = {
             x = x, y = y, z = z,
             name = name
@@ -161,7 +161,7 @@ return function(robot, meta, constants)
             x, y, z = getPositionFor(x)
         end
 
-        local key = getPositionKey(x, y, z)
+        local key = getKeyFor(x, y, z)
         local proxy = proxies[key]
 
         if proxy then
@@ -186,12 +186,10 @@ return function(robot, meta, constants)
             x, y, z = getPositionFor(x)
         end
 
-        local key = getPositionKey(x, y, z)
+        local key = getKeyFor(x, y, z)
         local proxy = proxies[key]
 
         if proxy then
-            proxy.target = nil
-
             softProxies[key] = nil
             proxies[key] = nil
 
@@ -219,7 +217,16 @@ return function(robot, meta, constants)
         return arr
     end
 
-    function meta.softUnwrap()
+    function meta.softUnwrap(side)
+        side = side or SIDES.front
+
+        local x, y, z = getPositionFor(side)
+        local key = getKeyFor(x, y, z)
+
+        softProxies[key] = nil
+    end
+
+    function meta.softUnwrapAll()
         softProxies = {}
     end
 
