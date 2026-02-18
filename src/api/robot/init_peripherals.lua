@@ -47,6 +47,7 @@ return function(robot, meta, constants)
         return robot.x + delta.x, robot.y + delta.y, robot.z + delta.z
     end
 
+    -- TODO [JM] wrap* must support coordinates instead of side as well!
     local function wrapHelper(side, wrapAs)
         if side and not SIDES[side] then
             wrapAs, side = side, nil
