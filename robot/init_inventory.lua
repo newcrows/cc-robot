@@ -62,12 +62,8 @@ return function(robot, meta)
         return reservedEmptySlots
     end
 
-    function meta.requireItemSpace(name, space)
+    local function waitForSpace(check)
         local waited = false
-
-        local function check()
-            return robot.hasItemSpace(name, space)
-        end
 
         while not check() do
             meta.dispatchEvent("inventory_warning", check, waited)
@@ -77,19 +73,20 @@ return function(robot, meta)
         meta.dispatchEvent("inventory_warning_cleared")
     end
 
-    function meta.requireUnknownItemSpace(stackSize, space)
-        local waited = false
+    function meta.requireItemSpace(name, space)
+        local function check()
+            return robot.hasItemSpace(name, space)
+        end
 
+        waitForSpace(check)
+    end
+
+    function meta.requireUnknownItemSpace(stackSize, space)
         local function check()
             return robot.hasItemSpaceForUnknown(stackSize, space)
         end
 
-        while not check() do
-            meta.dispatchEvent("inventory_warning", check, waited)
-            waited = true
-        end
-
-        meta.dispatchEvent("inventory_warning_cleared")
+        waitForSpace(check)
     end
 
     function meta.listSlots(name, limit, includeReservedItems)
