@@ -412,17 +412,17 @@ return function(robot, meta, constants)
             end
         end
 
-        local items = {}
+        local arr = {}
 
         for name, _ in pairs(names) do
             local detail = robot.getItemDetail(name)
 
             if detail then
-                table.insert(items, detail)
+                table.insert(arr, detail)
             end
         end
 
-        return items
+        return arr
     end
 
     function robot.reserve(name, count)
@@ -479,13 +479,16 @@ return function(robot, meta, constants)
     end
 
     function robot.listReservedItems()
-        local list = {}
+        local arr = {}
+
         for name, _ in pairs(reservedSpaces) do
-            local count = robot.getReservedItemCount(name)
-            if count > 0 then
-                list[name] = count
+            local detail = robot.getReservedItemDetail(name)
+
+            if detail then
+                table.insert(arr, detail)
             end
         end
-        return list
+
+        return arr
     end
 end

@@ -66,6 +66,24 @@ return function(robot, meta, constants)
         end
     end
 
+    function meta.getPeripheralConstructorDetail(name)
+        name = name or robot.getSelectedName()
+        return constructors[name]
+    end
+
+    function meta.listPeripheralConstructors()
+        local arr = {}
+
+        for name, constructor in pairs(constructors) do
+            table.insert(arr, {
+                name = name,
+                constructor = constructor
+            })
+        end
+
+        return arr
+    end
+
     function robot.wrap(side, wrapAs)
         return wrapHelper(side, wrapAs)
     end
