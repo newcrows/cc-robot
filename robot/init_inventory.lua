@@ -192,7 +192,6 @@ return function(robot, meta)
                 if emptyFound > reservedEmptySlotCount then
                     table.insert(emptySlots, {
                         id = i,
-                        name = nil,
                         count = 0,
                         space = 64
                     })
@@ -239,8 +238,9 @@ return function(robot, meta)
 
         local function setSlot(id, name, count)
             if id < 1 or id > 16 then
-                return false
+                error("id must be in range 1 <= id <= 16")
             end
+
             count = count or 0
 
             if not name or count <= 0 then
@@ -365,7 +365,7 @@ return function(robot, meta)
 
     function robot.getItemCount(name)
         name = name or selectedName
-        return meta.countItems(name, false)
+        return meta.countItems(name)
     end
 
     function robot.hasItemCount(name, count)
@@ -378,8 +378,9 @@ return function(robot, meta)
 
         local space = 0
         local stackSize = getStackSize(name)
+        local slots = meta.listSlots(name)
 
-        for _, slot in ipairs(meta.listSlots(name, nil, false)) do
+        for _, slot in ipairs(slots) do
             space = space + slot.space
         end
 
@@ -393,7 +394,7 @@ return function(robot, meta)
     end
 
     function robot.getItemSpaceForUnknown(stackSize)
-        local emptySlots = meta.listEmptySlots(nil, false)
+        local emptySlots = meta.listEmptySlots()
         return #emptySlots * (stackSize or 64)
     end
 
@@ -402,7 +403,7 @@ return function(robot, meta)
     end
 
     function robot.listItems()
-        local slots = meta.listSlots(nil, nil, false)
+        local slots = meta.listSlots()
         local names = {}
 
         for _, slot in pairs(slots) do
@@ -457,7 +458,7 @@ return function(robot, meta)
         name = name or selectedName
 
         local total = meta.countItems(name, true)
-        local free = meta.countItems(name, false)
+        local free = meta.countItems(name)
 
         return total - free
     end
