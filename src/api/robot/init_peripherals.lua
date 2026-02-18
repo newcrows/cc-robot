@@ -123,8 +123,12 @@ return function(robot, meta, constants)
                 end
 
                 return function(...)
-                    if not isSoftWrapped(key) then
-                        softWrap(key, proxy)
+                    if not proxies[key] then
+                        error("peripheral is no longer wrapped", 0)
+                    end
+
+                    if not softProxies[key] then
+                        softWrap(key, proxies[key])
                     end
 
                     return proxy.target[prop](...)
@@ -177,6 +181,30 @@ return function(robot, meta, constants)
         return createProxy(x, y, z, name)
     end
 
+    local function unwrapHelper(x, y, z)
+        x = x or SIDES.front
+
+        if type(x) == "number" and type(y) == "number" and type(z) == "number" then
+            --nop
+        elseif type(x) == "string" then
+            x, y, z = getPositionFor(x)
+        end
+
+        local key = getPositionKey(x, y, z)
+        local proxy = proxies[key]
+
+        if proxy then
+            proxy.target = nil
+
+            softProxies[key] = nil
+            proxies[key] = nil
+
+            print("unwrap " .. proxy.name .. " at (" .. x .. ", " .. y .. ", " .. z .. ")")
+        end
+
+        return true
+    end
+
     function meta.getPeripheralConstructorDetail(name)
         name = name or robot.getSelectedName()
         return constructors[name]
@@ -209,6 +237,18 @@ return function(robot, meta, constants)
 
     function robot.wrapDown(wrapAs)
         return wrapHelper(SIDES.bottom, wrapAs)
+    end
+
+    function robot.unwrap(x, y, z)
+        return unwrapHelper(x, y, z)
+    end
+
+    function robot.unwrapUp()
+        return unwrapHelper(SIDES.top)
+    end
+
+    function robot.unwrapDown()
+        return unwrapHelper(SIDES.bottom)
     end
 
     loadConstructors()
