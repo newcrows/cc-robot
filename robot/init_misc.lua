@@ -9,7 +9,7 @@ return function(robot, meta, constants)
         return total
     end
 
-    local function getFreeSlotCount()
+    local function countEmptySlots()
         return #meta.listEmptySlots(nil, false)
     end
 
@@ -125,7 +125,7 @@ return function(robot, meta, constants)
         local totalSucked = 0
         local waited = false
 
-        while (count and totalSucked < count) or (not count and getFreeSlotCount() > 0) or (blocking and totalSucked == 0) do
+        while (count and totalSucked < count) or (not count and countEmptySlots() > 0) or (blocking and totalSucked == 0) do
             local nextAmount = 64
 
             if count then
@@ -155,7 +155,7 @@ return function(robot, meta, constants)
             else
                 -- Nichts eingesaugt (Kiste leer oder kein freier Slot mehr verfügbar)
                 if blocking then
-                    if getFreeSlotCount() <= 0 then
+                    if countEmptySlots() <= 0 then
                         return totalSucked
                     end
 
