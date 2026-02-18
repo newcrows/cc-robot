@@ -1,10 +1,31 @@
 local baseUrl = "https://raw.githubusercontent.com/newcrows/cc-robot/refs/heads/src"
-local args = { ... }
-local destination = args[1] or ""
-local branch = args[2] or "main"
+local flags
+local destination
+local branch
 
-if string.sub(destination, 1, 1) ~= "/" then
-    destination = "/" .. fs.combine(shell.dir(), destination)
+local function parseArgs()
+    local args = { ... }
+
+    if args[1] and string.sub(args[1], 1, 1) == "-" then
+        flags = {}
+
+        for flag in string.gmatch(flags, ".") do
+            if flag ~= "-" then
+                flags[flag] = true
+            end
+        end
+
+        destination = args[2] or ""
+        branch = args[3] or "main"
+    else
+        flags = {}
+        destination = args[1] or ""
+        branch = args[2] or "main"
+    end
+
+    if string.sub(destination, 1, 1) ~= "/" then
+        destination = "/" .. fs.combine(shell.dir(), destination)
+    end
 end
 
 local function readableSize(numBytes)
@@ -87,7 +108,7 @@ local function downloadFiles(config)
 end
 
 local function install()
-    print("install robot..")
+    print("install remote." .. branch .. " -> " .. destination .. "..")
 
     print("download config..")
     local ok, config = pcall(downloadConfig)
@@ -98,7 +119,7 @@ local function install()
     end
 
     print("run pre install script..")
-    ok = pcall(config.pre_install, destination, branch, config)
+    ok = pcall(config.pre_install, flags, destination, branch, config)
 
     if not ok then
         print("..run pre install script failed")
@@ -114,14 +135,15 @@ local function install()
     end
 
     print("run post install script..")
-    ok = pcall(config.post_install, destination, branch, config)
+    ok = pcall(config.post_install, flags, destination, branch, config)
 
     if not ok then
         print("..run post install script failed")
         return
     end
 
-    print("..install ok")
+    print("..install remote." .. branch .. " -> " .. destination .. " ok")
 end
 
+parseArgs()
 install()
