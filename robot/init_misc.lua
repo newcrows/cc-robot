@@ -1,4 +1,4 @@
-return function(robot, meta, constants)
+return function(robot, meta)
     local function physicalCountAll()
         local total = 0
 
