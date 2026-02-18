@@ -147,7 +147,17 @@ return function(robot, meta, constants)
         x = x or SIDES.front
         local name
 
-        if type(x) == "number" and type(y) == "number" and type(z) == "number" then
+        if type(x) == "table" then
+            if x.name then
+                print("rewrap " .. x.name .. " at (" .. x.x .. ", " .. x.y .. ", " .. x.z .. ")")
+                local key = getKeyFor(x.x, x.y, x.z)
+                proxies[key] = x
+
+                return x
+            end
+
+            x, y, z, name = x.x, x.y, x.z, wrapAs
+        elseif type(x) == "number" and type(y) == "number" and type(z) == "number" then
             x, y, z, name = x, y, z, wrapAs
         elseif type(x) == "string" then
             if SIDES[x] then
@@ -180,7 +190,9 @@ return function(robot, meta, constants)
     local function unwrapHelper(x, y, z)
         x = x or SIDES.front
 
-        if type(x) == "number" and type(y) == "number" and type(z) == "number" then
+        if type(x) == "table" then
+            x, y, z = x.x, x.y, x.z
+        elseif type(x) == "number" and type(y) == "number" and type(z) == "number" then
             --nop
         elseif type(x) == "string" then
             x, y, z = getPositionFor(x)
