@@ -73,11 +73,11 @@ return function(robot, meta)
                 os.sleep(1)
             end
 
-            meta.dispatchEvent("space_warning", check, waited)
+            meta.dispatchEvent("item_warning", check, waited)
             waited = true
         end
 
-        meta.dispatchEvent("space_warning_cleared")
+        meta.dispatchEvent("item_warning_cleared")
     end
 
     function meta.requireItemSpace(name, space)
@@ -314,7 +314,7 @@ return function(robot, meta)
         return layoutFunc(setSlot, clearSlot)
     end
 
-    function robot.onSpaceWarning(callback)
+    function robot.onItemWarning(callback)
         if spaceWarningListenerId then
             meta.removeEventListener(spaceWarningListenerId)
             spaceWarningListenerId = nil
@@ -322,12 +322,12 @@ return function(robot, meta)
 
         if callback then
             spaceWarningListenerId = meta.addEventListener({
-                space_warning = callback
+                item_warning = callback
             })
         end
     end
 
-    function robot.onSpaceWarningCleared(callback)
+    function robot.onItemWarningCleared(callback)
         if spaceWarningClearedListenerId then
             meta.removeEventListener(spaceWarningClearedListenerId)
             spaceWarningClearedListenerId = nil
@@ -335,7 +335,7 @@ return function(robot, meta)
 
         if callback then
             spaceWarningClearedListenerId = meta.addEventListener({
-                space_warning_cleared = callback
+                item_warning_cleared = callback
             })
         end
     end
