@@ -100,7 +100,6 @@ return function(robot, meta)
         limit = limit or 16
         local slots = {}
 
-        -- 1. Durchlauf: Brutto-Bestand pro Item-Typ ermitteln
         local totalCounts = {}
         for i = 1, 16 do
             local d = turtle.getItemDetail(i)
@@ -109,7 +108,6 @@ return function(robot, meta)
             end
         end
 
-        -- 2. Durchlauf: Slots filtern und logischen Space/Count berechnen
         local reservedUsedForCount = {}
         local reservedUsedForSpace = {}
 
@@ -124,13 +122,11 @@ return function(robot, meta)
                 if not includeReservedItems then
                     local reservedTotal = reservedSpaces[detail.name] or 0
 
-                    -- LOGIK FÜR COUNT: Reservierung "frisst" vorhandene Items von vorne auf
                     local alreadyUsedCount = reservedUsedForCount[detail.name] or 0
                     local reservedInSlot = math.min(count, reservedTotal - alreadyUsedCount)
                     count = count - reservedInSlot
                     reservedUsedForCount[detail.name] = alreadyUsedCount + reservedInSlot
 
-                    -- LOGIK FÜR SPACE: Fehlende Reservierung blockiert physischen Platz
                     local currentTotal = totalCounts[detail.name] or 0
                     local missingTotal = math.max(0, reservedTotal - currentTotal)
 
