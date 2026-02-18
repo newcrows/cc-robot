@@ -1,6 +1,8 @@
 return function(robot, meta)
     local selectedName
     local reservedSpaces = {}
+    local spaceWarningListenerId
+    local spaceWarningClearedListenerId
 
     local function compact()
         for targetSlot = 1, 15 do
@@ -66,11 +68,11 @@ return function(robot, meta)
         local waited = false
 
         while not check() do
-            meta.dispatchEvent("inventory_warning", check, waited)
+            meta.dispatchEvent("space_warning", check, waited)
             waited = true
         end
 
-        meta.dispatchEvent("inventory_warning_cleared")
+        meta.dispatchEvent("space_warning_cleared")
     end
 
     function meta.requireItemSpace(name, space)
@@ -307,8 +309,30 @@ return function(robot, meta)
         return layoutFunc(setSlot, clearSlot)
     end
 
-    function robot.onInventoryWarning(callback)
+    function robot.onSpaceWarning(callback)
+        if spaceWarningListenerId then
+            meta.removeEventListener(spaceWarningListenerId)
+            spaceWarningListenerId = nil
+        end
 
+        if callback then
+            spaceWarningListenerId = meta.addEventListener({
+                space_warning = callback
+            })
+        end
+    end
+
+    function robot.onSpaceWarningCleared(callback)
+        if spaceWarningClearedListenerId then
+            meta.removeEventListener(spaceWarningClearedListenerId)
+            spaceWarningClearedListenerId = nil
+        end
+
+        if callback then
+            spaceWarningClearedListenerId = meta.addEventListener({
+                space_warning_cleared = callback
+            })
+        end
     end
 
     function robot.select(name)
