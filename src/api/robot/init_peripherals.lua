@@ -30,9 +30,9 @@ return function(robot, meta, constants)
             error("name could not be determined on " .. side)
         end
 
-        local _, detail = inspectFunc()
+        local ok, detail = inspectFunc()
 
-        if not detail then
+        if not ok then
             error("name could not be determined on " .. side)
         end
 
@@ -40,6 +40,12 @@ return function(robot, meta, constants)
     end
 
     local function getPositionFor(side)
+        if side == SIDES.top then
+            return robot.x, robot.y + 1, robot.z
+        elseif side == SIDES.bottom then
+            return robot.x, robot.y - 1, robot.z
+        end
+
         local facingI = (FACING_INDEX[robot.facing] + SIDE_INDEX[side]) % 4
         local facing = FACING_INDEX[facingI]
         local delta = DELTAS[facing]
@@ -47,16 +53,12 @@ return function(robot, meta, constants)
         return robot.x + delta.x, robot.y + delta.y, robot.z + delta.z
     end
 
-    -- TODO [JM] wrap* must support coordinates instead of side as well!
-    local function wrapHelper(side, wrapAs)
-        if side and not SIDES[side] then
-            wrapAs, side = side, nil
-        end
-
-        side = side or SIDES.front
-
-        local name = wrapAs or getNameFor(side)
-        local x, y, z = getPositionFor(side)
+    local function createProxy(x, y, z, name)
+        local key = x .. "|" .. y .. "|" .. z
+        local proxy = {
+            x = x, y = y, z = z,
+            name = name
+        }
 
         -- TODO [JM] peripheral proxy creation here
 
@@ -68,6 +70,43 @@ return function(robot, meta, constants)
 
         -- go / moveTo either aliases or I decide which of both later on
         -- probably should use one of them only, so there is no bloat
+
+        proxies[key] = proxy
+        return proxy
+    end
+
+    local function wrapHelper(x, y, z, wrapAs)
+        x = x or SIDES.front
+        local name
+
+        if type(x) == "number" and type(y) == "number" and type(z) == "number" then
+            x, y, z, name = x, y, z, wrapAs
+        elseif type(x) == "string" then
+            if SIDES[x] then
+                x, wrapAs = x, y
+            else
+                wrapAs = x
+                x = SIDES.front
+            end
+
+            name = wrapAs or getNameFor(x)
+            x, y, z = getPositionFor(x)
+        end
+
+        local key = x .. "|" .. y .. "|" .. z
+        local proxy = proxies[key]
+
+        if proxy then
+            if proxy.name ~= name then
+                error("already wrapped as something else")
+            end
+
+            print("return " .. name .. " at (" .. x .. ", " .. y .. ", " .. z .. ")")
+            return proxy
+        end
+
+        print("create " .. name .. " at (" .. x .. ", " .. y .. ", " .. z .. ")")
+        return createProxy(x, y, z, name)
     end
 
     function meta.getPeripheralConstructorDetail(name)
@@ -88,8 +127,8 @@ return function(robot, meta, constants)
         return arr
     end
 
-    function robot.wrap(side, wrapAs)
-        return wrapHelper(side, wrapAs)
+    function robot.wrap(x, y, z, wrapAs)
+        return wrapHelper(x, y, z, wrapAs)
     end
 
     function robot.wrapUp(wrapAs)
