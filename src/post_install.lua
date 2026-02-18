@@ -22,11 +22,9 @@ local function replaceInstallDirPlaceholders()
 end
 
 local function printWhatNext()
-    local exampleDir = (destination == "/" and "" or destination) .. "/examples"
-
     print("---- WHAT NEXT? ----")
-    print("check out the examples in:")
-    print(exampleDir)
+    print("check out the examples on github")
+    print("or dive right in!")
     print()
     print("happy coding!")
     print("--------------------")
