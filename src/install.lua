@@ -9,7 +9,7 @@ local function parseArgs()
     if args[1] and string.sub(args[1], 1, 1) == "-" then
         flags = {}
 
-        for flag in string.gmatch(flags, ".") do
+        for flag in string.gmatch(args[1], ".") do
             if flag ~= "-" then
                 flags[flag] = true
             end

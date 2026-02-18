@@ -18,6 +18,6 @@ if flags.t then
     }
 
     for _, testFile in ipairs(testFiles) do
-        table.insert(config, testFile)
+        table.insert(config.files, testFile)
     end
 end
