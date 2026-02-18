@@ -193,7 +193,7 @@ return function(robot, meta)
                     table.insert(emptySlots, {
                         id = i,
                         count = 0,
-                        space = 64
+                        space = getStackSize()
                     })
                 end
             end
@@ -399,7 +399,7 @@ return function(robot, meta)
 
     function robot.getItemSpaceForUnknown(stackSize)
         local emptySlots = meta.listEmptySlots()
-        return #emptySlots * (stackSize or 64)
+        return #emptySlots * (stackSize or getStackSize())
     end
 
     function robot.hasItemSpaceForUnknown(stackSize, space)
@@ -444,7 +444,7 @@ return function(robot, meta)
             return
         end
 
-        reservedSpaces[name] = (reservedSpaces[name] or 0) - (space or 64)
+        reservedSpaces[name] = (reservedSpaces[name] or 0) - (space or getStackSize(name))
     end
 
     function robot.getReservedItemDetail(name)
