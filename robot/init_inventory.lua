@@ -225,6 +225,8 @@ return function(robot, meta)
     end
 
     function robot.getItemDetail(name)
+        name = name or selectedName
+
         local count = robot.getItemCount(name)
 
         if count == 0 then
@@ -238,14 +240,18 @@ return function(robot, meta)
     end
 
     function robot.getItemCount(name)
+        name = name or selectedName
         return meta.countItems(name, false)
     end
 
     function robot.hasItemCount(name, count)
+        name = name or selectedName
         return robot.getItemCount(name) >= (count or 1)
     end
 
     function robot.getItemSpace(name)
+        name = name or selectedName
+
         local space = 0
         local stackSize = getStackSize(name)
 
@@ -258,6 +264,7 @@ return function(robot, meta)
     end
 
     function robot.hasItemSpace(name, count)
+        name = name or selectedName
         return robot.getItemSpace(name) >= (count or 1)
     end
 
@@ -296,10 +303,13 @@ return function(robot, meta)
     end
 
     function robot.reserve(name, count)
+        name = name or selectedName
         reservedSpaces[name] = (reservedSpaces[name] or 0) + (count or 64)
     end
 
     function robot.free(name, count)
+        name = name or selectedName
+
         if not name then
             reservedSpaces = {}
             return
@@ -309,6 +319,7 @@ return function(robot, meta)
     end
 
     function robot.getReservedItemDetail(name)
+        name = name or selectedName
         local count = robot.getReservedItemCount(name)
 
         if count == 0 then
@@ -319,6 +330,8 @@ return function(robot, meta)
     end
 
     function robot.getReservedItemCount(name)
+        name = name or selectedName
+
         local total = meta.countItems(name, true)
         local free = meta.countItems(name, false)
 
@@ -326,15 +339,19 @@ return function(robot, meta)
     end
 
     function robot.hasReservedItemCount(name, count)
+        name = name or selectedName
         return robot.getReservedItemCount(name) >= (count or 1)
     end
 
     function robot.getReservedItemSpace(name)
+        name = name or selectedName
+
         local count = robot.getReservedItemCount(name)
         return reservedSpaces[name] - count
     end
 
     function robot.hasReservedItemSpace(name, count)
+        name = name or selectedName
         return robot.getReservedItemSpace(name) >= (count or 1)
     end
 
