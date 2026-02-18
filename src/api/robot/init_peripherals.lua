@@ -7,7 +7,7 @@ return function(robot, meta, constants)
     local constructors = {}
     local proxies = {}
 
-    local function getPeripheralName(side)
+    local function getNameFor(side)
         local inspectFunc = ({
             front = turtle.inspect,
             top = turtle.inspectUp,
@@ -27,7 +27,7 @@ return function(robot, meta, constants)
         return detail.name
     end
 
-    local function getPeripheralPosition(side)
+    local function getPositionFor(side)
         local facingI = (FACING_INDEX[robot.facing] + SIDE_INDEX[side]) % 4
         local facing = FACING_INDEX[facingI]
         local delta = DELTAS[facing]
@@ -42,8 +42,8 @@ return function(robot, meta, constants)
 
         side = side or SIDES.front
 
-        local name = wrapAs or getPeripheralName(side)
-        local x, y, z = getPeripheralPosition(side)
+        local name = wrapAs or getNameFor(side)
+        local x, y, z = getPositionFor(side)
 
         -- TODO [JM] peripheral proxy creation here
 
