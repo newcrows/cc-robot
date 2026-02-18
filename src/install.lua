@@ -1,4 +1,4 @@
-local baseUrl = "https://raw.githubusercontent.com/newcrows/cc-robot/refs/heads/src"
+local baseUrl = "https://raw.githubusercontent.com/newcrows/cc-robot/refs/heads"
 
 local args = { ... }
 local flags
@@ -45,7 +45,7 @@ local function readableSize(numBytes)
 end
 
 local function download(relPath)
-    local response = http.get(baseUrl .. "/" .. branch .. "/" .. relPath)
+    local response = http.get(baseUrl .. "/" .. branch .. "/src/" .. relPath)
     local content = response.readAll()
 
     return content
@@ -108,7 +108,7 @@ local function downloadFiles(config)
 end
 
 local function install()
-    print("install remote." .. branch .. " -> " .. destination .. "..")
+    print("install branch " .. branch .. "..")
 
     print("download config..")
     local ok, config = pcall(downloadConfig)
@@ -142,7 +142,7 @@ local function install()
         return
     end
 
-    print("..install remote." .. branch .. " -> " .. destination .. " ok")
+    print("..installed branch " .. branch .. " to " .. destination)
 end
 
 parseArgs()
