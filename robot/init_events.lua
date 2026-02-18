@@ -48,12 +48,12 @@ return function(_, meta)
         return arr
     end
 
-    function meta.dispatchEvent(name, ...)
-        assert(name, "name must not be nil")
+    function meta.dispatchEvent(event, ...)
+        assert(event, "event must not be nil")
 
         for _, listener in pairs(listeners) do
-            if listener[name] then
-                listener[name](...)
+            if listener[event] then
+                listener[event](...)
             end
         end
     end
