@@ -1,4 +1,4 @@
-return function(robot, meta)
+return function(robot, meta, constants)
     local selectedName
     local reservedSpaces = {}
     local spaceWarningListenerId
@@ -34,7 +34,7 @@ return function(robot, meta)
 
     local function getStackSize(name)
         local slot = meta.getFirstSlot(name, true)
-        return slot and slot.count + slot.space or 64
+        return slot and slot.count + slot.space or constants.default_stack_size
     end
 
     local function countReservedEmptySlots()

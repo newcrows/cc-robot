@@ -73,7 +73,8 @@ local constants = {
         unuse = true,
         pin = true,
         unpin = true
-    }
+    },
+    default_stack_size = 64
 }
 
 robot.meta = meta

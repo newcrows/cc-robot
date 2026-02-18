@@ -1,6 +1,4 @@
-return function(robot, meta)
-    local stackSize = 64
-
+return function(robot, meta, constants)
     local function physicalCountAll()
         local total = 0
 
@@ -126,6 +124,7 @@ return function(robot, meta)
 
         local totalSucked = 0
         local waited = false
+        local stackSize = constants.default_stack_size
 
         while (count and totalSucked < count) or (not count and countEmptySlots() > 0) or (blocking and totalSucked == 0) do
             local nextAmount = count and math.min(stackSize, count - totalSucked) or stackSize

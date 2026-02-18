@@ -273,7 +273,7 @@ return function(robot, meta, constants)
                 return {}
             end,
             ["string"] = function()
-                return { [name] = reserveCount or 64 }
+                return { [name] = reserveCount or constants.default_stack_size }
             end,
             ["table"] = function()
                 return name
