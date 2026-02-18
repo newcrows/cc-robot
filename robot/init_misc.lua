@@ -1,5 +1,9 @@
 return function(robot, meta, constants)
     local function placeHelper(placeFunc, name, blocking)
+        if type(name) == "boolean" or type(name) == "function" then
+            blocking, name = name, robot.getSelectedName()
+        end
+
         if not name then
             error("name must not be nil", 0)
         end
@@ -35,6 +39,12 @@ return function(robot, meta, constants)
     end
 
     local function dropHelper(dropFunc, name, count, blocking)
+        if type(name) == "number" or name == nil then
+            blocking, count, name = count, name, robot.getSelectedName()
+        elseif type(name) == "boolean" or type(name) == "function" then
+            blocking, count, name = name, nil, robot.getSelectedName()
+        end
+
         if not name then
             error("name must not be nil", 0)
         end
@@ -76,87 +86,27 @@ return function(robot, meta, constants)
     end
 
     function robot.place(name, blocking)
-        if type(name) == "boolean" or type(name) == "function" then
-            blocking, name = name, robot.getSelectedName()
-        end
-
         return placeHelper(turtle.place, name, blocking)
     end
 
     function robot.placeUp(name, blocking)
-        if type(name) == "boolean" or type(name) == "function" then
-            blocking, name = name, robot.getSelectedName()
-        end
-
         return placeHelper(turtle.placeUp, name, blocking)
     end
 
     function robot.placeDown(name, blocking)
-        if type(name) == "boolean" or type(name) == "function" then
-            blocking, name = name, robot.getSelectedName()
-        end
-
         return placeHelper(turtle.placeDown, name, blocking)
     end
 
     function robot.drop(name, count, blocking)
-        if type(name) == "boolean" then
-            blocking = name
-            count = nil
-            name = nil
-        elseif type(name) == "number" then
-            blocking = count
-            count = name
-            name = nil
-        elseif type(name) == "string" and type("count") == "boolean" then
-            blocking = count
-            count = nil
-        end
-
-        name = name or robot.getSelectedName()
-        count = count or robot.getItemCount(name)
-
-        return drop(turtle.drop, name, count, blocking)
+        return dropHelper(turtle.drop, name, count, blocking)
     end
 
     function robot.dropUp(name, count, blocking)
-        if type(name) == "boolean" then
-            blocking = name
-            count = nil
-            name = nil
-        elseif type(name) == "number" then
-            blocking = count
-            count = name
-            name = nil
-        elseif type(name) == "string" and type("count") == "boolean" then
-            blocking = count
-            count = nil
-        end
-
-        name = name or robot.getSelectedName()
-        count = count or robot.getItemCount(name)
-
-        return drop(turtle.dropUp, name, count, blocking)
+        return dropHelper(turtle.dropUp, name, count, blocking)
     end
 
     function robot.dropDown(name, count, blocking)
-        if type(name) == "boolean" then
-            blocking = name
-            count = nil
-            name = nil
-        elseif type(name) == "number" then
-            blocking = count
-            count = name
-            name = nil
-        elseif type(name) == "string" and type("count") == "boolean" then
-            blocking = count
-            count = nil
-        end
-
-        name = name or robot.getSelectedName()
-        count = count or robot.getItemCount(name)
-
-        return drop(turtle.dropDown, name, count, blocking)
+        return dropHelper(turtle.dropDown, name, count, blocking)
     end
 
     function robot.detect()
