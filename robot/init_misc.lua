@@ -1,76 +1,4 @@
 return function(robot, meta, constants)
-    local function drop(dropFunc, name, count, blocking)
-        local amount = 0
-
-        while amount < count do
-            local ok, err = meta.selectFirstSlot(name)
-
-            if not ok and blocking then
-                os.sleep(1)
-            elseif not ok then
-                return amount, err
-            end
-
-            local itemCount = robot.getItemCount(name)
-            local dropCount = math.min(count - amount, itemCount)
-
-            ok, err = dropFunc(dropCount)
-
-            if not ok and blocking then
-                os.sleep(1)
-            elseif not ok then
-                return amount, err
-            end
-
-            local dropAmount = itemCount - robot.getItemCount(name)
-            amount = amount + dropAmount
-        end
-
-        return amount
-    end
-
-    local function compare(inspectFunc, name)
-        local blockExists, blockDetail = inspectFunc()
-
-        if blockExists and blockDetail.name == name then
-            return true
-        elseif not blockExists and name == "air" then
-            return true
-        end
-
-        return false
-    end
-
-    local function suck(suckFunc, count, blocking)
-        count = count or 9999
-        local amount = 0
-
-        while amount < count do
-            local rawCount = meta.countItems(nil, true, true)
-            local suckCount = math.min(count - amount, 64)
-
-            local ok, err = suckFunc(suckCount)
-
-            if not ok and blocking then
-                if count == 9999 and amount > 0 then
-                    return amount
-                end
-
-                os.sleep(1)
-            elseif not ok then
-                if count == 9999 then
-                    return amount
-                end
-
-                return amount, err
-            end
-
-            amount = amount + meta.countItems(nil, true, true) - rawCount
-        end
-
-        return amount
-    end
-
     local function placeHelper(placeFunc, name, blocking)
         if not name then
             error("name must not be nil", 0)
@@ -104,6 +32,47 @@ return function(robot, meta, constants)
         end
 
         return true
+    end
+
+    local function dropHelper(dropFunc, name, count, blocking)
+        if not name then
+            error("name must not be nil", 0)
+        end
+
+        local remaining = count or robot.getItemCount(name)
+        local amount = remaining
+        local waited = false
+
+        while remaining > 0 do
+            local slotInfo = meta.selectFirstSlot(name, false)
+            local amountToDrop = 0
+
+            if slotInfo then
+                local currentInSlot = slotInfo.count
+                amountToDrop = math.min(currentInSlot, remaining)
+            end
+
+            if amountToDrop > 0 and dropFunc(amountToDrop) then
+                remaining = remaining - amountToDrop
+                waited = false
+            else
+                if blocking then
+                    if waited then
+                        os.sleep(1)
+                    end
+
+                    if type(blocking) == "function" then
+                        blocking()
+                    end
+
+                    waited = true
+                else
+                    return amount - remaining
+                end
+            end
+        end
+
+        return amount
     end
 
     function robot.place(name, blocking)
