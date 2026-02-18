@@ -1,10 +1,15 @@
 return function(robot, meta, constants)
     local DELTAS = constants.deltas
+    local FACING_INDEX = constants.facing_index
     local FACINGS = constants.facings
     local OPPOSITE_FACINGS = constants.opposite_facings
 
     robot.x, robot.y, robot.z = 0, 0, 0
     robot.facing = FACINGS.north
+
+    local acceptedFuels = {}
+    local fuelWarningListenerId
+    local fuelWarningClearedListenerId
 
     local function moveHelper(moveFunc, delta, count, blocking)
         if type(count) == "function" or type(count) == "boolean" then
@@ -13,6 +18,8 @@ return function(robot, meta, constants)
         else
             count = count or 1
         end
+
+        meta.requireFuelLevel(count)
 
         local moved = 0
         while moved < count do
@@ -50,8 +57,56 @@ return function(robot, meta, constants)
             turnFunc()
         end
 
-        robot.facing = (robot.facing + (direction * count)) % 4
+        local facingI = (FACING_INDEX[robot.facing] + (direction * count)) % 4
+
+        robot.facing = FACING_INDEX[facingI]
         return count
+    end
+
+    local function refuel(name, count)
+        local slot = meta.selectFirstSlot(name, false, true)
+
+        if slot then
+            local cappedCount = math.min(turtle.getItemCount(), count)
+            turtle.refuel(cappedCount)
+        end
+    end
+
+    local function refuelTo(requiredLevel)
+        for name, reserveCount in pairs(acceptedFuels) do
+            local availableCount = math.min(robot.getReservedItemCount(name), reserveCount)
+            refuel(name, availableCount)
+
+            if turtle.getFuelLevel() >= requiredLevel then
+                return true
+            end
+        end
+
+        return false
+    end
+
+    function meta.requireFuelLevel(requiredLevel)
+        local level = turtle.getFuelLevel()
+        local waited = false
+
+        while level < requiredLevel do
+            if refuelTo(requiredLevel) then
+                if waited then
+                    meta.dispatchEvent("fuel_warning_cleared")
+                end
+
+                return
+            end
+
+            if waited then
+                os.sleep(1)
+            end
+
+            level = turtle.getFuelLevel()
+            meta.dispatchEvent("fuel_warning", level, requiredLevel, acceptedFuels, waited)
+
+            waited = true
+        end
     end
 
     function robot.forward(count, blocking)
@@ -187,7 +242,7 @@ return function(robot, meta, constants)
     end
 
     function robot.face(targetFacing)
-        local diff = (targetFacing - robot.facing) % 4
+        local diff = (FACING_INDEX[targetFacing] - FACING_INDEX[robot.facing]) % 4
 
         if diff == 1 then
             turtle.turnRight()
@@ -199,5 +254,53 @@ return function(robot, meta, constants)
         end
 
         robot.facing = targetFacing
+    end
+
+    function robot.setFuel(name, reserveCount)
+        acceptedFuels = ({
+            ["nil"] = function()
+                return {}
+            end,
+            ["string"] = function()
+                return { [name] = reserveCount or 64 }
+            end,
+            ["table"] = function()
+                return name
+            end
+        })[type(name)]()
+    end
+
+    function robot.onFuelWarning(callback)
+        if fuelWarningListenerId then
+            meta.removeEventListener(fuelWarningListenerId)
+            fuelWarningListenerId = nil
+        end
+
+        if callback then
+            fuelWarningListenerId = meta.addEventListener({
+                fuel_warning = callback
+            })
+        end
+    end
+
+    function robot.onFuelWarningCleared(callback)
+        if fuelWarningClearedListenerId then
+            meta.removeEventListener(fuelWarningClearedListenerId)
+            fuelWarningClearedListenerId = nil
+        end
+
+        if callback then
+            fuelWarningClearedListenerId = meta.addEventListener({
+                fuel_warning_cleared = callback
+            })
+        end
+    end
+
+    function robot.getFuelLevel()
+        return turtle.getFuelLevel()
+    end
+
+    function robot.getFuelLimit()
+        return turtle.getFuelLimit()
     end
 end
