@@ -56,6 +56,14 @@ return function(robot, meta, constants)
 
     local function loadConstructors()
         local dir = "%INSTALL_DIR%/peripherals"
+        local files = fs.list(dir)
+
+        for _, file in ipairs(files) do
+            local cleanFile = string.gsub(file, "%.lua$", "")
+            local detail = require(fs.combine(dir, cleanFile))
+
+            constructors[detail.name] = detail.constructor
+        end
     end
 
     function robot.wrap(side, wrapAs)
@@ -70,5 +78,5 @@ return function(robot, meta, constants)
         return wrapHelper(SIDES.bottom, wrapAs)
     end
 
-    -- TODO [JM] load all custom peripherals from %INSTALL_DIR%/api/peripherals/* here
+    loadConstructors()
 end
