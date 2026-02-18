@@ -64,35 +64,55 @@ return function(robot, meta)
 
     function meta.listSlots(name, limit, includeReservedItems)
         limit = limit or 16
-
         local slots = {}
-        local seenReserved = {}
+
+        -- 1. Durchlauf: Brutto-Bestand pro Item-Typ ermitteln
+        local totalCounts = {}
+        for i = 1, 16 do
+            local d = turtle.getItemDetail(i)
+            if d then
+                totalCounts[d.name] = (totalCounts[d.name] or 0) + d.count
+            end
+        end
+
+        -- 2. Durchlauf: Slots filtern und logischen Space/Count berechnen
+        local reservedUsedForCount = {}
+        local reservedUsedForSpace = {}
 
         for i = 1, 16 do
             local detail = turtle.getItemDetail(i)
 
             if detail and (not name or detail.name == name) then
                 local count = detail.count
-                local space = turtle.getItemSpace(i)
+                local physicalSpace = turtle.getItemSpace(i)
+                local usableSpace = physicalSpace
 
                 if not includeReservedItems then
-                    local totalReserved = reservedSpaces[detail.name] or 0
-                    local alreadySeen = seenReserved[detail.name] or 0
+                    local reservedTotal = reservedSpaces[detail.name] or 0
 
-                    if alreadySeen < totalReserved then
-                        local reservedInSlot = math.min(count, totalReserved - alreadySeen)
+                    -- LOGIK FÜR COUNT: Reservierung "frisst" vorhandene Items von vorne auf
+                    local alreadyUsedCount = reservedUsedForCount[detail.name] or 0
+                    local reservedInSlot = math.min(count, reservedTotal - alreadyUsedCount)
+                    count = count - reservedInSlot
+                    reservedUsedForCount[detail.name] = alreadyUsedCount + reservedInSlot
 
-                        count = count - reservedInSlot
-                        seenReserved[detail.name] = alreadySeen + reservedInSlot
-                    end
+                    -- LOGIK FÜR SPACE: Fehlende Reservierung blockiert physischen Platz
+                    local currentTotal = totalCounts[detail.name] or 0
+                    local missingTotal = math.max(0, reservedTotal - currentTotal)
+
+                    local alreadyBlockedSpace = reservedUsedForSpace[detail.name] or 0
+                    local blockInSlot = math.min(physicalSpace, missingTotal - alreadyBlockedSpace)
+                    usableSpace = physicalSpace - blockInSlot
+                    reservedUsedForSpace[detail.name] = alreadyBlockedSpace + blockInSlot
                 end
 
-                if count > 0 then
+                -- Slot aufnehmen, wenn er freien Count ODER freien Space bietet
+                if includeReservedItems or count > 0 or usableSpace > 0 then
                     table.insert(slots, {
                         id = i,
                         name = detail.name,
                         count = count,
-                        space = space
+                        space = usableSpace
                     })
                 end
 
@@ -101,7 +121,6 @@ return function(robot, meta)
                 end
             end
         end
-
         return slots
     end
 
@@ -154,13 +173,13 @@ return function(robot, meta)
         return emptySlots
     end
 
-    function meta.getFirstEmptySlot(compact)
-        local slots = meta.listEmptySlots(1, compact)
+    function meta.getFirstEmptySlot(shouldCompact)
+        local slots = meta.listEmptySlots(1, shouldCompact)
         return slots[1]
     end
 
-    function meta.selectFirstEmptySlot(compact)
-        local slot = meta.getFirstEmptySlot(compact)
+    function meta.selectFirstEmptySlot(shouldCompact)
+        local slot = meta.getFirstEmptySlot(shouldCompact)
 
         if slot then
             turtle.select(slot.id)
@@ -206,7 +225,7 @@ return function(robot, meta)
     end
 
     function robot.getItemDetail(name)
-        local count = meta.countItems(name, false)
+        local count = robot.getItemCount(name)
 
         if count == 0 then
             return nil
@@ -232,7 +251,7 @@ return function(robot, meta)
 
         for _, slot in ipairs(meta.listSlots(name, nil, false)) do
             space = space + slot.space
-            stackSize = slot.count + slot.space
+            stackSize = getStackSize(name)
         end
 
         space = space + robot.getItemSpaceForUnknown(stackSize)
@@ -282,6 +301,11 @@ return function(robot, meta)
     end
 
     function robot.free(name, count)
+        if not name then
+            reservedSpaces = {}
+            return
+        end
+
         reservedSpaces[name] = (reservedSpaces[name] or 0) - (count or 64)
     end
 
