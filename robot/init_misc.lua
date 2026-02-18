@@ -1,4 +1,18 @@
 return function(robot, meta, constants)
+    local function physicalCountAll()
+        local total = 0
+
+        for i = 1, 16 do
+            total = total + turtle.getItemCount(i)
+        end
+
+        return total
+    end
+
+    local function getFreeSlotCount()
+        return #meta.listEmptySlots(nil, false)
+    end
+
     local function placeHelper(placeFunc, name, blocking)
         if type(name) == "boolean" or type(name) == "function" then
             blocking, name = name, robot.getSelectedName()
@@ -108,24 +122,51 @@ return function(robot, meta, constants)
             blocking, count = count, nil
         end
 
-        -- Wenn count nil ist, saugen wir so viel wie möglich (bis zu 64)
-        local target = count or 64
         local totalSucked = 0
         local waited = false
 
-        while totalSucked < target or (blocking and totalSucked == 0) do
-            local needed = target - totalSucked
-            local success, amount = suckFunc(needed)
+        while (count and totalSucked < count) or (not count and getFreeSlotCount() > 0) or (blocking and totalSucked == 0) do
+            local nextAmount = 64
+
+            if count then
+                nextAmount = math.min(64, count - totalSucked)
+            end
+
+            -- Bestandsaufnahme vor dem Saugen
+            local before = physicalCountAll()
+            local success = suckFunc(nextAmount)
 
             if success then
-                totalSucked = totalSucked + (amount or 1) -- amount kann bei alten CC-Versionen nil sein
-                if totalSucked >= target then return totalSucked end
+                -- Bestandsaufnahme nach dem Saugen zur Ermittlung der Differenz
+                local after = physicalCountAll()
+                local amount = after - before
+
+                totalSucked = totalSucked + amount
                 waited = false
+
+                if count and totalSucked >= count then
+                    return totalSucked
+                end
+
+                -- Falls success true war, aber 0 Items kamen (sehr selten, aber möglich):
+                if amount == 0 and not blocking then
+                    return totalSucked
+                end
             else
-                -- Nichts eingesaugt (Kiste leer oder Inventar voll)
+                -- Nichts eingesaugt (Kiste leer oder kein freier Slot mehr verfügbar)
                 if blocking then
-                    if waited then os.sleep(1) end
-                    if type(blocking) == "function" then blocking() end
+                    if getFreeSlotCount() <= 0 then
+                        return totalSucked
+                    end
+
+                    if waited then
+                        os.sleep(1)
+                    end
+
+                    if type(blocking) == "function" then
+                        blocking()
+                    end
+
                     waited = true
                 else
                     return totalSucked
