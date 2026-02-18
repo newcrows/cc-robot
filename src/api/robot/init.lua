@@ -25,6 +25,12 @@ local constants = {
         [3] = "west",
         [4] = "up",
         [5] = "down",
+        ["0|0|-1"] = "north",
+        ["1|0|0"] = "east",
+        ["0|0|1"] = "south",
+        ["-1|0|0"] = "west",
+        ["0|1|0"] = "up",
+        ["0|-1|0"] = "down",
         north = 0,
         east = 1,
         south = 2,
@@ -77,16 +83,6 @@ local constants = {
         left = "right",
         top = "bottom",
         bottom = "top"
-    },
-    raw_properties = {
-        name = true,
-        side = true,
-        target = true,
-        pinned = true,
-        use = true,
-        unuse = true,
-        pin = true,
-        unpin = true
     },
     default_stack_size = 64
 }

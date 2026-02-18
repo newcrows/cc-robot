@@ -4,8 +4,17 @@ return function(robot, meta, constants)
     local SIDES = constants.sides
     local DELTAS = constants.deltas
 
+    local RAW_PROPERTIES = {
+        x = true,
+        y = true,
+        z = true,
+        name = true,
+        target = true
+    }
+
     local constructors = {}
     local proxies = {}
+    local softProxies = {}
 
     local function loadConstructors()
         local dir = "%INSTALL_DIR%/peripherals"
@@ -27,13 +36,13 @@ return function(robot, meta, constants)
         })[side]
 
         if not inspectFunc then
-            error("name could not be determined on " .. side)
+            error("name could not be determined on " .. side, 0)
         end
 
         local ok, detail = inspectFunc()
 
         if not ok then
-            error("name could not be determined on " .. side)
+            error("name could not be determined on " .. side, 0)
         end
 
         return detail.name
@@ -53,25 +62,84 @@ return function(robot, meta, constants)
         return robot.x + delta.x, robot.y + delta.y, robot.z + delta.z
     end
 
+    local function getPositionKey(x, y, z)
+        return x .. "|" .. y .. "|" .. z
+    end
+
+    local function getSideFor(facing)
+        local facingI = FACING_INDEX[facing]
+        local robotFacingI = FACING_INDEX[robot.facing]
+
+        local sideI = (facingI - robotFacingI) % 4
+        return SIDE_INDEX[sideI]
+    end
+
+    local function isSoftWrapped(key)
+        return softProxies[key] and true or false
+    end
+
+    local function softWrap(key, proxy)
+        local dx, dy, dz = proxy.x - robot.x, proxy.y - robot.y, proxy.z - robot.z
+        local deltaKey = getPositionKey(dx, dy, dz)
+        local facing = FACING_INDEX[deltaKey]
+
+        if not facing then
+            error("could not soft wrap", 0)
+        end
+
+        local side = getSideFor(facing)
+        local target = peripheral.wrap(side)
+
+        local constructor = constructors[proxy.name]
+
+        if constructor then
+            local opts = {
+                robot = robot,
+                meta = meta,
+                constants = constants,
+                facing = facing,
+                side = side,
+                target = target
+            }
+
+            target = constructor(opts)
+        end
+
+        proxy.target = target
+        softProxies[key] = proxy
+    end
+
     local function createProxy(x, y, z, name)
-        local key = x .. "|" .. y .. "|" .. z
+        local key = getPositionKey(x, y, z)
         local proxy = {
             x = x, y = y, z = z,
             name = name
         }
 
-        -- TODO [JM] peripheral proxy creation here
+        local metatable = {
+            __index = function(_, prop)
+                if RAW_PROPERTIES[prop] then
+                    return rawget(proxy, prop)
+                end
 
-        -- maybe robot.go(peripheral) should just work?
-        -- going to peripherals directly is probably a nice feature without bloating the api
+                return function(...)
+                    if not isSoftWrapped(key) then
+                        softWrap(key, proxy)
+                    end
 
-        -- like robot.go(chest_1) -> robot moves next to chest_1?
-        -- like robot.moveTo(chest_1) -> robot moves next to chest_1?
+                    return proxy.target[prop](...)
+                end
+            end,
+            __newindex = function(_, prop, value)
+                if RAW_PROPERTIES[prop] then
+                    rawset(proxy, prop, value)
+                end
+            end
+        }
 
-        -- go / moveTo either aliases or I decide which of both later on
-        -- probably should use one of them only, so there is no bloat
-
+        setmetatable(proxy, metatable)
         proxies[key] = proxy
+
         return proxy
     end
 
@@ -93,12 +161,12 @@ return function(robot, meta, constants)
             x, y, z = getPositionFor(x)
         end
 
-        local key = x .. "|" .. y .. "|" .. z
+        local key = getPositionKey(x, y, z)
         local proxy = proxies[key]
 
         if proxy then
             if proxy.name ~= name then
-                error("already wrapped as something else")
+                error("already wrapped as something else", 0)
             end
 
             print("return " .. name .. " at (" .. x .. ", " .. y .. ", " .. z .. ")")
@@ -125,6 +193,10 @@ return function(robot, meta, constants)
         end
 
         return arr
+    end
+
+    function meta.softUnwrap()
+        softProxies = {}
     end
 
     function robot.wrap(x, y, z, wrapAs)

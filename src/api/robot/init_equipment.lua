@@ -1,3 +1,4 @@
+--[[
 return function(robot, meta, constants)
     local RAW_PROPERTIES = constants.raw_properties
     local SIDES = constants.sides
@@ -654,4 +655,8 @@ return function(robot, meta, constants)
     meta.setPeripheralConstructor("minecraft:diamond_shovel", digToolConstructor)
     meta.setPeripheralConstructor("minecraft:diamond_sword", attackToolConstructor)
     meta.setPeripheralConstructor("minecraft:crafting_table", craftToolConstructor)
+end
+]]--
+
+return function()
 end
