@@ -1,5 +1,5 @@
 {
-  "pre_install": "",
+  "pre_install": "pre_install.lua",
   "post_install": "post_install.lua",
   "files": [
     "api/robot/init.lua",
