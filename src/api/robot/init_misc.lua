@@ -1,4 +1,6 @@
 return function(robot, meta)
+    local stackSize = 64
+
     local function physicalCountAll()
         local total = 0
 
@@ -126,13 +128,8 @@ return function(robot, meta)
         local waited = false
 
         while (count and totalSucked < count) or (not count and countEmptySlots() > 0) or (blocking and totalSucked == 0) do
-            local nextAmount = 64
+            local nextAmount = count and math.min(stackSize, count - totalSucked) or stackSize
 
-            if count then
-                nextAmount = math.min(64, count - totalSucked)
-            end
-
-            -- Bestandsaufnahme vor dem Saugen
             local before = physicalCountAll()
             local success = suckFunc(nextAmount)
 
