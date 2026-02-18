@@ -103,6 +103,39 @@ return function(robot, meta, constants)
         return false
     end
 
+    local function suckHelper(suckFunc, count, blocking)
+        if type(count) == "boolean" or type(count) == "function" then
+            blocking, count = count, nil
+        end
+
+        -- Wenn count nil ist, saugen wir so viel wie möglich (bis zu 64)
+        local target = count or 64
+        local totalSucked = 0
+        local waited = false
+
+        while totalSucked < target or (blocking and totalSucked == 0) do
+            local needed = target - totalSucked
+            local success, amount = suckFunc(needed)
+
+            if success then
+                totalSucked = totalSucked + (amount or 1) -- amount kann bei alten CC-Versionen nil sein
+                if totalSucked >= target then return totalSucked end
+                waited = false
+            else
+                -- Nichts eingesaugt (Kiste leer oder Inventar voll)
+                if blocking then
+                    if waited then os.sleep(1) end
+                    if type(blocking) == "function" then blocking() end
+                    waited = true
+                else
+                    return totalSucked
+                end
+            end
+        end
+
+        return totalSucked
+    end
+
     function robot.place(name, blocking)
         return placeHelper(turtle.place, name, blocking)
     end
@@ -152,30 +185,15 @@ return function(robot, meta, constants)
     end
 
     function robot.suck(count, blocking)
-        if type(count) == "boolean" then
-            blocking = count
-            count = nil
-        end
-
-        return suck(turtle.suck, count, blocking)
+        return suckHelper(turtle.suck, count, blocking)
     end
 
     function robot.suckUp(count, blocking)
-        if type(count) == "boolean" then
-            blocking = count
-            count = nil
-        end
-
-        return suck(turtle.suckUp, count, blocking)
+        return suckHelper(turtle.suckUp, count, blocking)
     end
 
     function robot.suckDown(count, blocking)
-        if type(count) == "boolean" then
-            blocking = count
-            count = nil
-        end
-
-        return suck(turtle.suckDown, count, blocking)
+        return suckHelper(turtle.suckDown, count, blocking)
     end
 
     function robot.inspect()
