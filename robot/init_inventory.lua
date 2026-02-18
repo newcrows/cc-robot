@@ -88,7 +88,7 @@ return function(robot, meta)
         waitForSpace(check)
     end
 
-    function meta.requireUnknownItemSpace(stackSize, space)
+    function meta.requireItemSpaceForUnknown(stackSize, space)
         local function check()
             return robot.hasItemSpaceForUnknown(stackSize, space)
         end
