@@ -48,6 +48,20 @@ local constants = {
         up = "down",
         down = "up"
     },
+    side_index = {
+        [0] = "front",
+        [1] = "right",
+        [2] = "back",
+        [3] = "left",
+        [4] = "up",
+        [5] = "down",
+        front = 0,
+        right = 1,
+        back = 2,
+        left = 3,
+        up = 4,
+        down = 5
+    },
     sides = {
         front = "front",
         right = "right",

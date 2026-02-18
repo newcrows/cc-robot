@@ -1,47 +1,38 @@
 return function(robot, meta, constants)
-    local RAW_PROPERTIES = constants.raw_properties
-    local FACINGS = constants.facings
-    local OPPOSITE_FACINGS = constants.opposite_facings
+    local FACING_INDEX = constants.facing_index
+    local SIDE_INDEX = constants.side_index
     local SIDES = constants.sides
-    local INSPECT_FUNCS = {
-        [SIDES.front] = turtle.inspect,
-        [SIDES.top] = turtle.inspectUp,
-        [SIDES.bottom] = turtle.inspectDown
-    }
+    local DELTAS = constants.deltas
 
     local constructors = {}
     local proxies = {}
 
-    local function createWrapProxy(name, side, target)
-        local proxy = {
-            name = name,
-            side = side,
-            target = target
-        }
+    local function getPeripheralName(side)
+        local inspectFunc = ({
+            front = turtle.inspect,
+            top = turtle.inspectUp,
+            bottom = turtle.inspectDown
+        })[side]
 
-        local metatable = {
-            __index = function(_, key)
-                if RAW_PROPERTIES[key] then
-                    return rawget(proxy, key)
-                end
+        if not inspectFunc then
+            error("name could not be determined on " .. side)
+        end
 
-                return function(...)
-                    if not proxy.target then
-                        error("wrapped block is no longer accessible")
-                    end
+        local _, detail = inspectFunc()
 
-                    return proxy.target[key](...)
-                end
-            end,
-            __newindex = function(_, key, value)
-                if RAW_PROPERTIES[key] then
-                    rawset(proxy, key, value)
-                end
-            end
-        }
+        if not detail then
+            error("name could not be determined on " .. side)
+        end
 
-        setmetatable(proxy, metatable)
-        return proxy
+        return detail.name
+    end
+
+    local function getPeripheralPosition(side)
+        local facingI = (FACING_INDEX[robot.facing] + SIDE_INDEX[side]) % 4
+        local facing = FACING_INDEX[facingI]
+        local delta = DELTAS[facing]
+
+        return robot.x + delta.x, robot.y + delta.y, robot.z + delta.z
     end
 
     local function wrapHelper(side, wrapAs)
@@ -50,6 +41,9 @@ return function(robot, meta, constants)
         end
 
         side = side or SIDES.front
+
+        local name = wrapAs or getPeripheralName(side)
+        local x, y, z = getPeripheralPosition(side)
 
         -- TODO [JM] peripheral proxy creation here
     end
