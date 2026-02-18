@@ -201,19 +201,83 @@ return function(robot, meta)
     end
 
     function meta.arrangeSlots(layoutFunc)
-        local blacklist = {}
-        local setSlot = function(slotId, name, count)
-            if blacklist[slotId] then
-                error("slot " .. tostring(slotId) .. " was already set in current arrangeSlots() call")
+        local lockedSlots = {}
+
+        local function setSlot(id, name, count)
+            if id < 1 or id > 16 then
+                return false
+            end
+            count = count or 0
+
+            if not name or count <= 0 then
+                if turtle.getItemCount(id) > 0 and not lockedSlots[id] then
+                    turtle.select(id)
+                    for i = 1, 16 do
+                        if i ~= id and not lockedSlots[i] then
+                            if turtle.transferTo(i) then
+                                break
+                            end
+                        end
+                    end
+                end
+                lockedSlots[id] = true
+                return true
             end
 
-            setSlotHolder.setSlot(slotId, name, count, blacklist)
-            blacklist[slotId] = true
+            local currentInTarget = turtle.getItemDetail(id)
 
-            return true
+            if currentInTarget and currentInTarget.name ~= name then
+                turtle.select(id)
+                for i = 1, 16 do
+                    if i ~= id and not lockedSlots[i] then
+                        if turtle.transferTo(i) then
+                            break
+                        end
+                    end
+                end
+                currentInTarget = nil
+            end
+
+            local currentCount = turtle.getItemCount(id)
+            local needed = count - currentCount
+
+            if needed > 0 then
+                for sourceId = 1, 16 do
+                    if sourceId ~= id and not lockedSlots[sourceId] then
+                        local source = turtle.getItemDetail(sourceId)
+                        if source and source.name == name then
+                            turtle.select(sourceId)
+                            turtle.transferTo(id, needed)
+
+                            needed = count - turtle.getItemCount(id)
+                            if needed <= 0 then
+                                break
+                            end
+                        end
+                    end
+                end
+            elseif needed < 0 then
+                turtle.select(id)
+                local toRemove = math.abs(needed)
+                for i = 1, 16 do
+                    if i ~= id and not lockedSlots[i] then
+                        if turtle.transferTo(i, toRemove) then
+                            break
+                        end
+                    end
+                end
+            end
+
+            lockedSlots[id] = true
+            return turtle.getItemCount(id) == count
         end
 
-        return layoutFunc(setSlot)
+        local function clearSlot(id)
+            setSlot(id)
+        end
+
+        -- Führe das Layout aus
+        return layoutFunc(setSlot, clearSlot)
     end
 
     function robot.select(name)
