@@ -1,6 +1,6 @@
 const fs = require("fs");
 const nodePath = require("path");
-const inputDir = "../robot";
+const inputDir = "../src/api/robot";
 
 function extract(filename) {
   const outputFile = "./out/" + filename
