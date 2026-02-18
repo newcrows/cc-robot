@@ -85,6 +85,24 @@ return function(robot, meta, constants)
         return amount
     end
 
+    local function compareHelper(inspectFunc, name)
+        name = name or robot.getSelectedName()
+
+        if not name then
+            error("name must not be nil", 0)
+        end
+
+        local _, detail = inspectFunc()
+
+        if detail then
+            return detail.name == name
+        else
+            return name == "air" or name == "minecraft:air"
+        end
+
+        return false
+    end
+
     function robot.place(name, blocking)
         return placeHelper(turtle.place, name, blocking)
     end
@@ -122,18 +140,15 @@ return function(robot, meta, constants)
     end
 
     function robot.compare(name)
-        name = name or robot.getSelectedName()
-        return compare(turtle.inspect, name)
+        return compareHelper(turtle.inspect, name)
     end
 
     function robot.compareUp(name)
-        name = name or robot.getSelectedName()
-        return compare(turtle.inspectUp, name)
+        return compareHelper(turtle.inspectUp, name)
     end
 
     function robot.compareDown(name)
-        name = name or robot.getSelectedName()
-        return compare(turtle.inspectDown, name)
+        return compareHelper(turtle.inspectDown, name)
     end
 
     function robot.suck(count, blocking)
