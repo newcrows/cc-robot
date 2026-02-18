@@ -203,6 +203,10 @@ return function(robot, meta)
             end
         end
 
+        if #emptySlots == 0 and not shouldCompact then
+            return meta.listEmptySlots(limit, true)
+        end
+
         return emptySlots
     end
 
