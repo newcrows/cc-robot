@@ -25,7 +25,7 @@ local function removeConfigFile()
 end
 
 function task.run(name, opts)
-    if not resumed then
+    if not opts.resumed then
         writeConfigFile(name, opts)
         print("run: " .. name, table.unpack(opts))
     else
