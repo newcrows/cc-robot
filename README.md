@@ -30,6 +30,11 @@ local robot = require("%INSTALL_DIR%/api/robot")
 local robot = require("/api/robot")
 ```
 
+## peek the complete method overview
+
+Go [here](https://github.com/newcrows/cc-robot/tree/main/tooling/out/src/api/robot)
+to see what functions are exposed.
+
 ## multiple tools example
 ```lua
 -- this snippet assumes you have a pickaxe, an axe, a shovel
