@@ -34,12 +34,15 @@ end
 
 local function moveWithPrompt(src, dest)
     if fs.exists(dest) then
-        write("'" .. dest .. "' already exists. Overwrite? (y/n): ")
+        print("'" .. dest .. "' already exists.")
+        write("overwrite? (y/n): ")
+
         local response = read():lower()
 
-        if response == "y" or response == "yes" or response == "" then
+        if response == "y" or response == "yes" then
             fs.delete(dest)
         else
+            print("skipped '" .. dest .. "'")
             return
         end
     end
