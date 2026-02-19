@@ -155,7 +155,6 @@ return function(robot, meta, constants)
 
         if type(x) == "table" then
             if x.name then
-                print("rewrap " .. x.name .. " at (" .. x.x .. ", " .. x.y .. ", " .. x.z .. ")")
                 local key = getKeyFor(x.x, x.y, x.z)
                 proxies[key] = x
 
@@ -185,11 +184,9 @@ return function(robot, meta, constants)
                 error("already wrapped as something else", 0)
             end
 
-            print("return " .. name .. " at (" .. x .. ", " .. y .. ", " .. z .. ")")
             return proxy
         end
 
-        print("create " .. name .. " at (" .. x .. ", " .. y .. ", " .. z .. ")")
         return createProxy(x, y, z, name)
     end
 
@@ -210,8 +207,6 @@ return function(robot, meta, constants)
         if proxy then
             softProxies[key] = nil
             proxies[key] = nil
-
-            print("unwrap " .. proxy.name .. " at (" .. x .. ", " .. y .. ", " .. z .. ")")
         end
 
         return true
