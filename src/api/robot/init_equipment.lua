@@ -81,34 +81,16 @@ return function(robot, meta, constants)
         proxy.target = target
     end
 
-    local function checkEquipment(check, state, name)
-        local checked = check()
-        local waited = false
-
-        if checked then
-            return
-        end
-
-        while not checked do
-            if waited then
-                os.sleep(1)
-            end
-
-            meta.dispatchEvent("equipment_warning", state, name, waited)
-
-            checked = check()
-            waited = true
-        end
-
-        meta.dispatchEvent("equipment_warning_cleared")
-    end
-
     local function equipAndSoftWrap(side, proxy)
-        local function check()
+        local function checkState()
             return meta.selectFirstSlot(proxy.name, true)
         end
 
-        checkEquipment(check, STATE.missing, proxy.name)
+        local function getState()
+            return STATE.missing, proxy.name
+        end
+
+        meta.waitFor(checkState, getState, "equipment_warning")
 
         local equipFunc = side == SIDES.right and nativeTurtle.equipRight or nativeTurtle.equipLeft
         equipFunc()
@@ -179,11 +161,15 @@ return function(robot, meta, constants)
                 error("can't unuse pinned equipment", 0)
             end
 
-            local function check()
+            local function checkState()
                 return meta.selectFirstEmptySlot(true)
             end
 
-            checkEquipment(check, STATE.no_space, proxy.name)
+            local function getState()
+                return STATE.no_space, proxy.name
+            end
+
+            meta.waitFor(checkState, getState, "equipment_warning")
 
             local equipFunc = proxy.side == SIDES.right and nativeTurtle.equipRight or nativeTurtle.equipLeft
             equipFunc()
