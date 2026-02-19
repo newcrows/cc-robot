@@ -13,43 +13,44 @@ return function(robot, meta, constants)
         return #meta.listEmptySlots()
     end
 
+    local function ensure(check, tick, strategy)
+        tick()
+
+        local ok = check()
+        if ok or not strategy then
+            return
+        end
+
+        strategy = type(strategy) == "function" and strategy or function()
+        end
+
+        while true do
+            strategy(true)
+            tick(true)
+
+            if check() then
+                return
+            end
+
+            os.sleep(1)
+        end
+    end
+
     local function placeHelper(placeFunc, name, blocking)
-        if type(name) == "boolean" or type(name) == "function" then
-            blocking, name = name, robot.getSelectedName()
+        local placed = false
+
+        local function check()
+            return placed
         end
 
-        if not name then
-            error("name must not be nil", 0)
-        end
-
-        local success = false
-        local waited = false
-
-        while not success do
-            success = meta.selectFirstSlot(name)
-
-            if success then
-                success = placeFunc()
-            end
-
-            if not success then
-                if blocking then
-                    if waited then
-                        os.sleep(1)
-                    end
-
-                    if type(blocking) == "function" then
-                        blocking()
-                    end
-
-                    waited = true
-                else
-                    return false
-                end
+        local function tick()
+            if meta.selectFirstSlot(name) then
+                placed = placeFunc()
             end
         end
 
-        return true
+        ensure(check, tick, blocking)
+        return placed
     end
 
     local function dropHelper(dropFunc, name, count, blocking)
