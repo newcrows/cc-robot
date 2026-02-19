@@ -10,8 +10,12 @@
     "api/robot/init_peripherals.lua",
     "api/robot/init_positioning.lua",
     "api/robot/init_turtle.lua",
+    "api/task/init.lua",
     "peripherals/chest.lua",
     "peripherals/dig_tool.lua",
-    "peripherals/me_bridge.lua"
+    "peripherals/me_bridge.lua",
+    "startup/init.lua",
+    "tasks/simple.lua",
+    "task.lua"
   ]
 }
