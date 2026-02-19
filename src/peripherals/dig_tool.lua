@@ -10,7 +10,7 @@ return {
         -- TODO [JM] implement blocking
         local function digHelper(digFunc, blocking)
             if digFunc() then
-                meta.unwrapAll()
+                meta.softUnwrapAll()
 
                 return true
             end
