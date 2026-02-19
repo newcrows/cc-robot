@@ -71,12 +71,12 @@ return function(_, meta)
                 os.sleep(1)
             end
 
-            meta.dispatchEvent(event, table.unpack(getState()), waited)
+            meta.dispatchEvent(warningEvent, table.unpack(getState()), waited)
 
             checked = checkState()
             waited = true
         end
 
-        meta.dispatchEvent(event .. "_cleared")
+        meta.dispatchEvent(warningEvent .. "_cleared")
     end
 end
