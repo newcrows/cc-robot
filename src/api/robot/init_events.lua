@@ -57,4 +57,26 @@ return function(_, meta)
             end
         end
     end
+
+    function meta.waitFor(checkState, getState, warningEvent)
+        local checked = checkState()
+        local waited = false
+
+        if checked then
+            return
+        end
+
+        while not checked do
+            if waited then
+                os.sleep(1)
+            end
+
+            meta.dispatchEvent(event, table.unpack(getState()), waited)
+
+            checked = checkState()
+            waited = true
+        end
+
+        meta.dispatchEvent(event .. "_cleared")
+    end
 end

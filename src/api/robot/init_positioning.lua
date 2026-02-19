@@ -78,6 +78,10 @@ return function(robot, meta, constants)
     end
 
     local function refuelTo(requiredLevel)
+        if nativeTurtle.getFuelLevel() >= requiredLevel then
+            return true
+        end
+
         for name, reserveCount in pairs(acceptedFuels) do
             local availableCount = math.min(robot.getReservedItemCount(name), reserveCount)
             refuel(name, availableCount)
@@ -146,8 +150,6 @@ return function(robot, meta, constants)
         return math.max(-1, math.min(1, val))
     end
 
-    -- TODO [JM] fix the warning dispatch logic
-    -- make it work like item_warning and equipment_warning, much cleaner loops
     function meta.requireFuelLevel(requiredLevel)
         if not next(acceptedFuels) then
             error("no accepted fuels configured! use robot.setFuel() first.", 0)
@@ -157,27 +159,15 @@ return function(robot, meta, constants)
             error("requiredLevel is bigger than turtle.getFuelLimit()!", 0)
         end
 
-        local level = nativeTurtle.getFuelLevel()
-        local waited = false
-
-        while level < requiredLevel do
-            if refuelTo(requiredLevel) then
-                if waited then
-                    meta.dispatchEvent("fuel_warning_cleared")
-                end
-
-                return
-            end
-
-            if waited then
-                os.sleep(1)
-            end
-
-            level = nativeTurtle.getFuelLevel()
-            meta.dispatchEvent("fuel_warning", level, requiredLevel, acceptedFuels, waited)
-
-            waited = true
+        local function checkState()
+            return refuelTo(requiredLevel)
         end
+
+        local function getState()
+            return nativeTurtle.getFuelLevel(), requiredLevel, acceptedFuels
+        end
+
+        meta.waitFor(checkState, getState, "fuel_warning")
     end
 
     function robot.forward(count, blocking)
