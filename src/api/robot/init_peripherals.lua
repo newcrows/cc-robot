@@ -16,7 +16,7 @@ return function(robot, meta, constants)
     local softProxies = {}
 
     local function loadConstructors()
-        local dir = "%INSTALL_DIR%/peripherals"
+        local dir = "/my_dir/peripherals"
         local files = fs.list(dir)
 
         for _, file in ipairs(files) do

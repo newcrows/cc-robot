@@ -169,16 +169,14 @@ return function(robot, meta, constants)
         return false
     end
 
-    -- TODO [JM] add an option to includeReservedItems?
-    -- would just return physically empty slots then
-    function meta.listEmptySlots(limit, shouldCompact)
+    function meta.listEmptySlots(limit, includeReservedItems, shouldCompact)
         limit = limit or 16
 
         if shouldCompact then
             compact()
         end
 
-        local reservedEmptySlotCount = countReservedEmptySlots()
+        local reservedEmptySlotCount = includeReservedItems and 0 or countReservedEmptySlots()
         local emptySlots = {}
         local emptyFound = 0
 
@@ -201,19 +199,19 @@ return function(robot, meta, constants)
         end
 
         if #emptySlots == 0 and not shouldCompact then
-            return meta.listEmptySlots(limit, true)
+            return meta.listEmptySlots(limit, includeReservedItems, true)
         end
 
         return emptySlots
     end
 
-    function meta.getFirstEmptySlot(shouldCompact)
-        local slots = meta.listEmptySlots(1, shouldCompact)
+    function meta.getFirstEmptySlot(includeReservedItems)
+        local slots = meta.listEmptySlots(1, includeReservedItems)
         return slots[1]
     end
 
-    function meta.selectFirstEmptySlot(shouldCompact)
-        local slot = meta.getFirstEmptySlot(shouldCompact)
+    function meta.selectFirstEmptySlot(includeReservedItems)
+        local slot = meta.getFirstEmptySlot(includeReservedItems)
 
         if slot then
             nativeTurtle.select(slot.id)
