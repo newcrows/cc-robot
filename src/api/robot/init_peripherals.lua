@@ -1,4 +1,4 @@
-return function(robot, meta, constants)
+return function(robot, meta, constants, turtle)
     local FACING_INDEX = constants.facing_index
     local SIDE_INDEX = constants.side_index
     local SIDES = constants.sides

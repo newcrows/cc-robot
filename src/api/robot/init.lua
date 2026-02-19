@@ -1,3 +1,4 @@
+local initTurtle = require((...) .. "/init_turtle")
 local initPositioning = require((...) .. "/init_positioning")
 local initEvents = require((...) .. "/init_events")
 local initPeripherals = require((...) .. "/init_peripherals")
@@ -86,15 +87,18 @@ local constants = {
     },
     default_stack_size = 64
 }
+local turtle = turtle
 
 robot.meta = meta
 robot.constants = constants
+robot.turtle = turtle
 
-initPositioning(robot, meta, constants)
-initEvents(robot, meta, constants)
-initPeripherals(robot, meta, constants)
-initEquipment(robot, meta, constants)
-initInventory(robot, meta, constants)
-initMisc(robot, meta, constants)
+initTurtle(robot, meta, constants, turtle)
+initPositioning(robot, meta, constants, turtle)
+initEvents(robot, meta, constants, turtle)
+initPeripherals(robot, meta, constants, turtle)
+initEquipment(robot, meta, constants, turtle)
+initInventory(robot, meta, constants, turtle)
+initMisc(robot, meta, constants, turtle)
 
 return robot

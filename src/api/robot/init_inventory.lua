@@ -1,4 +1,4 @@
-return function(robot, meta, constants)
+return function(robot, meta, constants, turtle)
     local selectedName
     local reservedSpaces = {}
     local spaceWarningListenerId
