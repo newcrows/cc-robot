@@ -54,7 +54,7 @@ local function moveSpecialFiles()
         end
 
         if string.match(file, "^startup") then
-            moveWithPrompt(destination .. "/" .. file, "/startup/" .. file)
+            moveWithPrompt(destination .. "/" .. file, "/" .. file)
         end
     end
 end
