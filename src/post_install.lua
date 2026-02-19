@@ -4,6 +4,34 @@ local destination = args[2]
 -- local branch = args[3]
 local config = args[4]
 
+local function replaceInFile(file, map)
+    local f = fs.open(file, "r")
+    local content = f.readAll()
+    f.close()
+
+    local newContent = content
+
+    for placeholder, replacement in pairs(map) do
+        newContent = string.gsub(newContent, placeholder, replacement)
+    end
+
+    f = fs.open(file, "w")
+    f.write(newContent)
+    f.close()
+end
+
+local function replacePlaceholders()
+    local map = {
+        ["%%INSTALL_DIR%%"] = destination == "/" and "" or destination,
+        ["%%STARTUP_DIR%%"] = "/startup"
+    }
+
+    for _, file in ipairs(config.files) do
+        local absFile = destination .. "/" .. file
+        replaceInFile(absFile, map)
+    end
+end
+
 local function moveWithPrompt(src, dest)
     if fs.exists(dest) then
         write("'" .. dest .. "' already exists. Overwrite? (y/n): ")
@@ -19,40 +47,16 @@ local function moveWithPrompt(src, dest)
     fs.move(src, dest)
 end
 
--- TODO [JM] handle multiple placeholders at once, no need to iterate files more than once
-local function replaceInFile(file, placeholder, replacement)
-    local f = fs.open(file, "r")
-    local content = f.readAll()
-    f.close()
-
-    local newContent = string.gsub(content, placeholder, replacement)
-
-    f = fs.open(file, "w")
-    f.write(newContent)
-    f.close()
-end
-
-local function replaceInstallDirPlaceholders()
+local function moveSpecialFiles()
     for _, file in ipairs(config.files) do
-        local absFile = destination .. "/" .. file
-        replaceInFile(absFile, "%%INSTALL_DIR%%", destination == "/" and "" or destination)
-    end
-end
+        if fs.dir(file) == "" and string.match(file, "\.lua$") then
+            moveWithPrompt(destination .. "/" .. file, "/" .. file)
+        end
 
-local function replaceStartupDirPlaceholders()
-    for _, file in ipairs(config.files) do
-        local absFile = destination .. "/" .. file
-        replaceInFile(absFile, "%%STARTUP_DIR%%", "/startup")
+        if string.match(file, "^startup") then
+            moveWithPrompt(destination .. "/" .. file, "/startup/" .. file)
+        end
     end
-end
-
--- TODO [JM] move all files in src/startup to /startup after download
--- TODO [JM] move all files directly in src  to / after download
--- these files are startup logic and programs shipped with robot
--- TODO [JM] if files exist, prompt for override (default yes)
-local function moveExecutablesToRoot()
-    moveWithPrompt(destination .. "/startup/init.lua", "/startup/init.lua")
-    moveWithPrompt(destination .. "/task.lua", "/task.lua")
 end
 
 local function printWhatNext()
@@ -64,7 +68,6 @@ local function printWhatNext()
     print("--------------------")
 end
 
-replaceInstallDirPlaceholders()
-replaceStartupDirPlaceholders()
-moveExecutablesToRoot()
+replacePlaceholders()
+moveSpecialFiles()
 printWhatNext()
