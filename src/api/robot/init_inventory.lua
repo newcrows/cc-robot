@@ -498,4 +498,16 @@ return function(robot, meta, constants)
 
         return arr
     end
+
+    robot.onItemWarning(function(_, waited)
+        if not waited then
+            print("---- item_warning ----")
+            print("not enough space")
+            print("----------------------")
+        end
+    end)
+
+    robot.onItemWarningCleared(function()
+        print("---- item_warning_cleared ----")
+    end)
 end

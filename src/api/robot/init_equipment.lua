@@ -296,4 +296,17 @@ return function(robot, meta, constants)
             })
         end
     end
+
+    robot.onEquipmentWarning(function(state, name, waited)
+        if not waited then
+            print("---- equipment_warning ----")
+            print("state = " .. state)
+            print("name = " .. name)
+            print("-------------------------- ")
+        end
+    end)
+
+    robot.onEquipmentWarningCleared(function()
+        print("---- equipment_warning_cleared ----")
+    end)
 end
