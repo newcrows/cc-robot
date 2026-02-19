@@ -7,6 +7,7 @@ return {
     constructor = function(opts)
         local meta = opts.meta
 
+        -- TODO [JM] implement blocking
         local function digHelper(digFunc, blocking)
             if digFunc() then
                 meta.unwrapAll()
