@@ -94,7 +94,6 @@ local constants = {
 
 robot.meta = meta
 robot.constants = constants
-robot.turtle = nativeTurtle
 
 initTurtle(robot, meta, constants)
 initPositioning(robot, meta, constants)
