@@ -425,9 +425,9 @@ return function(robot, meta, constants)
         return arr
     end
 
-    function robot.reserve(name, count)
+    function robot.reserve(name, space)
         name = name or selectedName
-        reservedSpaces[name] = (reservedSpaces[name] or 0) + (count or getStackSize(name))
+        reservedSpaces[name] = (reservedSpaces[name] or 0) + (space or getStackSize(name))
     end
 
     function robot.free(name, space)
