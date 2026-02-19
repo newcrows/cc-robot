@@ -15,7 +15,7 @@
     "peripherals/dig_tool.lua",
     "peripherals/me_bridge.lua",
     "startup/init.lua",
-    "tasks/simple_task.lua",
+    "tasks/simple.lua",
     "task.lua"
   ]
 }
