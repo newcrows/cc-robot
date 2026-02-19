@@ -51,6 +51,10 @@ local function moveWithPrompt(src, dest)
 end
 
 local function moveSpecialFiles()
+    if destination == "/" then
+        return
+    end
+
     for _, file in ipairs(config.files) do
         if fs.getDir(file) == "" then
             moveWithPrompt(destination .. "/" .. file, "/" .. file)
