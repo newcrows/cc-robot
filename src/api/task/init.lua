@@ -21,18 +21,21 @@ local function readConfigFile()
 end
 
 local function removeConfigFile()
-    fs.remove(configFile)
+    fs.delete(configFile)
 end
 
 function task.run(name, opts)
     if not resumed then
         writeConfigFile(name, opts)
+        print("run: " .. name, table.unpack(opts))
+    else
+        print("resume: " .. name, table.unpack(opts))
     end
 
     local ctrl = {
         reportProgress = function(progress)
-            local percentage = math.round(progress * 100)
-            print("task " .. name .. " " .. percentage .. "% complete")
+            local percentage = math.floor(progress * 100)
+            print(percentage .. "% complete")
         end
     }
 
