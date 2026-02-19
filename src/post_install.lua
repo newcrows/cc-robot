@@ -27,7 +27,7 @@ end
 local function replaceStartupDirPlaceholders()
     for _, file in ipairs(config.files) do
         local absFile = destination .. "/" .. file
-        replaceInFile(absFile, "%%STARTUP_DIR%%", destination == "/" and "" or destination)
+        replaceInFile(absFile, "%%STARTUP_DIR%%", "/startup")
     end
 end
 
