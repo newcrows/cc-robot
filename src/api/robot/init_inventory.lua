@@ -247,7 +247,7 @@ return function(robot, meta, constants)
                 error("id must be in range 1 <= id <= 16")
             end
 
-            count = count or 0
+            count = count or 1
 
             if not name or count <= 0 then
                 if nativeTurtle.getItemCount(id) > 0 and not lockedSlots[id] then
