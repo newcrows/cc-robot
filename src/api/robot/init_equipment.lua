@@ -99,7 +99,7 @@ return function(robot, meta, constants)
             name = name
         }
 
-        function proxy.use()
+        function proxy.use(wrapOnly)
             if proxy.invalid then
                 error("equipment is not equipped any more", 0)
             end
@@ -112,6 +112,10 @@ return function(robot, meta, constants)
 
             if equippedSide then
                 softWrap(equippedSide, proxy)
+                return
+            end
+
+            if wrapOnly then
                 return
             end
 
@@ -188,6 +192,8 @@ return function(robot, meta, constants)
 
         if pinned then
             proxy.pin()
+        else
+            proxy.use(true)
         end
 
         return proxy
@@ -199,15 +205,22 @@ return function(robot, meta, constants)
         if type(name) == "table" then
             proxies[name] = name
             name.invalid = nil
+
+            robot.reserve(name, 1)
+            name.use(true)
         end
 
         local proxy = proxies[name]
 
         if proxy then
-            proxy.pin()
+            if pinned then
+                proxy.pin()
+            end
+
             return proxy
         end
 
+        robot.reserve(name, 1)
         return createProxy(name, pinned)
     end
 
@@ -215,12 +228,14 @@ return function(robot, meta, constants)
         name = name or robot.getSelectedName()
         local proxy = proxies[name]
 
-        if proxy and proxy.target then
+        if proxy then
             proxy.unpin()
             proxy.unuse()
 
             proxies[name] = nil
             proxy.invalid = true
+
+            robot.free(name, 1)
         end
     end
 end

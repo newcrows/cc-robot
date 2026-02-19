@@ -68,7 +68,7 @@ return function(robot, meta, constants)
         local waited = false
 
         while remaining > 0 do
-            local slotInfo = meta.selectFirstSlot(name)
+            local slotInfo = meta.getFirstSlot(name)
             local amountToDrop = 0
 
             if slotInfo then
