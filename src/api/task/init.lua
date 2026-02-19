@@ -1,5 +1,5 @@
 local tasksDir = "%INSTALL_DIR%/tasks"
-local configFile = "%INSTALL_DIR%/startup/task.config"
+local configFile = "%STARTUP_DIR%/startup/task.config"
 local task = {}
 
 local function writeConfigFile(name, opts)

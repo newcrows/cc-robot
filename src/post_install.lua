@@ -4,6 +4,7 @@ local destination = args[2]
 -- local branch = args[3]
 local config = args[4]
 
+-- TODO [JM] handle multiple placeholders at once, no need to iterate files more than once
 local function replaceInFile(file, placeholder, replacement)
     local f = fs.open(file, "r")
     local content = f.readAll()
@@ -23,6 +24,18 @@ local function replaceInstallDirPlaceholders()
     end
 end
 
+local function replaceStartupDirPlaceholders()
+    for _, file in ipairs(config.files) do
+        local absFile = destination .. "/" .. file
+        replaceInFile(absFile, "%%STARTUP_DIR%%", destination == "/" and "" or destination)
+    end
+end
+
+local function moveExecutablesToRoot()
+    fs.move(destination .. "/startup/init.lua", "/startup/init.lua")
+    fs.move(destination .. "/task.lua", "/task.lua")
+end
+
 local function printWhatNext()
     print("---- WHAT NEXT? ----")
     print("check out the examples on github")
@@ -33,4 +46,6 @@ local function printWhatNext()
 end
 
 replaceInstallDirPlaceholders()
+replaceStartupDirPlaceholders()
+moveExecutablesToRoot()
 printWhatNext()
