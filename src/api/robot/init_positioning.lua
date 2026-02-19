@@ -146,6 +146,8 @@ return function(robot, meta, constants)
         return math.max(-1, math.min(1, val))
     end
 
+    -- TODO [JM] fix the warning dispatch logic
+    -- make it work like item_warning and equipment_warning, much cleaner loops
     function meta.requireFuelLevel(requiredLevel)
         if not next(acceptedFuels) then
             error("no accepted fuels configured! use robot.setFuel() first.", 0)
