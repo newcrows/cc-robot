@@ -247,29 +247,83 @@ return function(robot, meta, constants, turtle)
         local forward = robot.forward
         local face = robot.face
 
-        if dx ~= 0 then
-            face(dx > 0 and FACINGS.east or FACINGS.west)
+        local function move_x(targetFacing)
+            if dx ~= 0 then
+                local facing = dx > 0 and FACINGS.east or FACINGS.west
 
-            local moved = forward(math.abs(dx), moveBlocking)
-            if moved ~= math.abs(dx) then
-                return robot.x, robot.y, robot.z
+                if facing ~= targetFacing then
+                    return true
+                end
+
+                face(facing)
+
+                local moved = forward(math.abs(dx), moveBlocking)
+                if moved ~= math.abs(dx) then
+                    return false
+                end
             end
+
+            return true
         end
 
-        if dy ~= 0 then
-            local _, m_dud = move(0, dy, 0, moveBlocking)
-            if m_dud ~= dy then
-                return robot.x, robot.y, robot.z
+        local function move_y(targetFacing)
+            if dy ~= 0 then
+                local facing = dy > 0 and FACINGS.up or FACINGS.down
+
+                if facing ~= targetFacing then
+                    return true
+                end
+
+                local _, m_dud = move(0, dy, 0, moveBlocking)
+                if m_dud ~= dy then
+                    return false
+                end
             end
+
+            return true
         end
 
-        if dz ~= 0 then
-            face(dz > 0 and FACINGS.south or FACINGS.north)
+        local function move_z(targetFacing)
+            if dz ~= 0 then
+                local facing = dz > 0 and FACINGS.south or FACINGS.north
 
-            local moved = forward(math.abs(dz), moveBlocking)
-            if moved ~= math.abs(dz) then
-                return robot.x, robot.y, robot.z
+                if facing ~= targetFacing then
+                    return true
+                end
+
+                face(facing)
+
+                local moved = forward(math.abs(dz), moveBlocking)
+                if moved ~= math.abs(dz) then
+                    return false
+                end
             end
+
+            return true
+        end
+
+        if not move_x(FACINGS.east) then
+            return robot.x, robot.y, robot.z
+        end
+
+        if not move_y(FACINGS.up) then
+            return robot.x, robot.y, robot.z
+        end
+
+        if not move_z(FACINGS.north) then
+            return robot.x, robot.y, robot.z
+        end
+
+        if not move_z(FACINGS.south) then
+            return robot.x, robot.y, robot.z
+        end
+
+        if not move_y(FACINGS.down) then
+            return robot.x, robot.y, robot.z
+        end
+
+        if not move_x(FACINGS.west) then
+            return robot.x, robot.y, robot.z
         end
 
         return robot.x, robot.y, robot.z
