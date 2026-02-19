@@ -49,7 +49,7 @@ end
 
 local function moveSpecialFiles()
     for _, file in ipairs(config.files) do
-        if fs.dir(file) == "" and string.match(file, "\.lua$") then
+        if fs.getDir(file) == "" and string.match(file, "\.lua$") then
             moveWithPrompt(destination .. "/" .. file, "/" .. file)
         end
 
