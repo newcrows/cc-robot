@@ -82,14 +82,21 @@ return function(robot, meta, constants)
     end
 
     local function checkEquipment(check, state, name)
+        local checked = check()
         local waited = false
 
-        while not check() do
+        if checked then
+            return
+        end
+
+        while not checked do
             if waited then
                 os.sleep(1)
             end
 
             meta.dispatchEvent("equipment_warning", state, name, waited)
+
+            checked = check()
             waited = true
         end
 
