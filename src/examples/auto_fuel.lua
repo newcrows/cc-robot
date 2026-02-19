@@ -1,12 +1,16 @@
--- snippet assumes a non-full chest in front of the turtle
+-- snippet assumes turtle is not fully fueled
 local robot = require("%INSTALL_DIR%/api/robot")
-local chest = robot.wrap()
 
-robot.setAutoFuel("minecraft:coal_block", 64)
+-- tell robot which fuel(s) to use and reserve space for
+robot.setFuel("minecraft:coal_block")
 
-local function restockFuel()
-    robot.select("minecraft:coal_block")
-    chest.export(64 - robot.getReservedItemCount())
-end
+-- print missing fuelLevel
+robot.onFuelWarning(function(level, requiredLevel)
+    print("has " .. level .. " requires " .. requiredLevel)
+end)
 
-restockFuel()
+-- try to move the maximum number of steps a turtle can move with max fuel
+-- this triggers the fuel warning if the turtle is not fully fueled
+-- put some coal_block into the inventory and see what happens
+local steps = robot.getFuelLimit()
+robot.forward(steps)
