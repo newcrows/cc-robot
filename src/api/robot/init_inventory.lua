@@ -65,15 +65,22 @@ return function(robot, meta, constants)
     end
 
     local function waitForSpace(check)
+        local checked = check()
         local waited = false
 
-        while not check() do
+        if checked then
+            return
+        end
+
+        while not checked do
             if waited then
                 compact()
                 os.sleep(1)
             end
 
             meta.dispatchEvent("item_warning", check, waited)
+
+            checked = check()
             waited = true
         end
 
