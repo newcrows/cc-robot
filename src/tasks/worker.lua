@@ -90,9 +90,12 @@ return function(opts, ctrl)
 
     -- _G.robot injected by startup
     local modem = robot.equip("computercraft:wireless_modem_normal")
+    local compass = robot.equip("minecraft:compass")
 
+    -- refresh position data
     modem.use()
-    rednet.open()
+    robot.x, robot.y, robot.z = gps.locate()
+    robot.facing = compass.getFacing()
 
     -- TODO [JM] wait for new tasks via rednet here
 end
