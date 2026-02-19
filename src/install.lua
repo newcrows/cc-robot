@@ -41,7 +41,7 @@ local function readableSize(numBytes)
         return math.floor(numBytes / 1024 / 1024) .. "mb"
     end
 
-    error("numBytes is too big")
+    error("numBytes is too big", 0)
 end
 
 local function download(relPath)
@@ -61,7 +61,7 @@ local function downloadConfig()
 
         if not preInstallFunc then
             preInstallFunc = function()
-                error("load pre_install script failed")
+                error("load pre_install script failed", 0)
             end
         end
 
@@ -77,7 +77,7 @@ local function downloadConfig()
 
         if not postInstallFunc then
             postInstallFunc = function()
-                error("load post_install script failed")
+                error("load post_install script failed", 0)
             end
         end
 
