@@ -24,6 +24,33 @@ local function removeConfigFile()
     fs.delete(configFile)
 end
 
+local function runProtected(_task, opts, ctrl)
+    local oldPull = os.pullEvent
+
+    os.pullEvent = function(filter)
+        local eventData = { os.pullEventRaw(filter) }
+
+        if eventData[1] == "terminate" then
+            error("TASK_TERMINATED", 0)
+        end
+
+        return unpack(eventData)
+    end
+
+    local ok, err = pcall(_task, opts, ctrl)
+    os.pullEvent = oldPull
+
+    if not ok then
+        if err == "TASK_TERMINATED" then
+            return "terminated"
+        else
+            return "crashed"
+        end
+    end
+
+    return "finished"
+end
+
 function task.run(name, opts)
     if not opts.resumed then
         writeConfigFile(name, opts)
@@ -40,10 +67,10 @@ function task.run(name, opts)
     }
 
     local _task = require(tasksDir .. "/" .. name)
-    _task(opts, ctrl)
+    local result = runProtected(_task, opts, ctrl)
 
     removeConfigFile()
-    print("finished: " .. name, table.unpack(opts))
+    print(result .. ": " .. name, table.unpack(opts))
 end
 
 function task.resume()
