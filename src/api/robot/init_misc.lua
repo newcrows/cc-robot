@@ -103,8 +103,6 @@ return function(robot, meta, constants)
         else
             return name == "air" or name == "minecraft:air"
         end
-
-        return false
     end
 
     local function suckHelper(suckFunc, count, blocking)
@@ -113,46 +111,27 @@ return function(robot, meta, constants)
         end
 
         local totalSucked = 0
-        local waited = false
         local stackSize = constants.default_stack_size
 
-        while (count and totalSucked < count) or (not count and countEmptySlots() > 0) or (blocking and totalSucked == 0) do
+        local function check()
+            local conditionA = count and totalSucked >= count
+            local conditionB = not count and countEmptySlots() == 0
+
+            return conditionA or conditionB
+        end
+
+        local function tick()
             local nextAmount = count and math.min(stackSize, count - totalSucked) or stackSize
-
             local before = physicalCountAll()
-            local success = suckFunc(nextAmount)
 
-            if success then
+            if suckFunc(nextAmount) then
                 local after = physicalCountAll()
-                local amount = after - before
 
-                totalSucked = totalSucked + amount
-                waited = false
-
-                if count and totalSucked >= count then
-                    return totalSucked
-                end
-            else
-                if blocking then
-                    if countEmptySlots() <= 0 then
-                        return totalSucked
-                    end
-
-                    if waited then
-                        os.sleep(1)
-                    end
-
-                    if type(blocking) == "function" then
-                        blocking()
-                    end
-
-                    waited = true
-                else
-                    return totalSucked
-                end
+                totalSucked = totalSucked + (after - before)
             end
         end
 
+        meta.ensure(check, tick, blocking)
         return totalSucked
     end
 
