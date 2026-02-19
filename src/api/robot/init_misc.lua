@@ -77,6 +77,10 @@ return function(robot, meta, constants)
                 amountToDrop = math.min(currentInSlot, remaining)
             end
 
+            if amountToDrop > 0 then
+                robot.select(name)
+            end
+
             if amountToDrop > 0 and dropFunc(amountToDrop) then
                 remaining = remaining - amountToDrop
                 waited = false
