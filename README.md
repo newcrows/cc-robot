@@ -58,7 +58,7 @@ sword.attack()
 ```
 see [DOCS.md](./DOCS.md) for documentation.
 
-## crafting example BROKEN RIGHT NOW, WORKING ON FIX
+## crafting example BROKEN, WORKING ON FIX
 ```lua
 -- this snippet assumes the inventory only contains items required to craft pistons
 local robot = require("%INSTALL_DIR%/api/robot")
