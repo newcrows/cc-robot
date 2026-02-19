@@ -31,6 +31,10 @@ local function replaceStartupDirPlaceholders()
     end
 end
 
+-- TODO [JM] move all files in src/startup to /startup after download
+-- TODO [JM] move all files directly in src  to / after download
+-- these files are startup logic and programs shipped with robot
+-- TODO [JM] if files exist, prompt for override (default yes)
 local function moveExecutablesToRoot()
     fs.move(destination .. "/startup/init.lua", "/startup/init.lua")
     fs.move(destination .. "/task.lua", "/task.lua")
