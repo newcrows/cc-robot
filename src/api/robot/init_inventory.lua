@@ -64,43 +64,30 @@ return function(robot, meta, constants)
         return reservedEmptySlots
     end
 
-    local function waitForSpace(check)
-        local checked = check()
-        local waited = false
-
-        if checked then
-            return
-        end
-
-        while not checked do
-            if waited then
-                compact()
-                os.sleep(1)
-            end
-
-            meta.dispatchEvent("item_warning", check, waited)
-
-            checked = check()
-            waited = true
-        end
-
-        meta.dispatchEvent("item_warning_cleared")
-    end
-
     function meta.requireItemSpace(name, space)
-        local function check()
+        local function checkState()
             return robot.hasItemSpace(name, space)
         end
 
-        waitForSpace(check)
+        local function getState()
+            -- allow event handler to check by itself whether it dropped enough items already
+            return checkState
+        end
+
+        meta.waitFor(checkState, getState, "item_warning")
     end
 
     function meta.requireItemSpaceForUnknown(stackSize, space)
-        local function check()
+        local function checkState()
             return robot.hasItemSpaceForUnknown(stackSize, space)
         end
 
-        waitForSpace(check)
+        local function getState()
+            -- allow event handler to check by itself whether it dropped enough items already
+            return checkState
+        end
+
+        meta.waitFor(checkState, getState, "item_warning")
     end
 
     function meta.listSlots(name, limit, includeReservedItems)
