@@ -43,6 +43,7 @@ function task.run(name, opts)
     _task(opts, ctrl)
 
     removeConfigFile()
+    print("finished: " .. name, table.unpack(opts))
 end
 
 function task.resume()
