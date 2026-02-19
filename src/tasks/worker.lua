@@ -1,6 +1,6 @@
 local tasksDir = "%INSTALL_DIR%/tasks"
 local configFile = "%STARTUP_DIR%/slave.task.config"
-local slave = {}
+local worker = {}
 
 local function writeConfigFile(name, opts)
     local file = fs.open(configFile, "w")
@@ -51,7 +51,7 @@ local function runProtected(_task, opts, ctrl)
     return "finished"
 end
 
-function slave.run(name, opts)
+function worker.run(name, opts)
     if not opts.resumed then
         writeConfigFile(name, opts)
         -- TODO [JM] notify task run via rednet here
@@ -76,17 +76,17 @@ function slave.run(name, opts)
     print(result .. ": " .. name, table.unpack(opts))
 end
 
-function slave.resume()
+function worker.resume()
     if fs.exists(configFile) then
         local config = readConfigFile()
         config.opts.resumed = true
 
-        slave.run(config.name, config.opts)
+        worker.run(config.name, config.opts)
     end
 end
 
 return function(opts, ctrl)
-    slave.resume()
+    worker.resume()
 
     -- _G.robot injected by startup
     local modem = robot.equip("computercraft:wireless_modem_normal")
