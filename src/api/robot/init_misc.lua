@@ -13,7 +13,7 @@ return function(robot, meta, constants)
         return #meta.listEmptySlots()
     end
 
-    local function ensure(check, tick, strategy)
+    function meta.ensure(check, tick, strategy)
         tick()
 
         local ok = check()
@@ -25,8 +25,8 @@ return function(robot, meta, constants)
         end
 
         while true do
-            strategy(true)
-            tick(true)
+            strategy()
+            tick()
 
             if check() then
                 return
@@ -49,7 +49,7 @@ return function(robot, meta, constants)
             end
         end
 
-        ensure(check, tick, blocking)
+        meta.ensure(check, tick, blocking)
         return placed
     end
 
@@ -85,7 +85,7 @@ return function(robot, meta, constants)
             end
         end
 
-        ensure(check, tick, blocking)
+        meta.ensure(check, tick, blocking)
         return totalAmount - remaining
     end
 

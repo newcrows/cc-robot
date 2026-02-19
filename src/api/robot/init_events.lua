@@ -58,7 +58,7 @@ return function(_, meta)
         end
     end
 
-    function meta.waitFor(checkState, getState, warningEvent)
+    function meta.waitForClear(checkState, getState, warningEvent)
         local checked = checkState()
         local waited = false
 
