@@ -23,8 +23,11 @@ return function(robot, meta, constants)
         for _, file in ipairs(files) do
             local cleanFile = string.gsub(file, "%.lua$", "")
             local detail = require(fs.combine(dir, cleanFile))
+            local names = detail.names or { detail.name }
 
-            constructors[detail.name] = detail.constructor
+            for _, name in ipairs(names) do
+                constructors[name] = detail.constructor
+            end
         end
     end
 
