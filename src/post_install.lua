@@ -56,7 +56,7 @@ local function moveSpecialFiles()
             moveWithPrompt(destination .. "/" .. file, "/" .. file)
         end
 
-        if string.match(fs.getDir(file), "^startup") then
+        if string.match(file, "^startup") then
             moveWithPrompt(destination .. "/" .. file, "/" .. file)
         end
     end
