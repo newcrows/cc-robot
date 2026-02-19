@@ -48,7 +48,7 @@ get a `robot` instance using `require()`.
 local robot = require("%INSTALL_DIR%/api/robot")
 
 -- if no <install-dir> was passed, simply use:
-local robot = require("/robot")
+local robot = require("/api/robot")
 ```
 
 ## important differences to vanilla turtles
