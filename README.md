@@ -24,7 +24,7 @@ both `<install-dir>` and `<branch>` are optional.
 
 get a `robot` instance using `require()`.
 ```lua
-local robot = require("%INSTALL_DIR%/robot")
+local robot = require("%INSTALL_DIR%/api/robot")
 
 -- if no <install-dir> was passed, simply use:
 local robot = require("/robot")
@@ -34,7 +34,7 @@ local robot = require("/robot")
 ```lua
 -- this snippet assumes you have a pickaxe, an axe, a shovel
 -- and a sword somewhere in the turtle's inventory
-local robot = require("%INSTALL_DIR%/robot")
+local robot = require("%INSTALL_DIR%/api/robot")
 
 local pickaxe = robot.equip("minecraft:diamond_pickaxe")
 local axe = robot.equip("minecraft:diamond_axe")
@@ -53,7 +53,7 @@ see [DOCS.md](./DOCS.md) for documentation.
 ## crafting example
 ```lua
 -- this snippet assumes the inventory only contains items required to craft pistons
-local robot = require("%INSTALL_DIR%/robot")
+local robot = require("%INSTALL_DIR%/api/robot")
 local craftingTable = robot.equip("minecraft:crafting_table")
 
 local pistonRecipe = {
@@ -84,7 +84,7 @@ stockpiled / reserved items are never dropped or exported by `robot`.
 
 ```lua
 -- snippet assumes a non-full chest in front of the turtle
-local robot = require("%INSTALL_DIR%/robot")
+local robot = require("%INSTALL_DIR%/api/robot")
 local chest = robot.wrap()
 
 robot.setAutoFuel("minecraft:coal_block", 64)
@@ -101,7 +101,7 @@ see [DOCS.md](./DOCS.md) for documentation.
 ## inventory example
 ```lua
 -- this snippet assumes a chest (or items floating in the world) in front of the turtle
-local robot = require("%INSTALL_DIR%/robot")
+local robot = require("%INSTALL_DIR%/api/robot")
 
 -- suck as much as we can from the chest into the turtle
 robot.suck()

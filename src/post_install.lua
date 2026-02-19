@@ -1,6 +1,8 @@
 local args = { ... }
-local destination = args[1]
-local config = args[3]
+-- local flags = args[1]
+local destination = args[2]
+-- local branch = args[3]
+local config = args[4]
 
 local function replaceInFile(file, placeholder, replacement)
     local f = fs.open(file, "r")
@@ -22,11 +24,9 @@ local function replaceInstallDirPlaceholders()
 end
 
 local function printWhatNext()
-    local exampleDir = (destination == "/" and "" or destination) .. "/examples"
-
     print("---- WHAT NEXT? ----")
-    print("check out the examples in:")
-    print(exampleDir)
+    print("check out the examples on github")
+    print("or dive right in!")
     print()
     print("happy coding!")
     print("--------------------")

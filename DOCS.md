@@ -43,7 +43,7 @@ run the installer `pastebin run tfVJuZaE` ([pastebin link](https://pastebin.com/
 
 get a `robot` instance using `require()`.
 ```lua
-local robot = require("%INSTALL_DIR%/robot")
+local robot = require("%INSTALL_DIR%/api/robot")
 
 -- if no <install-dir> was passed, simply use:
 local robot = require("/robot")

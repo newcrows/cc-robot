@@ -1,0 +1,17 @@
+{
+  "pre_install": "pre_install.lua",
+  "post_install": "post_install.lua",
+  "files": [
+    "api/robot/init.lua",
+    "api/robot/init_equipment.lua",
+    "api/robot/init_events.lua",
+    "api/robot/init_inventory.lua",
+    "api/robot/init_misc.lua",
+    "api/robot/init_peripherals.lua",
+    "api/robot/init_positioning.lua",
+    "api/robot/init_turtle.lua",
+    "peripherals/chest.lua",
+    "peripherals/dig_tool.lua",
+    "peripherals/me_bridge.lua"
+  ]
+}

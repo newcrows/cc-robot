@@ -1,5 +1,5 @@
 -- this snippet assumes the inventory only contains items required to craft pistons
-local robot = require("%INSTALL_DIR%/robot")
+local robot = require("%INSTALL_DIR%/api/robot")
 local craftingTable = robot.equip("minecraft:crafting_table")
 
 local pistonRecipe = {
