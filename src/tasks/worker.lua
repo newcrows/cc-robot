@@ -88,5 +88,11 @@ end
 return function(opts, ctrl)
     slave.resume()
 
+    -- _G.robot injected by startup
+    local modem = robot.equip("computercraft:wireless_modem_normal")
+
+    modem.use()
+    rednet.open()
+
     -- TODO [JM] wait for new tasks via rednet here
 end
