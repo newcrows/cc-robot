@@ -3,7 +3,6 @@ return function(robot, meta, constants)
     local SIDE_INDEX = constants.side_index
     local SIDES = constants.sides
     local DELTAS = constants.deltas
-
     local RAW_PROPERTIES = {
         x = true,
         y = true,
@@ -96,6 +95,10 @@ return function(robot, meta, constants)
                 robot = robot,
                 meta = meta,
                 constants = constants,
+                name = proxy.name,
+                x = proxy.x,
+                y = proxy.y,
+                z = proxy.z,
                 facing = facing,
                 side = side,
                 target = target
@@ -216,7 +219,11 @@ return function(robot, meta, constants)
 
     function meta.getPeripheralConstructorDetail(name)
         name = name or robot.getSelectedName()
-        return constructors[name]
+
+        return {
+            name = name,
+            constructor = constructors[name]
+        }
     end
 
     function meta.listPeripheralConstructors()

@@ -50,6 +50,7 @@ return function(robot, meta, constants)
                 robot = robot,
                 meta = meta,
                 constants = constants,
+                name = proxy.name,
                 side = side,
                 target = target
             }
@@ -68,6 +69,15 @@ return function(robot, meta, constants)
 
         local equipFunc = side == SIDES.right and nativeTurtle.equipRight or nativeTurtle.equipLeft
         equipFunc()
+
+        for _, candidateProxy in pairs(proxies) do
+            if candidateProxy.target and candidateProxy.side == side then
+                candidateProxy.side = nil
+                candidateProxy.target = nil
+
+                break
+            end
+        end
 
         softWrap(side, proxy)
         nextSide = nextSide == SIDES.right and SIDES.left or SIDES.right

@@ -169,6 +169,8 @@ return function(robot, meta, constants)
         return false
     end
 
+    -- TODO [JM] add an option to includeReservedItems?
+    -- would just return physically empty slots then
     function meta.listEmptySlots(limit, shouldCompact)
         limit = limit or 16
 
