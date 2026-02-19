@@ -12,6 +12,10 @@ return function(robot, meta, constants)
         pin = true,
         unpin = true
     }
+    local STATE = {
+        missing = "missing",
+        no_space = "no_space"
+    }
 
     local proxies = {}
     local nextSide = SIDES.right
@@ -75,10 +79,27 @@ return function(robot, meta, constants)
         proxy.target = target
     end
 
-    local function equipAndSoftWrap(side, proxy)
-        if not meta.selectFirstSlot(proxy.name, true) then
-            error("equipment not found in inventory", 0)
+    local function checkEquipment(check, state, name)
+        local waited = false
+
+        while not check() do
+            if waited then
+                os.sleep(1)
+            end
+
+            meta.dispatchEvent("equipment_warning", state, name, waited)
+            waited = true
         end
+
+        meta.dispatchEvent("equipment_warning_cleared")
+    end
+
+    local function equipAndSoftWrap(side, proxy)
+        local function check()
+            return meta.selectFirstSlot(proxy.name, true)
+        end
+
+        checkEquipment(check, STATE.missing, proxy.name)
 
         local equipFunc = side == SIDES.right and nativeTurtle.equipRight or nativeTurtle.equipLeft
         equipFunc()
@@ -149,9 +170,11 @@ return function(robot, meta, constants)
                 error("can't unuse pinned equipment", 0)
             end
 
-            if not meta.selectFirstEmptySlot(true) then
-                error("no space in inventory", 0)
+            local function check()
+                return meta.selectFirstEmptySlot(true)
             end
+
+            checkEquipment(check, STATE.no_space, proxy.name)
 
             local equipFunc = proxy.side == SIDES.right and nativeTurtle.equipRight or nativeTurtle.equipLeft
             equipFunc()
