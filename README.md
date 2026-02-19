@@ -33,7 +33,13 @@ local robot = require("/api/robot")
 ## peek the complete method overview
 
 Go [here](https://github.com/newcrows/cc-robot/tree/main/tooling/out/src/api/robot)
-to see what functions are exposed.
+to see what functions are exposed by the modules.
+
+you can't access `local` functions.
+
+`meta` functions accessible via `robot.meta`.
+
+`robot` functons accessible via `robot`.
 
 ## multiple tools example
 ```lua
