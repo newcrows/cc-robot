@@ -1,3 +1,6 @@
+-- TODO [JM] I need events in case peripherals unexpectedly went missing
+-- programs should not randomly crash because someone took a chest or something
+-- only hard errors (wrap "back" ohne wrapAs, etc.) sollten einen error auslösen
 return function(robot, meta, constants)
     local FACING_INDEX = constants.facing_index
     local SIDE_INDEX = constants.side_index
