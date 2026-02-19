@@ -135,7 +135,7 @@ robot.drop(torchCount - 64)
 ```
 see [DOCS.md](./DOCS.md) for documentation.
 
-## run_test example REMOVED, NEW RELEASE WILL HANDLE TESTS BETTER
+## run_test example REMOVED, NEW RELEASE HAS CI
 
 to make sure `robot` works as intended, you can run `<install-dir>/examples/run_test`.
 
