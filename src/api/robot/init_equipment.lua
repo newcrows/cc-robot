@@ -1,14 +1,11 @@
 return function(robot, meta, constants)
     local SIDES = constants.sides
-
     local RAW_PROPERTIES = {
         side = true,
         name = true,
         target = true,
         use = true,
-        unuse = true,
-        pin = true,
-        unpin = true
+        unuse = true
     }
 
     local proxies = {}
@@ -69,7 +66,7 @@ return function(robot, meta, constants)
             error("equipment not found in inventory", 0)
         end
 
-        local equipFunc = side == SIDES.right and turtle.equipRight or turtle.equipLeft
+        local equipFunc = side == SIDES.right and nativeTurtle.equipRight or nativeTurtle.equipLeft
         equipFunc()
 
         softWrap(side, proxy)
@@ -83,7 +80,7 @@ return function(robot, meta, constants)
 
         function proxy.use()
             if proxy.target then
-                return true
+                return
             end
 
             local equippedSide = getEquippedSide(name)
@@ -104,12 +101,19 @@ return function(robot, meta, constants)
         end
 
         function proxy.unuse()
-        end
+            if not proxy.target then
+                return
+            end
 
-        function proxy.pin()
-        end
+            if not meta.selectFirstEmptySlot(true) then
+                error("no space in inventory", 0)
+            end
 
-        function proxy.unpin()
+            local equipFunc = proxy.side == SIDES.right and nativeTurtle.equipRight or nativeTurtle.equipLeft
+            equipFunc()
+
+            proxy.side = nil
+            proxy.target = nil
         end
 
         local metatable = {
@@ -119,8 +123,7 @@ return function(robot, meta, constants)
                 end
 
                 return function(...)
-                    -- check whether we need to call use() here
-
+                    proxy.use()
                     return proxy.target[prop](...)
                 end
             end,
@@ -137,11 +140,22 @@ return function(robot, meta, constants)
         return proxy
     end
 
-    function robot.equip(name, pinned)
+    function robot.equip(name)
         name = name or robot.getSelectedName()
+        return createProxy(name)
     end
 
     function robot.unequip(name)
         name = name or robot.getSelectedName()
+        local proxy = proxies[name]
+
+        if proxy and proxy.target then
+            proxy.unuse()
+
+            -- need to make the proxy invalid somehow
+            -- must be restore-able when robot.equip(proxy) is called later
+            -- to stay consistent with robot.wrap(peripheral) restoring the peripheral
+            proxies[name] = nil
+        end
     end
 end
