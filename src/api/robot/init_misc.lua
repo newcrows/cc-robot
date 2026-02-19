@@ -13,29 +13,6 @@ return function(robot, meta, constants)
         return #meta.listEmptySlots()
     end
 
-    function meta.ensure(check, tick, strategy)
-        tick()
-
-        local ok = check()
-        if ok or not strategy then
-            return
-        end
-
-        strategy = type(strategy) == "function" and strategy or function()
-        end
-
-        while true do
-            strategy()
-            tick()
-
-            if check() then
-                return
-            end
-
-            os.sleep(1)
-        end
-    end
-
     local function placeHelper(placeFunc, name, blocking)
         local placed = false
 
@@ -133,6 +110,29 @@ return function(robot, meta, constants)
 
         meta.ensure(check, tick, blocking)
         return totalSucked
+    end
+
+    function meta.ensure(check, tick, strategy)
+        tick()
+
+        local ok = check()
+        if ok or not strategy then
+            return
+        end
+
+        strategy = type(strategy) == "function" and strategy or function()
+        end
+
+        while true do
+            strategy()
+            tick()
+
+            if check() then
+                return
+            end
+
+            os.sleep(1)
+        end
     end
 
     function robot.place(name, blocking)
