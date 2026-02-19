@@ -1,4 +1,4 @@
-return function(robot, meta, constants, turtle)
+return function(robot, meta, constants)
     local selectedName
     local reservedSpaces = {}
     local spaceWarningListenerId
@@ -6,20 +6,20 @@ return function(robot, meta, constants, turtle)
 
     local function compact()
         for targetSlot = 1, 15 do
-            local space = turtle.getItemSpace(targetSlot)
+            local space = nativeTurtle.getItemSpace(targetSlot)
 
             if space > 0 then
-                local target = turtle.getItemDetail(targetSlot)
+                local target = nativeTurtle.getItemDetail(targetSlot)
 
                 for sourceSlot = 16, targetSlot + 1, -1 do
-                    local source = turtle.getItemDetail(sourceSlot)
+                    local source = nativeTurtle.getItemDetail(sourceSlot)
 
                     if source then
                         if not target or source.name == target.name then
-                            turtle.select(sourceSlot)
-                            if turtle.transferTo(targetSlot) then
-                                target = turtle.getItemDetail(targetSlot)
-                                space = turtle.getItemSpace(targetSlot)
+                            nativeTurtle.select(sourceSlot)
+                            if nativeTurtle.transferTo(targetSlot) then
+                                target = nativeTurtle.getItemDetail(targetSlot)
+                                space = nativeTurtle.getItemSpace(targetSlot)
                             end
                         end
                     end
@@ -102,7 +102,7 @@ return function(robot, meta, constants, turtle)
 
         local totalCounts = {}
         for i = 1, 16 do
-            local d = turtle.getItemDetail(i)
+            local d = nativeTurtle.getItemDetail(i)
             if d then
                 totalCounts[d.name] = (totalCounts[d.name] or 0) + d.count
             end
@@ -112,11 +112,11 @@ return function(robot, meta, constants, turtle)
         local reservedUsedForSpace = {}
 
         for i = 1, 16 do
-            local detail = turtle.getItemDetail(i)
+            local detail = nativeTurtle.getItemDetail(i)
 
             if detail and (not name or detail.name == name) then
                 local count = detail.count
-                local physicalSpace = turtle.getItemSpace(i)
+                local physicalSpace = nativeTurtle.getItemSpace(i)
                 local usableSpace = physicalSpace
 
                 if not includeReservedItems then
@@ -162,7 +162,7 @@ return function(robot, meta, constants, turtle)
         local slot = meta.getFirstSlot(name, includeReservedItems)
 
         if slot then
-            turtle.select(slot.id)
+            nativeTurtle.select(slot.id)
             return true
         end
 
@@ -181,7 +181,7 @@ return function(robot, meta, constants, turtle)
         local emptyFound = 0
 
         for i = 1, 16 do
-            if turtle.getItemCount(i) == 0 then
+            if nativeTurtle.getItemCount(i) == 0 then
                 emptyFound = emptyFound + 1
 
                 if emptyFound > reservedEmptySlotCount then
@@ -214,7 +214,7 @@ return function(robot, meta, constants, turtle)
         local slot = meta.getFirstEmptySlot(shouldCompact)
 
         if slot then
-            turtle.select(slot.id)
+            nativeTurtle.select(slot.id)
             return true
         end
 
@@ -243,11 +243,11 @@ return function(robot, meta, constants, turtle)
             count = count or 0
 
             if not name or count <= 0 then
-                if turtle.getItemCount(id) > 0 and not lockedSlots[id] then
-                    turtle.select(id)
+                if nativeTurtle.getItemCount(id) > 0 and not lockedSlots[id] then
+                    nativeTurtle.select(id)
                     for i = 1, 16 do
                         if i ~= id and not lockedSlots[i] then
-                            if turtle.transferTo(i) then
+                            if nativeTurtle.transferTo(i) then
                                 break
                             end
                         end
@@ -257,13 +257,13 @@ return function(robot, meta, constants, turtle)
                 return true
             end
 
-            local currentInTarget = turtle.getItemDetail(id)
+            local currentInTarget = nativeTurtle.getItemDetail(id)
 
             if currentInTarget and currentInTarget.name ~= name then
-                turtle.select(id)
+                nativeTurtle.select(id)
                 for i = 1, 16 do
                     if i ~= id and not lockedSlots[i] then
-                        if turtle.transferTo(i) then
+                        if nativeTurtle.transferTo(i) then
                             break
                         end
                     end
@@ -271,18 +271,18 @@ return function(robot, meta, constants, turtle)
                 currentInTarget = nil
             end
 
-            local currentCount = turtle.getItemCount(id)
+            local currentCount = nativeTurtle.getItemCount(id)
             local needed = count - currentCount
 
             if needed > 0 then
                 for sourceId = 1, 16 do
                     if sourceId ~= id and not lockedSlots[sourceId] then
-                        local source = turtle.getItemDetail(sourceId)
+                        local source = nativeTurtle.getItemDetail(sourceId)
                         if source and source.name == name then
-                            turtle.select(sourceId)
-                            turtle.transferTo(id, needed)
+                            nativeTurtle.select(sourceId)
+                            nativeTurtle.transferTo(id, needed)
 
-                            needed = count - turtle.getItemCount(id)
+                            needed = count - nativeTurtle.getItemCount(id)
                             if needed <= 0 then
                                 break
                             end
@@ -290,11 +290,11 @@ return function(robot, meta, constants, turtle)
                     end
                 end
             elseif needed < 0 then
-                turtle.select(id)
+                nativeTurtle.select(id)
                 local toRemove = math.abs(needed)
                 for i = 1, 16 do
                     if i ~= id and not lockedSlots[i] then
-                        if turtle.transferTo(i, toRemove) then
+                        if nativeTurtle.transferTo(i, toRemove) then
                             break
                         end
                     end
@@ -302,7 +302,7 @@ return function(robot, meta, constants, turtle)
             end
 
             lockedSlots[id] = true
-            return turtle.getItemCount(id) == count
+            return nativeTurtle.getItemCount(id) == count
         end
 
         local function clearSlot(id)
@@ -405,7 +405,7 @@ return function(robot, meta, constants, turtle)
         local names = {}
 
         for _, slot in pairs(slots) do
-            local detail = turtle.getItemDetail(slot.id)
+            local detail = nativeTurtle.getItemDetail(slot.id)
 
             if detail then
                 names[detail.name] = true

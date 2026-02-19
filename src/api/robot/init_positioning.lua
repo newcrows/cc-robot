@@ -1,4 +1,4 @@
-return function(robot, meta, constants, turtle)
+return function(robot, meta, constants)
     local DELTAS = constants.deltas
     local FACING_INDEX = constants.facing_index
     local FACINGS = constants.facings
@@ -71,8 +71,8 @@ return function(robot, meta, constants, turtle)
         local slot = meta.selectFirstSlot(name, true)
 
         if slot then
-            local cappedCount = math.min(turtle.getItemCount(), count)
-            turtle.refuel(cappedCount)
+            local cappedCount = math.min(nativeTurtle.getItemCount(), count)
+            nativeTurtle.refuel(cappedCount)
         end
     end
 
@@ -81,7 +81,7 @@ return function(robot, meta, constants, turtle)
             local availableCount = math.min(robot.getReservedItemCount(name), reserveCount)
             refuel(name, availableCount)
 
-            if turtle.getFuelLevel() >= requiredLevel then
+            if nativeTurtle.getFuelLevel() >= requiredLevel then
                 return true
             end
         end
@@ -150,11 +150,11 @@ return function(robot, meta, constants, turtle)
             error("no accepted fuels configured! use robot.setFuel() first.", 0)
         end
 
-        if requiredLevel > turtle.getFuelLimit() then
+        if requiredLevel > nativeTurtle.getFuelLimit() then
             error("requiredLevel is bigger than turtle.getFuelLimit()!", 0)
         end
 
-        local level = turtle.getFuelLevel()
+        local level = nativeTurtle.getFuelLevel()
         local waited = false
 
         while level < requiredLevel do
@@ -170,7 +170,7 @@ return function(robot, meta, constants, turtle)
                 os.sleep(1)
             end
 
-            level = turtle.getFuelLevel()
+            level = nativeTurtle.getFuelLevel()
             meta.dispatchEvent("fuel_warning", level, requiredLevel, acceptedFuels, waited)
 
             waited = true
@@ -178,28 +178,28 @@ return function(robot, meta, constants, turtle)
     end
 
     function robot.forward(count, blocking)
-        return moveHelper(turtle.forward, DELTAS[robot.facing], count, blocking)
+        return moveHelper(nativeTurtle.forward, DELTAS[robot.facing], count, blocking)
     end
 
     function robot.back(count, blocking)
         local opposite = OPPOSITE_FACINGS[robot.facing]
-        return moveHelper(turtle.back, DELTAS[opposite], count, blocking)
+        return moveHelper(nativeTurtle.back, DELTAS[opposite], count, blocking)
     end
 
     function robot.up(count, blocking)
-        return moveHelper(turtle.up, DELTAS.up, count, blocking)
+        return moveHelper(nativeTurtle.up, DELTAS.up, count, blocking)
     end
 
     function robot.down(count, blocking)
-        return moveHelper(turtle.down, DELTAS.down, count, blocking)
+        return moveHelper(nativeTurtle.down, DELTAS.down, count, blocking)
     end
 
     function robot.turnRight(count)
-        return turnHelper(turtle.turnRight, 1, count)
+        return turnHelper(nativeTurtle.turnRight, 1, count)
     end
 
     function robot.turnLeft(count)
-        return turnHelper(turtle.turnLeft, -1, count)
+        return turnHelper(nativeTurtle.turnLeft, -1, count)
     end
 
     function robot.moveTo(x, y, z, blocking)
@@ -333,12 +333,12 @@ return function(robot, meta, constants, turtle)
         local diff = (FACING_INDEX[facing] - FACING_INDEX[robot.facing]) % 4
 
         if diff == 1 then
-            turtle.turnRight()
+            nativeTurtle.turnRight()
         elseif diff == 2 then
-            turtle.turnRight()
-            turtle.turnRight()
+            nativeTurtle.turnRight()
+            nativeTurtle.turnRight()
         elseif diff == 3 then
-            turtle.turnLeft()
+            nativeTurtle.turnLeft()
         end
 
         robot.facing = facing
@@ -393,10 +393,10 @@ return function(robot, meta, constants, turtle)
     end
 
     function robot.getFuelLevel()
-        return turtle.getFuelLevel()
+        return nativeTurtle.getFuelLevel()
     end
 
     function robot.getFuelLimit()
-        return turtle.getFuelLimit()
+        return nativeTurtle.getFuelLimit()
     end
 end

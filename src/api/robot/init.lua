@@ -6,11 +6,15 @@ local initEquipment = require((...) .. "/init_equipment")
 local initInventory = require((...) .. "/init_inventory")
 local initMisc = require((...) .. "/init_misc")
 
+if not _G.nativeTurtle then
+    _G.nativeTurtle = _G.turtle
+end
+
 local robot = {}
 local meta = {}
 local constants = {
-    auto_fuel_low_threshold = turtle.getFuelLimit() / 10 * 2,
-    auto_fuel_high_threshold = turtle.getFuelLimit() / 10 * 8,
+    auto_fuel_low_threshold = nativeTurtle.getFuelLimit() / 10 * 2,
+    auto_fuel_high_threshold = nativeTurtle.getFuelLimit() / 10 * 8,
     deltas = {
         north = { x = 0, y = 0, z = -1 },
         east = { x = 1, y = 0, z = 0 },
@@ -87,18 +91,17 @@ local constants = {
     },
     default_stack_size = 64
 }
-local turtle = turtle
 
 robot.meta = meta
 robot.constants = constants
-robot.turtle = turtle
+robot.turtle = nativeTurtle
 
-initTurtle(robot, meta, constants, turtle)
-initPositioning(robot, meta, constants, turtle)
-initEvents(robot, meta, constants, turtle)
-initPeripherals(robot, meta, constants, turtle)
-initEquipment(robot, meta, constants, turtle)
-initInventory(robot, meta, constants, turtle)
-initMisc(robot, meta, constants, turtle)
+initTurtle(robot, meta, constants)
+initPositioning(robot, meta, constants)
+initEvents(robot, meta, constants)
+initPeripherals(robot, meta, constants)
+initEquipment(robot, meta, constants)
+initInventory(robot, meta, constants)
+initMisc(robot, meta, constants)
 
 return robot

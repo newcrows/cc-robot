@@ -1,4 +1,4 @@
-return function(robot, meta, constants, turtle)
+return function(robot, meta, constants)
     local FACING_INDEX = constants.facing_index
     local SIDE_INDEX = constants.side_index
     local SIDES = constants.sides
@@ -30,9 +30,9 @@ return function(robot, meta, constants, turtle)
 
     local function getNameFor(side)
         local inspectFunc = ({
-            front = turtle.inspect,
-            top = turtle.inspectUp,
-            bottom = turtle.inspectDown
+            front = nativeTurtle.inspect,
+            top = nativeTurtle.inspectUp,
+            bottom = nativeTurtle.inspectDown
         })[side]
 
         if not inspectFunc then

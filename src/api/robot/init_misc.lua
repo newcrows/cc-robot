@@ -1,9 +1,9 @@
-return function(robot, meta, constants, turtle)
+return function(robot, meta, constants)
     local function physicalCountAll()
         local total = 0
 
         for i = 1, 16 do
-            total = total + turtle.getItemCount(i)
+            total = total + nativeTurtle.getItemCount(i)
         end
 
         return total
@@ -167,74 +167,74 @@ return function(robot, meta, constants, turtle)
     end
 
     function robot.place(name, blocking)
-        return placeHelper(turtle.place, name, blocking)
+        return placeHelper(nativeTurtle.place, name, blocking)
     end
 
     function robot.placeUp(name, blocking)
-        return placeHelper(turtle.placeUp, name, blocking)
+        return placeHelper(nativeTurtle.placeUp, name, blocking)
     end
 
     function robot.placeDown(name, blocking)
-        return placeHelper(turtle.placeDown, name, blocking)
+        return placeHelper(nativeTurtle.placeDown, name, blocking)
     end
 
     function robot.drop(name, count, blocking)
-        return dropHelper(turtle.drop, name, count, blocking)
+        return dropHelper(nativeTurtle.drop, name, count, blocking)
     end
 
     function robot.dropUp(name, count, blocking)
-        return dropHelper(turtle.dropUp, name, count, blocking)
+        return dropHelper(nativeTurtle.dropUp, name, count, blocking)
     end
 
     function robot.dropDown(name, count, blocking)
-        return dropHelper(turtle.dropDown, name, count, blocking)
+        return dropHelper(nativeTurtle.dropDown, name, count, blocking)
     end
 
     function robot.detect()
-        return turtle.detect()
+        return nativeTurtle.detect()
     end
 
     function robot.detectUp()
-        return turtle.detectUp()
+        return nativeTurtle.detectUp()
     end
 
     function robot.detectDown()
-        return turtle.detectDown()
+        return nativeTurtle.detectDown()
     end
 
     function robot.compare(name)
-        return compareHelper(turtle.inspect, name)
+        return compareHelper(nativeTurtle.inspect, name)
     end
 
     function robot.compareUp(name)
-        return compareHelper(turtle.inspectUp, name)
+        return compareHelper(nativeTurtle.inspectUp, name)
     end
 
     function robot.compareDown(name)
-        return compareHelper(turtle.inspectDown, name)
+        return compareHelper(nativeTurtle.inspectDown, name)
     end
 
     function robot.suck(count, blocking)
-        return suckHelper(turtle.suck, count, blocking)
+        return suckHelper(nativeTurtle.suck, count, blocking)
     end
 
     function robot.suckUp(count, blocking)
-        return suckHelper(turtle.suckUp, count, blocking)
+        return suckHelper(nativeTurtle.suckUp, count, blocking)
     end
 
     function robot.suckDown(count, blocking)
-        return suckHelper(turtle.suckDown, count, blocking)
+        return suckHelper(nativeTurtle.suckDown, count, blocking)
     end
 
     function robot.inspect()
-        return turtle.inspect()
+        return nativeTurtle.inspect()
     end
 
     function robot.inspectUp()
-        return turtle.inspectUp()
+        return nativeTurtle.inspectUp()
     end
 
     function robot.inspectDown()
-        return turtle.inspectDown()
+        return nativeTurtle.inspectDown()
     end
 end
