@@ -4,21 +4,6 @@ local flags = args[1]
 -- local branch = args[3]
 local config = args[4]
 
-if flags.e then
-    print("include examples..")
-
-    local exampleFiles = {
-        "examples/auto_fuel.lua",
-        "examples/crafting.lua",
-        "examples/inventory.lua",
-        "examples/multiple_tools.lua"
-    }
-
-    for _, exampleFile in ipairs(exampleFiles) do
-        table.insert(config.files, exampleFile)
-    end
-end
-
 if flags.t then
     print("include tests..")
 
