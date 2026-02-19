@@ -1,0 +1,30 @@
+---- local functions ----
+local function physicalCountAll()
+local function countEmptySlots()
+local function placeHelper(placeFunc, name, blocking)
+local function dropHelper(dropFunc, name, count, blocking)
+local function compareHelper(inspectFunc, name)
+local function suckHelper(suckFunc, count, blocking)
+
+---- meta functions ----
+
+---- robot functions ----
+robot.place(name, blocking)
+robot.placeUp(name, blocking)
+robot.placeDown(name, blocking)
+robot.drop(name, count, blocking)
+robot.dropUp(name, count, blocking)
+robot.dropDown(name, count, blocking)
+robot.detect()
+robot.detectUp()
+robot.detectDown()
+robot.compare(name)
+robot.compareUp(name)
+robot.compareDown(name)
+robot.suck(count, blocking)
+robot.suckUp(count, blocking)
+robot.suckDown(count, blocking)
+robot.inspect()
+robot.inspectUp()
+robot.inspectDown()
+

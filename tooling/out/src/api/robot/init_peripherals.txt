@@ -1,0 +1,27 @@
+---- local functions ----
+local function loadConstructors()
+local function getNameFor(side)
+local function getPositionFor(side)
+local function getKeyFor(x, y, z)
+local function getSideFor(facing)
+local function softWrap(key, proxy)
+local function createProxy(x, y, z, name)
+local function wrapHelper(x, y, z, wrapAs)
+local function unwrapHelper(x, y, z)
+
+---- meta functions ----
+meta.getPeripheralConstructorDetail(name)
+meta.listPeripheralConstructors()
+meta.softUnwrap(side)
+meta.softUnwrapAll()
+
+---- robot functions ----
+robot.wrap(x, y, z, wrapAs)
+robot.wrapUp(wrapAs)
+robot.wrapDown(wrapAs)
+robot.unwrap(x, y, z)
+robot.unwrapUp()
+robot.unwrapDown()
+robot.getPeripheralDetail(x, y, z)
+robot.listPeripherals()
+
