@@ -9,7 +9,9 @@
     "api/robot/init_misc.lua",
     "api/robot/init_peripherals.lua",
     "api/robot/init_positioning.lua",
+    "api/robot/init_turtle.lua",
     "peripherals/chest.lua",
+    "peripherals/dig_tool.lua",
     "peripherals/me_bridge.lua"
   ]
 }
