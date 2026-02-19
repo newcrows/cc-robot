@@ -64,44 +64,29 @@ return function(robot, meta, constants)
             error("name must not be nil", 0)
         end
 
-        local remaining = count or robot.getItemCount(name)
-        local amount = remaining
-        local waited = false
+        local totalAmount = count or robot.getItemCount(name)
+        local remaining = totalAmount
 
-        while remaining > 0 do
-            local slotInfo = meta.getFirstSlot(name)
-            local amountToDrop = 0
+        local function check()
+            return remaining <= 0
+        end
 
-            if slotInfo then
-                local currentInSlot = slotInfo.count
-                amountToDrop = math.min(currentInSlot, remaining)
-            end
+        local function tick()
+            -- TODO [JM] rename meta.getFirstSlot to meta.getFirstSlotDetail to stay coherent with all other funcs
+            local detail = meta.getFirstSlot(name)
 
-            if amountToDrop > 0 then
-                robot.select(name)
-            end
+            if detail then
+                local amountToDrop = math.min(detail.count, remaining)
+                nativeTurtle.select(detail.id)
 
-            if amountToDrop > 0 and dropFunc(amountToDrop) then
-                remaining = remaining - amountToDrop
-                waited = false
-            else
-                if blocking then
-                    if waited then
-                        os.sleep(1)
-                    end
-
-                    if type(blocking) == "function" then
-                        blocking()
-                    end
-
-                    waited = true
-                else
-                    return amount - remaining
+                if dropFunc(amountToDrop) then
+                    remaining = remaining - amountToDrop
                 end
             end
         end
 
-        return amount
+        ensure(check, tick, blocking)
+        return totalAmount - remaining
     end
 
     local function compareHelper(inspectFunc, name)
