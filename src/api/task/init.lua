@@ -1,3 +1,4 @@
+local tasksDir = "%INSTALL_DIR%/tasks"
 local configFile = "%INSTALL_DIR%/startup/task.config"
 local task = {}
 
@@ -35,7 +36,7 @@ function task.run(name, opts)
         end
     }
 
-    local _task = require(name)
+    local _task = require(tasksDir .. "/" .. name)
     _task(opts, ctrl)
 
     removeConfigFile()
