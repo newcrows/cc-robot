@@ -276,16 +276,25 @@ return function(robot, meta, constants)
         return unwrapHelper(SIDES.bottom)
     end
 
-    -- TODO [JM] implement this in a useful manner, like accepting {x,y,z} and {x,y,z,name} as well
-    -- should probably support getWrappedPeripheralDetail(SIDE) too
-    -- if peripheral doesn't exist in proxies, return nil (like all other getDetail() functions)
     function robot.getPeripheralDetail(x, y, z)
+        x = x or SIDES.front
 
+        if type(x) == "string" then
+            x, y, z = getPositionFor(x)
+        end
+
+        local key = getKeyFor(x, y, z)
+        return proxies[key]
     end
 
-    -- TODO [JM] implement, array with entries like getPeripheralDetail() for all known peripherals
     function robot.listPeripherals()
+        local arr = {}
 
+        for _, proxy in pairs(proxies) do
+            table.insert(arr, proxy)
+        end
+
+        return arr
     end
 
     loadConstructors()
