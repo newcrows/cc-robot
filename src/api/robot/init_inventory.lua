@@ -1,6 +1,8 @@
 return function(robot, meta, constants)
     local selectedName
     local reservedSpaces = {}
+    local countWarningListenerId
+    local countWarningClearedListenerId
     local spaceWarningListenerId
     local spaceWarningClearedListenerId
 
@@ -62,6 +64,18 @@ return function(robot, meta, constants)
         end
 
         return reservedEmptySlots
+    end
+
+    function meta.requireItemCount(name, count)
+        local function check()
+            return robot.hasItemCount(name, count)
+        end
+
+        local function get()
+            return check, name, count, getStackSize(name)
+        end
+
+        meta.ensureCleared(check, get, "count_warning")
     end
 
     function meta.requireItemSpace(name, space)
@@ -302,6 +316,32 @@ return function(robot, meta, constants)
         end
 
         return layoutFunc(setSlot, clearSlot)
+    end
+
+    function robot.onCountWarning(callback)
+        if countWarningListenerId then
+            meta.removeEventListener(countWarningListenerId)
+            countWarningListenerId = nil
+        end
+
+        if callback then
+            countWarningListenerId = meta.addEventListener({
+                count_warning = callback
+            })
+        end
+    end
+
+    function robot.onCountWarningCleared(callback)
+        if countWarningClearedListenerId then
+            meta.removeEventListener(countWarningClearedListenerId)
+            countWarningClearedListenerId = nil
+        end
+
+        if callback then
+            countWarningClearedListenerId = meta.addEventListener({
+                count_warning_cleared = callback
+            })
+        end
     end
 
     function robot.onSpaceWarning(callback)
