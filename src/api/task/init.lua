@@ -120,13 +120,13 @@ function task.run(name, opts)
         end
     }
 
-    _G.robot = require("%INSTALL_DIR%/api/robot")
     local _task = require(tasksDir .. "/" .. name)
 
     if not opts.resumed then
         processRequirements(_task.requirements)
     end
 
+    opts.robot = require("%INSTALL_DIR%/api/robot")
     local result = runProtected(_task.run, opts, ctrl)
 
     removeConfigFile()
