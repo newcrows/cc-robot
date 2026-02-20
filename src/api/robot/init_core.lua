@@ -91,13 +91,15 @@ return function(_, meta)
 
         while true do
             strategy()
-            tick()
+            local didTick = tick()
 
             if check() then
                 return
             end
 
-            os.sleep(1)
+            if not didTick then
+                os.sleep(1)
+            end
         end
     end
 

@@ -27,6 +27,8 @@ return function(robot, meta, constants)
 
                 moved = moved + 1
                 meta.softUnwrapAll()
+
+                return true
             end
         end
 
