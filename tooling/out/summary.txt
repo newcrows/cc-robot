@@ -1,5 +1,6 @@
 ---- LOCAL FUNCTIONS ----
 # api/robot/init_core.lua
+local function getEntries(table, keyAlias, valueAlias)
 local function strategy()
 local function tick()
 
@@ -56,6 +57,8 @@ local function get()
 local function createProxy(x, y, z, name)
 local function wrapHelper(x, y, z, wrapAs)
 local function unwrapHelper(x, y, z)
+local function getValues(table)
+local function getEntries(table, keyAlias, valueAlias)
 
 # api/robot/init_positioning.lua
 local function moveHelper(moveFunc, delta, count, blocking)
@@ -69,6 +72,7 @@ local function moveX(targetFacing, dx, callback)
 local function moveY(targetFacing, dy, callback)
 local function moveZ(targetFacing, dz, callback)
 local function moveInOrder(order, blocking)
+local function getKeys(table)
 local function check()
 local function get()
 local function check()
@@ -88,10 +92,6 @@ meta.getEventListenerDetail(id)
 meta.listEventListeners()
 meta.dispatchEvent(event, ...)
 meta.on(event, callback)
-meta.keys(table)
-meta.values(table)
-meta.entries(table, keyAlias, valueAlias)
-meta.any(table, match)
 meta.require(check, tick, strategy)
 meta.requireCleared(check, get, warning)
 

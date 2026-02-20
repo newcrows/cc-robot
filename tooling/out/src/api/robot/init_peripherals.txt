@@ -10,6 +10,8 @@ local function get()
 local function createProxy(x, y, z, name)
 local function wrapHelper(x, y, z, wrapAs)
 local function unwrapHelper(x, y, z)
+local function getValues(table)
+local function getEntries(table, keyAlias, valueAlias)
 
 ---- META FUNCTIONS ----
 meta.getPeripheralConstructorDetail(name)
