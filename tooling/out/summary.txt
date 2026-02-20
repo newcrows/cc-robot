@@ -58,10 +58,13 @@ local function check()
 local function get()
 local function check()
 local function get()
+local function check()
+local function get()
 local function setSlot(id, name, count)
 local function clearSlot(id)
 
 ---- meta functions ----
+meta.requireItemCount(name, count)
 meta.requireItemSpace(name, space)
 meta.requireItemSpaceForUnknown(stackSize, space)
 meta.listSlots(name, limit, includeReservedItems)
@@ -74,6 +77,8 @@ meta.countItems(name, includeReservedItems)
 meta.arrangeSlots(layoutFunc)
 
 ---- robot functions ----
+robot.onCountWarning(callback)
+robot.onCountWarningCleared(callback)
 robot.onSpaceWarning(callback)
 robot.onSpaceWarningCleared(callback)
 robot.select(name)
