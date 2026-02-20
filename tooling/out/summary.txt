@@ -74,8 +74,8 @@ meta.countItems(name, includeReservedItems)
 meta.arrangeSlots(layoutFunc)
 
 ---- robot functions ----
-robot.onItemWarning(callback)
-robot.onItemWarningCleared(callback)
+robot.onSpaceWarning(callback)
+robot.onSpaceWarningCleared(callback)
 robot.select(name)
 robot.getSelectedName()
 robot.getItemDetail(name)

@@ -304,7 +304,7 @@ return function(robot, meta, constants)
         return layoutFunc(setSlot, clearSlot)
     end
 
-    function robot.onItemWarning(callback)
+    function robot.onSpaceWarning(callback)
         if spaceWarningListenerId then
             meta.removeEventListener(spaceWarningListenerId)
             spaceWarningListenerId = nil
@@ -317,7 +317,7 @@ return function(robot, meta, constants)
         end
     end
 
-    function robot.onItemWarningCleared(callback)
+    function robot.onSpaceWarningCleared(callback)
         if spaceWarningClearedListenerId then
             meta.removeEventListener(spaceWarningClearedListenerId)
             spaceWarningClearedListenerId = nil
@@ -484,7 +484,7 @@ return function(robot, meta, constants)
         return arr
     end
 
-    robot.onItemWarning(function(alreadyWarned, _, name, space)
+    robot.onSpaceWarning(function(alreadyWarned, _, name, space)
         if not alreadyWarned then
             print("---- space_warning ----")
             if name == "unknown" then
@@ -496,7 +496,7 @@ return function(robot, meta, constants)
         end
     end)
 
-    robot.onItemWarningCleared(function()
+    robot.onSpaceWarningCleared(function()
         print("---- space_warning_cleared ----")
     end)
 end
