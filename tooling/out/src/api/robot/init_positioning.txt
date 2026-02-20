@@ -1,4 +1,4 @@
----- local functions ----
+---- LOCAL FUNCTIONS ----
 local function moveHelper(moveFunc, delta, count, blocking)
 local function check()
 local function tick()
@@ -15,10 +15,10 @@ local function get()
 local function check()
 local function get()
 
----- meta functions ----
+---- META FUNCTIONS ----
 meta.requireFuelLevel(requiredLevel)
 
----- robot functions ----
+---- ROBOT FUNCTIONS ----
 robot.forward(count, blocking)
 robot.back(count, blocking)
 robot.up(count, blocking)

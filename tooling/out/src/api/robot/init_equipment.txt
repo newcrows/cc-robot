@@ -1,4 +1,4 @@
----- local functions ----
+---- LOCAL FUNCTIONS ----
 local function getEquippedSide(name)
 local function getEmptySide()
 local function getEquippedProxy(side)
@@ -12,9 +12,9 @@ local function check()
 local function get()
 local function createProxy(name, pinned)
 
----- meta functions ----
+---- META FUNCTIONS ----
 
----- robot functions ----
+---- ROBOT FUNCTIONS ----
 robot.equip(name, pinned)
 robot.unequip(name)
 robot.onEquipmentWarning(callback)

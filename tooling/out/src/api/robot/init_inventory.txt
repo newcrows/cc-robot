@@ -1,4 +1,4 @@
----- local functions ----
+---- LOCAL FUNCTIONS ----
 local function compact()
 local function getStackSize(name)
 local function countReservedEmptySlots()
@@ -11,7 +11,7 @@ local function get()
 local function setSlot(id, name, count)
 local function clearSlot(id)
 
----- meta functions ----
+---- META FUNCTIONS ----
 meta.requireItemCount(name, count)
 meta.requireItemSpace(name, space)
 meta.requireItemSpaceForUnknown(stackSize, space)
@@ -24,7 +24,7 @@ meta.selectFirstEmptySlot(includeReservedItems)
 meta.countItems(name, includeReservedItems)
 meta.arrangeSlots(layoutFunc)
 
----- robot functions ----
+---- ROBOT FUNCTIONS ----
 robot.select(name)
 robot.getSelectedName()
 robot.getItemDetail(name)

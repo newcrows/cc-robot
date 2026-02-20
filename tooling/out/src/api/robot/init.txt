@@ -1,6 +1,6 @@
----- local functions ----
+---- LOCAL FUNCTIONS ----
 
----- meta functions ----
+---- META FUNCTIONS ----
 
----- robot functions ----
+---- ROBOT FUNCTIONS ----
 

@@ -1,4 +1,4 @@
----- local functions ----
+---- LOCAL FUNCTIONS ----
 local function physicalCountAll()
 local function countEmptySlots()
 local function placeHelper(placeFunc, name, blocking)
@@ -12,9 +12,9 @@ local function suckHelper(suckFunc, count, blocking)
 local function check()
 local function tick()
 
----- meta functions ----
+---- META FUNCTIONS ----
 
----- robot functions ----
+---- ROBOT FUNCTIONS ----
 robot.place(name, blocking)
 robot.placeUp(name, blocking)
 robot.placeDown(name, blocking)
