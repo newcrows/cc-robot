@@ -96,8 +96,8 @@ robot.meta = meta
 robot.constants = constants
 
 initTurtle(robot, meta, constants)
-initPositioning(robot, meta, constants)
 initEvents(robot, meta, constants)
+initPositioning(robot, meta, constants)
 initPeripherals(robot, meta, constants)
 initEquipment(robot, meta, constants)
 initInventory(robot, meta, constants)
