@@ -242,16 +242,7 @@ return function(robot, meta, constants)
     end
 
     function meta.listPeripheralConstructors()
-        local arr = {}
-
-        for name, constructor in pairs(constructors) do
-            table.insert(arr, {
-                name = name,
-                constructor = constructor
-            })
-        end
-
-        return arr
+        return meta.entries(constructors, "name", "constructor")
     end
 
     -- NOTE [JM] should use meta.softUnwrapAll for better performance, peripherals auto-soft-wrap anyway
@@ -305,13 +296,7 @@ return function(robot, meta, constants)
     end
 
     function robot.listPeripherals()
-        local arr = {}
-
-        for _, proxy in pairs(proxies) do
-            table.insert(arr, proxy)
-        end
-
-        return arr
+        return meta.values(proxies)
     end
 
     function robot.onPeripheralWarning(callback)
