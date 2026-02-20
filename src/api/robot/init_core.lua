@@ -1,4 +1,3 @@
--- TODO [JM] rename to init_core or something (not only events here any more)
 return function(_, meta)
     local listeners = {}
     local nextId = 1
@@ -73,6 +72,16 @@ return function(_, meta)
         end
 
         return keys
+    end
+
+    function meta.getValues(table)
+        local values = {}
+
+        for _, value in pairs(table) do
+            values[#values + 1] = value
+        end
+
+        return values
     end
 
     function meta.ensure(check, tick, strategy)
