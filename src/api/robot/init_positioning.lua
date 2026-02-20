@@ -159,7 +159,7 @@ return function(robot, meta, constants)
             return nativeTurtle.getFuelLevel(), requiredLevel, acceptedFuels
         end
 
-        meta.requireCleared(check, get, "fuel_warning")
+        meta.requireCleared(check, get, "fuel_level_warning")
     end
 
     function robot.forward(count, blocking)
@@ -288,12 +288,12 @@ return function(robot, meta, constants)
         return nativeTurtle.getFuelLimit()
     end
 
-    function robot.onFuelWarning(callback)
-        meta.on("fuel_warning", callback)
+    function robot.onFuelLevelWarning(callback)
+        meta.on("fuel_level_warning", callback)
     end
 
-    function robot.onFuelWarningCleared(callback)
-        meta.on("fuel_warning_cleared", callback)
+    function robot.onFuelLevelWarningCleared(callback)
+        meta.on("fuel_level_warning_cleared", callback)
     end
 
     function robot.onPathWarning(callback)
@@ -304,19 +304,19 @@ return function(robot, meta, constants)
         meta.on("path_warning_cleared", callback)
     end
 
-    robot.onFuelWarning(function(alreadyWarned, level, requiredLevel)
+    robot.onFuelLevelWarning(function(alreadyWarned, level, requiredLevel)
         if not alreadyWarned then
             local acceptedNames = getKeys(acceptedFuels)
 
-            print("---- fuel_warning ----")
+            print("---- fuel_level_warning ----")
             print("level = " .. level)
             print("requiredLevel = " .. requiredLevel)
             print("acceptedFuels = [" .. table.concat(acceptedNames, ", ") .. "]")
             print("----------------------")
         end
     end)
-    robot.onFuelWarningCleared(function()
-        print("---- fuel_warning_cleared ----")
+    robot.onFuelLevelWarningCleared(function()
+        print("---- fuel_level_warning_cleared ----")
     end)
 
     robot.onPathWarning(function(alreadyWarned, x, y, z)
