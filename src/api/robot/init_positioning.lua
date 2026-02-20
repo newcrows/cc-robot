@@ -5,7 +5,7 @@ return function(robot, meta, constants)
     local OPPOSITE_FACINGS = constants.opposite_facings
     local FUEL_LEVEL_WARNING = "fuel_level_warning"
     local PATH_WARNING = "path_warning"
-    local FUEL_SAFETY_MARGIN = nativeTurtle.getFuelLimit() / 10 * 2
+    local FUEL_SAFETY_MARGIN = math.min(nativeTurtle.getFuelLimit() / 10 * 2, 1000)
 
     robot.x, robot.y, robot.z = 0, 0, 0
     robot.facing = FACINGS.north
@@ -16,7 +16,7 @@ return function(robot, meta, constants)
         local moved = 0
 
         local function check()
-            return moved < count
+            return moved >= count
         end
 
         local function tick()
@@ -213,6 +213,8 @@ return function(robot, meta, constants)
         local dx = (x or robot.x) - robot.x
         local dy = (y or robot.y) - robot.y
         local dz = (z or robot.z) - robot.z
+
+        meta.requireFuelLevel(math.abs(dx) + math.abs(dy) + math.abs(dz))
 
         local order = {
             { moveX, FACINGS.east, dx },
