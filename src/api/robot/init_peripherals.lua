@@ -1,4 +1,5 @@
 return function(robot, meta, constants)
+    local FACINGS = constants.facings
     local FACING_INDEX = constants.facing_index
     local SIDE_INDEX = constants.side_index
     local SIDES = constants.sides
@@ -71,6 +72,12 @@ return function(robot, meta, constants)
     end
 
     local function getSideFor(facing)
+        if facing == FACINGS.up then
+            return SIDES.top
+        elseif facing == FACINGS.down then
+            return SIDES.bottom
+        end
+
         local facingI = FACING_INDEX[facing]
         local robotFacingI = FACING_INDEX[robot.facing]
 
