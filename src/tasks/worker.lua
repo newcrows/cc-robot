@@ -1,5 +1,5 @@
 local tasksDir = "%INSTALL_DIR%/tasks"
-local configFile = "%STARTUP_DIR%/slave.task.config"
+local configFile = "%STARTUP_DIR%/worker.task.config"
 local worker = {}
 
 local function writeConfigFile(name, opts)
@@ -22,6 +22,48 @@ end
 
 local function removeConfigFile()
     fs.delete(configFile)
+end
+
+local function processRequirements(req)
+    if not req then
+        return
+    end
+
+    if req.equipment then
+        for _, name in ipairs(req.equipment) do
+            robot.requireEquipment(name)
+            robot.reserve(name, 1) -- mock reserve equipment
+        end
+    end
+
+    if req.fuelLevel then
+        robot.requireFuelLevel(req.fuelLevel)
+    end
+
+    if req.itemCount then
+        for name, count in pairs(req.itemCount) do
+            robot.requireItemCount(name, count)
+        end
+    end
+
+    if req.itemSpace then
+        for name, space in pairs(req.itemSpace) do
+            robot.requireItemSpace(name, space)
+            robot.reserve(name, space) -- mock reserve to see whether all needed items fit together
+        end
+    end
+
+    if req.equipment then
+        for _, name in ipairs(req.equipment) do
+            robot.free(name, 1) -- free mock reserved equipment
+        end
+    end
+
+    if req.itemSpace then
+        for name, space in pairs(req.itemSpace) do
+            robot.free(name, space) -- free the mock reserved items
+        end
+    end
 end
 
 local function runProtected(_task, opts, ctrl)
@@ -51,28 +93,32 @@ local function runProtected(_task, opts, ctrl)
     return "finished"
 end
 
-function worker.run(name, opts)
+function worker.run(name, opts, reloadGlobals)
     if not opts.resumed then
         writeConfigFile(name, opts)
-        -- TODO [JM] notify task run via rednet here
-        --print("run: " .. name, table.unpack(opts))
+        print("run: " .. name, table.unpack(opts))
     else
-        -- TODO [JM] notify task resume via rednet here
-        --print("resume: " .. name, table.unpack(opts))
+        print("resume: " .. name, table.unpack(opts))
     end
 
     local ctrl = {
         reportProgress = function(progress)
-            -- TODO [JM] report progress via rednet here
+            local percentage = math.floor(progress * 100)
+            print(percentage .. "% complete")
         end
     }
 
     local _task = require(tasksDir .. "/" .. name)
-    local result = runProtected(_task, opts, ctrl)
+
+    if reloadGlobals then
+        _G.robot = require("%INSTALL_DIR%/api/robot")
+    end
+
+    processRequirements(_task.requirements)
+
+    local result = runProtected(_task.run, opts, ctrl)
 
     removeConfigFile()
-
-    -- TODO [JM] notify task finished|terminated|crashed via rednet here
     print(result .. ": " .. name, table.unpack(opts))
 end
 
@@ -95,7 +141,7 @@ return {
     run = function(opts, ctrl)
         worker.resume()
 
-        -- _G.robot injected by startup
+        -- _G.robot injected by startup (or by task api called with #reloadGlobals)
         local modem = robot.equip("computercraft:wireless_modem_normal")
         local compass = robot.equip("minecraft:compass")
 
