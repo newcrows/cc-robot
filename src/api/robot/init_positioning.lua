@@ -75,58 +75,6 @@ return function(robot, meta, constants)
         return false
     end
 
-    local function move(dfb, dud, drl, blocking)
-        if type(dfb) == "function" or type(dfb) == "boolean" then
-            blocking, dfb, dud, drl = dfb, 0, 0, 0
-        elseif type(dud) == "function" or type(dud) == "boolean" then
-            blocking, dud, drl = dud, 0, 0
-        elseif type(drl) == "function" or type(drl) == "boolean" then
-            blocking, drl = drl, 0
-        end
-
-        dfb, dud, drl = dfb or 0, dud or 0, drl or 0
-
-        local function wrap(d_dfb, d_dud, d_drl)
-            if type(blocking) == "function" then
-                local c_dfb = d_dfb > 0 and 1 or (d_dfb < 0 and -1 or 0)
-                local c_dud = d_dud > 0 and 1 or (d_dud < 0 and -1 or 0)
-                local c_drl = d_drl > 0 and 1 or (d_drl < 0 and -1 or 0)
-
-                return function()
-                    blocking(c_dfb, c_dud, c_drl)
-                end
-            end
-
-            return blocking
-        end
-
-        local dfbBlocking = wrap(dfb, 0, 0)
-        local dudBlocking = wrap(0, dud, 0)
-        local drlBlocking = wrap(0, 0, drl)
-
-        local forward = robot.forward
-        local back = robot.back
-        local up = robot.up
-        local down = robot.down
-        local turnRight = robot.turnRight
-        local turnLeft = robot.turnLeft
-
-        local m_dfb = dfb > 0 and forward(dfb, dfbBlocking) or -back(-dfb, dfbBlocking)
-        if m_dfb ~= dfb then
-            return m_dfb, 0, 0
-        end
-
-        local m_dud = dud > 0 and up(dud, dudBlocking) or -down(-dud, dudBlocking)
-        if m_dud ~= dud then
-            return m_dfb, m_dud, 0
-        end
-
-        local _ = drl > 0 and turnRight() or (drl < 0 and turnLeft())
-        local m_drl = drl > 0 and forward(drl, drlBlocking) or -forward(-drl, drlBlocking)
-
-        return m_dfb, m_dud, m_drl
-    end
-
     local function clamp(val)
         return math.max(-1, math.min(1, val))
     end
