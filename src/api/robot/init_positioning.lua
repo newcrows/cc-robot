@@ -195,6 +195,8 @@ return function(robot, meta, constants)
         return turnHelper(nativeTurtle.turnLeft, -1, count)
     end
 
+    -- TODO [JM] remove the "blocking" arg, instead fire fuel_warning and path_warning separately
+    -- also make all primitive move funcs (forward, back, up, down) use meta.ensure() directly
     function robot.moveTo(x, y, z, blocking)
         if type(x) == "table" then
             local name = x.name
