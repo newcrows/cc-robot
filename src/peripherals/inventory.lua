@@ -1,5 +1,4 @@
--- TODO [JM] rename this to "inventory.lua" and implement the generic inventory api
--- then use names = {"chest", "barrel", etc..} to register this for all inventory-like peripherals
+-- TODO [JM] implement the generic inventory api
 return {
     name = "minecraft:chest",
     constructor = function(opts)
