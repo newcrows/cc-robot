@@ -17,6 +17,7 @@
     "peripherals/me_bridge.lua",
     "startup/init.lua",
     "tasks/simple.lua",
+    "tasks/worker.lua",
     "task.lua"
   ]
 }
