@@ -2,9 +2,15 @@
 local function physicalCountAll()
 local function countEmptySlots()
 local function placeHelper(placeFunc, name, blocking)
+local function check()
+local function tick()
 local function dropHelper(dropFunc, name, count, blocking)
+local function check()
+local function tick()
 local function compareHelper(inspectFunc, name)
 local function suckHelper(suckFunc, count, blocking)
+local function check()
+local function tick()
 
 ---- meta functions ----
 

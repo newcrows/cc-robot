@@ -3,11 +3,14 @@ local function getEquippedSide(name)
 local function getEmptySide()
 local function getEquippedProxy(side)
 local function softWrap(side, proxy)
-local function checkEquipment(check, state, name)
+local function ensureItemAvailable(name)
+local function check()
+local function get()
 local function equipAndSoftWrap(side, proxy)
+local function ensureSpaceAvailable(name)
 local function check()
+local function get()
 local function createProxy(name, pinned)
-local function check()
 
 ---- meta functions ----
 

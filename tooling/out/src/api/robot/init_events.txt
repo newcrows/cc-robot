@@ -1,4 +1,6 @@
 ---- local functions ----
+local function strategy()
+local function tick()
 
 ---- meta functions ----
 meta.addEventListener(listener)
@@ -6,6 +8,9 @@ meta.removeEventListener(id)
 meta.getEventListenerDetail(id)
 meta.listEventListeners()
 meta.dispatchEvent(event, ...)
+meta.ensure(check, tick, strategy)
+meta.ensureCleared(check, get, warning)
+meta.getKeys(table)
 
 ---- robot functions ----
 

@@ -81,16 +81,20 @@ return function(robot, meta, constants)
         proxy.target = target
     end
 
+    local function ensureItemAvailable(name)
+        local function check()
+            return meta.selectFirstSlot(name, true)
+        end
+
+        local function get()
+            return STATE.missing, name
+        end
+
+        meta.ensureCleared(check, get, "equipment_warning")
+    end
+
     local function equipAndSoftWrap(side, proxy)
-        local function checkState()
-            return meta.selectFirstSlot(proxy.name, true)
-        end
-
-        local function getState()
-            return STATE.missing, proxy.name
-        end
-
-        meta.waitFor(checkState, getState, "equipment_warning")
+        ensureItemAvailable(proxy.name)
 
         local equipFunc = side == SIDES.right and nativeTurtle.equipRight or nativeTurtle.equipLeft
         equipFunc()
@@ -104,6 +108,21 @@ return function(robot, meta, constants)
 
         softWrap(side, proxy)
         nextSide = OPPOSITE_SIDES[nextSide]
+    end
+
+    local function ensureSpaceAvailable(name)
+        local function check()
+            -- Versucht einen leeren Slot zu finden und auszuwählen
+            return meta.selectFirstEmptySlot(true)
+        end
+
+        local function get()
+            -- Übergibt den Status 'no_space' und den Namen des Items,
+            -- das eigentlich abgelegt werden soll
+            return STATE.no_space, name
+        end
+
+        meta.ensureCleared(check, get, "equipment_warning")
     end
 
     local function createProxy(name, pinned)
@@ -161,15 +180,7 @@ return function(robot, meta, constants)
                 error("can't unuse pinned equipment", 0)
             end
 
-            local function checkState()
-                return meta.selectFirstEmptySlot(true)
-            end
-
-            local function getState()
-                return STATE.no_space, proxy.name
-            end
-
-            meta.waitFor(checkState, getState, "equipment_warning")
+            ensureSpaceAvailable(proxy.name)
 
             local equipFunc = proxy.side == SIDES.right and nativeTurtle.equipRight or nativeTurtle.equipLeft
             equipFunc()
@@ -283,12 +294,17 @@ return function(robot, meta, constants)
         end
     end
 
-    robot.onEquipmentWarning(function(state, name, waited)
-        if not waited then
+    robot.onEquipmentWarning(function(alreadyWarned, state, name)
+        if not alreadyWarned then
             print("---- equipment_warning ----")
-            print("state = " .. state)
-            print("name = " .. name)
-            print("-------------------------- ")
+
+            if state == STATE.missing then
+                print("missing: " .. name .. " (please insert)")
+            elseif state == STATE.no_space then
+                print("no space for " .. name .. " (please clear)")
+            end
+
+            print("---------------------------")
         end
     end)
 

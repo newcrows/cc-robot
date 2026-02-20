@@ -2,9 +2,10 @@
 local function compact()
 local function getStackSize(name)
 local function countReservedEmptySlots()
-local function waitForSpace(check)
 local function check()
+local function get()
 local function check()
+local function get()
 local function setSlot(id, name, count)
 local function clearSlot(id)
 
