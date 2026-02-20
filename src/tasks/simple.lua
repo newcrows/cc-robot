@@ -5,7 +5,7 @@ return {
 
         for i = 1, limit do
             os.sleep(interval)
-            ctrl.reportProgress(i / limit)
+            ctrl.tick(i / limit)
         end
     end
 }

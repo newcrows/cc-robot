@@ -109,7 +109,7 @@ function task.run(name, opts)
     end
 
     local ctrl = {
-        reportProgress = function(progress)
+        tick = function(progress)
             local percentage = math.floor(progress * 100)
             print(percentage .. "% complete")
         end
