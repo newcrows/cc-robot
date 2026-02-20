@@ -33,15 +33,15 @@ local function processRequirements(req)
         robot.setFuel(req.acceptedFuels)
     end
 
+    if req.fuelLevel then
+        robot.meta.requireFuelLevel(req.fuelLevel)
+    end
+
     if req.equipment then
         for _, name in ipairs(req.equipment) do
             robot.meta.requireEquipment(name)
             robot.reserve(name, 1) -- mock reserve equipment
         end
-    end
-
-    if req.fuelLevel then
-        robot.meta.requireFuelLevel(req.fuelLevel)
     end
 
     if req.itemCount then
