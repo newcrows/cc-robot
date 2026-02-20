@@ -90,6 +90,8 @@ return function(robot, meta, constants)
         local facing = FACING_INDEX[deltaKey]
 
         if not facing then
+            -- NOTE [JM] turtle is not near the proxy,
+            -- this is a logical error of the callee and must crash
             error("could not soft wrap", 0)
         end
 
@@ -113,6 +115,10 @@ return function(robot, meta, constants)
             }
 
             target = constructor(opts)
+        end
+
+        if not target then
+            -- this is an actual error that can be fixed (i.E. chest was removed by player)
         end
 
         proxy.target = target
