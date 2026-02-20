@@ -80,8 +80,20 @@ return function(robot, meta, constants)
         proxy.target = target
     end
 
+    local function requireItemToEquip(name)
+        local function check()
+            return meta.selectFirstSlot(name, true)
+        end
+
+        local function get()
+            return STATE.missing, name
+        end
+
+        meta.requireCleared(check, get, EQUIPMENT_WARNING)
+    end
+
     local function equipAndSoftWrap(side, proxy)
-        meta.requireEquipment(proxy.name)
+        requireItemToEquip(proxy.name)
 
         local equipFunc = side == SIDES.right and nativeTurtle.equipRight or nativeTurtle.equipLeft
         equipFunc()
@@ -217,6 +229,18 @@ return function(robot, meta, constants)
 
     function meta.requireEquipment(name)
         local function check()
+            local rightDetail = nativeTurtle.getEquippedRight()
+
+            if rightDetail and rightDetail.name == name then
+                return true
+            end
+
+            local leftDetail = nativeTurtle.getEquippedLeft()
+
+            if leftDetail and leftDetail.name == name then
+                return true
+            end
+
             return meta.selectFirstSlot(name, true)
         end
 
