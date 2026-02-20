@@ -132,6 +132,16 @@ return function(robot, meta, constants)
         end
     end
 
+    local function getKeys(table)
+        local keys = {}
+
+        for key in pairs(table) do
+            keys[#keys + 1] = key
+        end
+
+        return keys
+    end
+
     function meta.requireFuelLevel(requiredLevel)
         if not next(acceptedFuels) then
             error("no accepted fuels configured! use robot.setFuel() first.", 0)
@@ -296,7 +306,7 @@ return function(robot, meta, constants)
 
     robot.onFuelWarning(function(alreadyWarned, level, requiredLevel)
         if not alreadyWarned then
-            local acceptedNames = meta.keys(acceptedFuels)
+            local acceptedNames = getKeys(acceptedFuels)
 
             print("---- fuel_warning ----")
             print("level = " .. level)

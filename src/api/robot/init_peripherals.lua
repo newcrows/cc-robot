@@ -232,6 +232,16 @@ return function(robot, meta, constants)
         return true
     end
 
+    local function getValues(table)
+        local values = {}
+
+        for _, value in pairs(table) do
+            values[#values + 1] = value
+        end
+
+        return values
+    end
+
     function meta.getPeripheralConstructorDetail(name)
         name = name or robot.getSelectedName()
 
@@ -296,7 +306,7 @@ return function(robot, meta, constants)
     end
 
     function robot.listPeripherals()
-        return meta.values(proxies)
+        return getValues(proxies)
     end
 
     function robot.onPeripheralWarning(callback)

@@ -54,26 +54,6 @@ return function(_, meta)
         callbacksListener[event] = callback -- it can be so simple..
     end
 
-    function meta.keys(table)
-        local keys = {}
-
-        for key in pairs(table) do
-            keys[#keys + 1] = key
-        end
-
-        return keys
-    end
-
-    function meta.values(table)
-        local values = {}
-
-        for _, value in pairs(table) do
-            values[#values + 1] = value
-        end
-
-        return values
-    end
-
     function meta.entries(table, keyAlias, valueAlias)
         keyAlias = keyAlias or "key"
         valueAlias = valueAlias or "value"
