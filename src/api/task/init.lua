@@ -24,6 +24,48 @@ local function removeConfigFile()
     fs.delete(configFile)
 end
 
+local function processRequirements(req)
+    if not req then
+        return
+    end
+
+    if req.equipment then
+        for _, name in ipairs(req.equipment) do
+            robot.requireEquipment(name)
+            robot.reserve(name, 1) -- mock reserve equipment
+        end
+    end
+
+    if req.fuelLevel then
+        robot.requireFuelLevel(req.fuelLevel)
+    end
+
+    if req.itemCount then
+        for name, count in pairs(req.itemCount) do
+            robot.requireItemCount(name, count)
+        end
+    end
+
+    if req.itemSpace then
+        for name, space in pairs(req.itemSpace) do
+            robot.requireItemSpace(name, space)
+            robot.reserve(name, space) -- mock reserve to see whether all needed items fit together
+        end
+    end
+
+    if req.equipment then
+        for _, name in ipairs(req.equipment) do
+            robot.free(name, 1) -- free mock reserved equipment
+        end
+    end
+
+    if req.itemSpace then
+        for name, space in pairs(req.itemSpace) do
+            robot.free(name, space) -- free the mock reserved items
+        end
+    end
+end
+
 local function runProtected(_task, opts, ctrl)
     local oldPull = os.pullEvent
 
@@ -51,7 +93,7 @@ local function runProtected(_task, opts, ctrl)
     return "finished"
 end
 
-function task.run(name, opts)
+function task.run(name, opts, reloadGlobals)
     if not opts.resumed then
         writeConfigFile(name, opts)
         print("run: " .. name, table.unpack(opts))
@@ -67,7 +109,14 @@ function task.run(name, opts)
     }
 
     local _task = require(tasksDir .. "/" .. name)
-    local result = runProtected(_task, opts, ctrl)
+
+    if reloadGlobals then
+        _G.robot = require("%INSTALL_DIR%/api/robot")
+    end
+
+    processRequirements(_task.requirements)
+
+    local result = runProtected(_task.run, opts, ctrl)
 
     removeConfigFile()
     print(result .. ": " .. name, table.unpack(opts))

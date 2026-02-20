@@ -85,17 +85,25 @@ function worker.resume()
     end
 end
 
-return function(opts, ctrl)
-    worker.resume()
+return {
+    requirements = {
+        equipment = {
+            "computercraft:wireless_modem_normal",
+            "minecraft:compass"
+        }
+    },
+    run = function(opts, ctrl)
+        worker.resume()
 
-    -- _G.robot injected by startup
-    local modem = robot.equip("computercraft:wireless_modem_normal")
-    local compass = robot.equip("minecraft:compass")
+        -- _G.robot injected by startup
+        local modem = robot.equip("computercraft:wireless_modem_normal")
+        local compass = robot.equip("minecraft:compass")
 
-    -- refresh position data
-    modem.use()
-    robot.x, robot.y, robot.z = gps.locate()
-    robot.facing = compass.getFacing()
+        -- refresh position data
+        modem.use()
+        robot.x, robot.y, robot.z = gps.locate()
+        robot.facing = compass.getFacing()
 
-    -- TODO [JM] wait for new tasks via rednet here
-end
+        -- TODO [JM] wait for new tasks via rednet here
+    end
+}
