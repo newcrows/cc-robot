@@ -309,5 +309,14 @@ return function(robot, meta, constants)
         print("---- fuel_warning_cleared ----")
     end)
 
-    -- TODO [JM] default warning listeners for path_warning
+    robot.onPathWarning(function(alreadyWarned, x, y, z)
+        if not alreadyWarned then
+            print("---- path_warning ----")
+            print("path is obstructed at (" .. x .. ", " .. y .. ", " .. z .. ")")
+            print("----------------------")
+        end
+    end)
+    robot.onPathWarningCleared(function()
+        print("---- fuel_warning_cleared ----")
+    end)
 end
