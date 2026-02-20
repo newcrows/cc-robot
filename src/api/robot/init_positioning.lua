@@ -48,7 +48,6 @@ return function(robot, meta, constants)
         return count
     end
 
-    -- NOTE [JM] consumes the first stack it finds (partially if stack bigger than needed)
     local function refuel(name, count)
         local slot = meta.selectFirstSlot(name, true)
 
@@ -77,6 +76,50 @@ return function(robot, meta, constants)
 
     local function clamp(val)
         return math.max(-1, math.min(1, val))
+    end
+
+    local function move_x(targetFacing, dx, blocking)
+        if dx ~= 0 then
+            local facing = dx > 0 and FACINGS.east or FACINGS.west
+
+            if facing ~= targetFacing then
+                return true
+            end
+
+            robot.face(facing)
+            robot.forward(math.abs(dx), blocking)
+        end
+
+        return true
+    end
+
+    local function move_y(targetFacing, dy, blocking)
+        if dy ~= 0 then
+            -- TODO [JM] re-impl
+        end
+
+        return true
+    end
+
+    local function move_z(targetFacing, dz, blocking)
+        if dz ~= 0 then
+            local facing = dz > 0 and FACINGS.south or FACINGS.north
+
+            if facing ~= targetFacing then
+                return true
+            end
+
+            robot.face(facing)
+            robot.forward(math.abs(dz), blocking)
+        end
+
+        return true
+    end
+
+    local function moveInOrder(order, blocking)
+        for _, entry in ipairs(order) do
+            entry[1](entry[2], entry[3], blocking)
+        end
     end
 
     function meta.requireFuelLevel(requiredLevel)
@@ -128,7 +171,7 @@ return function(robot, meta, constants)
     -- also make all primitive move funcs (forward, back, up, down) use meta.ensure() directly
     -- also, the primitive functions should NOT fire fuel_warning any longer
     -- only complex functions (moveTo, equip, unequip, $softWrap, ..) should use any meta.require* logic
-    function robot.moveTo(x, y, z, blocking)
+    function robot.moveTo(x, y, z)
         if type(x) == "table" then
             local name = x.name
 
@@ -153,106 +196,20 @@ return function(robot, meta, constants)
         local dy = (y or robot.y) - robot.y
         local dz = (z or robot.z) - robot.z
 
-        local function wrap()
-            if type(blocking) ~= "function" then
-                return blocking
-            end
+        local order = {
+            {move_x, FACINGS.east, dx},
+            {move_y, FACINGS.up, dy},
+            {move_z, FACINGS.north, dz},
+            {move_z, FACINGS.south, dz},
+            {move_y, FACINGS.down, dy},
+            {move_x, FACINGS.west, dx}
+        }
 
-            return function(dfb, dud)
-                if dud ~= 0 then
-                    return blocking(0, dud > 0 and 1 or -1, 0)
-                end
-
-                if dfb > 0 then
-                    local d = constants.deltas[robot.facing]
-                    return blocking(d.x, 0, d.z)
-                end
-            end
+        local blocking = function()
+            -- TODO [JM] will trigger meta.ensureCleared(.., .., "path_warning")
         end
 
-        local moveBlocking = wrap()
-        local forward = robot.forward
-        local face = robot.face
-
-        local function move_x(targetFacing)
-            if dx ~= 0 then
-                local facing = dx > 0 and FACINGS.east or FACINGS.west
-
-                if facing ~= targetFacing then
-                    return true
-                end
-
-                face(facing)
-
-                local moved = forward(math.abs(dx), moveBlocking)
-                if moved ~= math.abs(dx) then
-                    return false
-                end
-            end
-
-            return true
-        end
-
-        local function move_y(targetFacing)
-            if dy ~= 0 then
-                local facing = dy > 0 and FACINGS.up or FACINGS.down
-
-                if facing ~= targetFacing then
-                    return true
-                end
-
-                local _, m_dud = move(0, dy, 0, moveBlocking)
-                if m_dud ~= dy then
-                    return false
-                end
-            end
-
-            return true
-        end
-
-        local function move_z(targetFacing)
-            if dz ~= 0 then
-                local facing = dz > 0 and FACINGS.south or FACINGS.north
-
-                if facing ~= targetFacing then
-                    return true
-                end
-
-                face(facing)
-
-                local moved = forward(math.abs(dz), moveBlocking)
-                if moved ~= math.abs(dz) then
-                    return false
-                end
-            end
-
-            return true
-        end
-
-        if not move_x(FACINGS.east) then
-            return robot.x, robot.y, robot.z
-        end
-
-        if not move_y(FACINGS.up) then
-            return robot.x, robot.y, robot.z
-        end
-
-        if not move_z(FACINGS.north) then
-            return robot.x, robot.y, robot.z
-        end
-
-        if not move_z(FACINGS.south) then
-            return robot.x, robot.y, robot.z
-        end
-
-        if not move_y(FACINGS.down) then
-            return robot.x, robot.y, robot.z
-        end
-
-        if not move_x(FACINGS.west) then
-            return robot.x, robot.y, robot.z
-        end
-
+        moveInOrder(order, blocking)
         return robot.x, robot.y, robot.z
     end
 
