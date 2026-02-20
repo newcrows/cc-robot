@@ -16,6 +16,7 @@ return function(robot, meta, constants)
         missing = "missing",
         no_space = "no_space"
     }
+    local EQUIPMENT_WARNING = "equipment_warning"
 
     local proxies = {}
     local nextSide = SIDES.right
@@ -108,7 +109,7 @@ return function(robot, meta, constants)
             return STATE.no_space, name
         end
 
-        meta.requireCleared(check, get, "equipment_warning")
+        meta.requireCleared(check, get, EQUIPMENT_WARNING)
     end
 
     local function createProxy(name, pinned)
@@ -223,7 +224,7 @@ return function(robot, meta, constants)
             return STATE.missing, name
         end
 
-        meta.requireCleared(check, get, "equipment_warning")
+        meta.requireCleared(check, get, EQUIPMENT_WARNING)
     end
 
     function robot.equip(name, pinned)
@@ -267,27 +268,25 @@ return function(robot, meta, constants)
     end
 
     function robot.onEquipmentWarning(callback)
-        meta.on("equipment_warning", callback)
+        meta.on(EQUIPMENT_WARNING, callback)
     end
 
     function robot.onEquipmentWarningCleared(callback)
-        meta.on("equipment_warning_cleared", callback)
+        meta.on(EQUIPMENT_WARNING .. "_cleared", callback)
     end
 
     robot.onEquipmentWarning(function(alreadyWarned, state, name)
         if not alreadyWarned then
-            print("---- equipment_warning ----")
+            print("---- " .. EQUIPMENT_WARNING .. " ----")
 
             if state == STATE.missing then
                 print("missing: " .. name .. " (please insert)")
             elseif state == STATE.no_space then
                 print("no space for " .. name .. " (please clear)")
             end
-
-            print("---------------------------")
         end
     end)
     robot.onEquipmentWarningCleared(function()
-        print("---- equipment_warning_cleared ----")
+        print("---- " .. EQUIPMENT_WARNING .. "_cleared ----")
     end)
 end
