@@ -65,29 +65,27 @@ return function(robot, meta, constants)
     end
 
     function meta.requireItemSpace(name, space)
-        local function checkState()
+        local function check()
             return robot.hasItemSpace(name, space)
         end
 
-        local function getState()
-            -- allow event handler to check by itself whether it dropped enough items already
-            return checkState
+        local function get()
+            return check, name, space, getStackSize(name)
         end
 
-        meta.waitFor(checkState, getState, "item_warning")
+        meta.ensureCleared(check, get, "space_warning")
     end
 
     function meta.requireItemSpaceForUnknown(stackSize, space)
-        local function checkState()
+        local function check()
             return robot.hasItemSpaceForUnknown(stackSize, space)
         end
 
-        local function getState()
-            -- allow event handler to check by itself whether it dropped enough items already
-            return checkState
+        local function get()
+            return check, "unknown", space, stackSize
         end
 
-        meta.waitFor(checkState, getState, "item_warning")
+        meta.ensureCleared(check, get, "space_warning")
     end
 
     function meta.listSlots(name, limit, includeReservedItems)
@@ -314,7 +312,7 @@ return function(robot, meta, constants)
 
         if callback then
             spaceWarningListenerId = meta.addEventListener({
-                item_warning = callback
+                space_warning = callback
             })
         end
     end
@@ -327,7 +325,7 @@ return function(robot, meta, constants)
 
         if callback then
             spaceWarningClearedListenerId = meta.addEventListener({
-                item_warning_cleared = callback
+                space_warning_cleared = callback
             })
         end
     end
@@ -486,15 +484,19 @@ return function(robot, meta, constants)
         return arr
     end
 
-    robot.onItemWarning(function(_, waited)
-        if not waited then
-            print("---- item_warning ----")
-            print("not enough space")
+    robot.onItemWarning(function(alreadyWarned, _, name, space)
+        if not alreadyWarned then
+            print("---- space_warning ----")
+            if name == "unknown" then
+                print("need space for " .. space .. "x unknown items")
+            else
+                print("need space for " .. space .. "x " .. name)
+            end
             print("----------------------")
         end
     end)
 
     robot.onItemWarningCleared(function()
-        print("---- item_warning_cleared ----")
+        print("---- space_warning_cleared ----")
     end)
 end

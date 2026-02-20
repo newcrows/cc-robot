@@ -107,7 +107,7 @@ return function(_, meta)
         local dispatched
 
         local function strategy()
-            meta.dispatchEvent(warning, table.unpack({ get() }), dispatched)
+            meta.dispatchEvent(warning, dispatched, get())
             dispatched = true
         end
 
