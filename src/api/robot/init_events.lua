@@ -1,3 +1,4 @@
+-- TODO [JM] rename to init_core or something (not only events here any more)
 return function(_, meta)
     local listeners = {}
     local nextId = 1
