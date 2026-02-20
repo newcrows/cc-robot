@@ -3,16 +3,16 @@ local function getEquippedSide(name)
 local function getEmptySide()
 local function getEquippedProxy(side)
 local function softWrap(side, proxy)
-local function requireItem(name)
-local function check()
-local function get()
 local function equipAndSoftWrap(side, proxy)
-local function requireSpace(name)
+local function requireSpaceToUnequip(name)
 local function check()
 local function get()
 local function createProxy(name, pinned)
+local function check()
+local function get()
 
 ---- META FUNCTIONS ----
+meta.requireEquipment(name)
 
 ---- ROBOT FUNCTIONS ----
 robot.equip(name, pinned)

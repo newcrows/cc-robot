@@ -9,14 +9,13 @@ local function getEquippedSide(name)
 local function getEmptySide()
 local function getEquippedProxy(side)
 local function softWrap(side, proxy)
-local function requireItem(name)
-local function check()
-local function get()
 local function equipAndSoftWrap(side, proxy)
-local function requireSpace(name)
+local function requireSpaceToUnequip(name)
 local function check()
 local function get()
 local function createProxy(name, pinned)
+local function check()
+local function get()
 
 # api/robot/init_inventory.lua
 local function compact()
@@ -94,6 +93,9 @@ meta.dispatchEvent(event, ...)
 meta.on(event, callback)
 meta.require(check, tick, strategy)
 meta.requireCleared(check, get, warning)
+
+# api/robot/init_equipment.lua
+meta.requireEquipment(name)
 
 # api/robot/init_inventory.lua
 meta.requireItemCount(name, count)
