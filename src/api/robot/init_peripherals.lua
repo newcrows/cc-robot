@@ -124,7 +124,7 @@ return function(robot, meta, constants)
             return proxy.x, proxy.y, proxy.z, proxy.name
         end
 
-        meta.ensureCleared(check, get, "peripheral_warning")
+        meta.requireCleared(check, get, "peripheral_warning")
     end
 
     local function createProxy(x, y, z, name)

@@ -49,11 +49,9 @@ return function(robot, meta, constants)
     end
 
     local function getEquippedProxy(side)
-        for _, proxy in pairs(proxies) do
-            if proxy.target and proxy.side == side then
-                return proxy
-            end
-        end
+        return meta.any(proxies, function()
+            return proxy.target and proxy.side == side
+        end)
     end
 
     local function softWrap(side, proxy)
@@ -88,7 +86,7 @@ return function(robot, meta, constants)
             return STATE.missing, name
         end
 
-        meta.ensureCleared(check, get, "equipment_warning")
+        meta.requireCleared(check, get, "equipment_warning")
     end
 
     local function equipAndSoftWrap(side, proxy)
@@ -120,7 +118,7 @@ return function(robot, meta, constants)
             return STATE.no_space, name
         end
 
-        meta.ensureCleared(check, get, "equipment_warning")
+        meta.requireCleared(check, get, "equipment_warning")
     end
 
     local function createProxy(name, pinned)

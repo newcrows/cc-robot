@@ -37,7 +37,7 @@ return function(_, meta)
     end
 
     function meta.listEventListeners()
-        return meta.getEntries(listeners, "id", "listener")
+        return meta.entries(listeners, "id", "listener")
     end
 
     function meta.dispatchEvent(event, ...)
@@ -54,8 +54,7 @@ return function(_, meta)
         callbacksListener[event] = callback -- it can be so simple..
     end
 
-    -- TODO [JM] use this wherever we loop table keys!! maybe add similar helpers here (getValues ?)
-    function meta.getKeys(table)
+    function meta.keys(table)
         local keys = {}
 
         for key in pairs(table) do
@@ -65,7 +64,7 @@ return function(_, meta)
         return keys
     end
 
-    function meta.getValues(table)
+    function meta.values(table)
         local values = {}
 
         for _, value in pairs(table) do
@@ -75,7 +74,7 @@ return function(_, meta)
         return values
     end
 
-    function meta.getEntries(table, keyAlias, valueAlias)
+    function meta.entries(table, keyAlias, valueAlias)
         keyAlias = keyAlias or "key"
         valueAlias = valueAlias or "value"
 
@@ -91,7 +90,15 @@ return function(_, meta)
         return entries
     end
 
-    function meta.ensure(check, tick, strategy)
+    function meta.any(table, match)
+        for k, v in pairs(table) do
+            if match(v, k, table) then
+                return v
+            end
+        end
+    end
+
+    function meta.require(check, tick, strategy)
         if type(check) ~= "function" then
             error("check must be a function", 0)
         end
@@ -122,7 +129,7 @@ return function(_, meta)
         end
     end
 
-    function meta.ensureCleared(check, get, warning)
+    function meta.requireCleared(check, get, warning)
         if type(check) ~= "function" then
             error("check must be a function", 0)
         end
@@ -145,7 +152,7 @@ return function(_, meta)
         local function tick()
         end
 
-        meta.ensure(check, tick, strategy)
+        meta.require(check, tick, strategy)
 
         if dispatched then
             meta.dispatchEvent(warning .. "_cleared")

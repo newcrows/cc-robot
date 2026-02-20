@@ -27,9 +27,9 @@ meta.getEventListenerDetail(id)
 meta.listEventListeners()
 meta.dispatchEvent(event, ...)
 meta.on(event, callback)
-meta.getKeys(table)
-meta.ensure(check, tick, strategy)
-meta.ensureCleared(check, get, warning)
+meta.keys(table)
+meta.require(check, tick, strategy)
+meta.requireCleared(check, get, warning)
 
 ---- robot functions ----
 

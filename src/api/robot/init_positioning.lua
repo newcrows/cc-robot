@@ -27,7 +27,7 @@ return function(robot, meta, constants)
             end
         end
 
-        meta.ensure(check, tick, blocking)
+        meta.require(check, tick, blocking)
         return moved
     end
 
@@ -149,7 +149,7 @@ return function(robot, meta, constants)
             return nativeTurtle.getFuelLevel(), requiredLevel, acceptedFuels
         end
 
-        meta.ensureCleared(check, get, "fuel_warning")
+        meta.requireCleared(check, get, "fuel_warning")
     end
 
     function robot.forward(count, blocking)
@@ -226,7 +226,7 @@ return function(robot, meta, constants)
                 return tx, ty, tz
             end
 
-            meta.ensureCleared(check, get, "path_warning")
+            meta.requireCleared(check, get, "path_warning")
         end
 
         moveInOrder(order, blocking)
@@ -296,7 +296,7 @@ return function(robot, meta, constants)
 
     robot.onFuelWarning(function(alreadyWarned, level, requiredLevel)
         if not alreadyWarned then
-            local acceptedNames = meta.getKeys(acceptedFuels)
+            local acceptedNames = meta.keys(acceptedFuels)
 
             print("---- fuel_warning ----")
             print("level = " .. level)

@@ -71,7 +71,7 @@ return function(robot, meta, constants)
             return check, name, count, getStackSize(name)
         end
 
-        meta.ensureCleared(check, get, "count_warning")
+        meta.requireCleared(check, get, "count_warning")
     end
 
     function meta.requireItemSpace(name, space)
@@ -83,7 +83,7 @@ return function(robot, meta, constants)
             return check, name, space, getStackSize(name)
         end
 
-        meta.ensureCleared(check, get, "space_warning")
+        meta.requireCleared(check, get, "space_warning")
     end
 
     function meta.requireItemSpaceForUnknown(stackSize, space)
@@ -95,7 +95,7 @@ return function(robot, meta, constants)
             return check, "unknown", space, stackSize
         end
 
-        meta.ensureCleared(check, get, "space_warning")
+        meta.requireCleared(check, get, "space_warning")
     end
 
     function meta.listSlots(name, limit, includeReservedItems)
