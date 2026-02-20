@@ -121,8 +121,8 @@ return function(robot, meta, constants)
 
             proxy.side = side
             proxy.target = target
-            softProxies[key] = proxy
 
+            softProxies[key] = proxy
             return true
         end
 
@@ -152,7 +152,11 @@ return function(robot, meta, constants)
                     end
 
                     if not softProxies[key] then
-                        softWrap(key, proxies[key])
+                        softWrap(key, proxy)
+                    end
+
+                    if not peripheral.isPresent(proxy.side) then
+                        softWrap(key, proxy)
                     end
 
                     return proxy.target[prop](...)
