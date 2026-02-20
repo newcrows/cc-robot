@@ -78,7 +78,7 @@ return function(robot, meta, constants)
         return math.max(-1, math.min(1, val))
     end
 
-    local function moveX(targetFacing, dx, blocking)
+    local function moveX(targetFacing, dx, callback)
         if dx ~= 0 then
             local facing = dx > 0 and FACINGS.east or FACINGS.west
 
@@ -87,13 +87,15 @@ return function(robot, meta, constants)
             end
 
             robot.face(facing)
-            robot.forward(math.abs(dx), blocking)
+            robot.forward(math.abs(dx), function()
+                callback(robot.x + clamp(dx), robot.y, robot.z)
+            end)
         end
 
         return true
     end
 
-    local function moveY(targetFacing, dy, blocking)
+    local function moveY(targetFacing, dy, callback)
         if dy ~= 0 then
             local facing = dy > 0 and FACINGS.up or FACINGS.down
             if facing ~= targetFacing then
@@ -101,13 +103,15 @@ return function(robot, meta, constants)
             end
 
             local moveFunc = dy > 0 and robot.up or robot.down
-            moveFunc(math.abs(dy), blocking)
+            moveFunc(math.abs(dy), function()
+                callback(robot.x, robot.y + clamp(dy), robot.z)
+            end)
         end
 
         return true
     end
 
-    local function moveZ(targetFacing, dz, blocking)
+    local function moveZ(targetFacing, dz, callback)
         if dz ~= 0 then
             local facing = dz > 0 and FACINGS.south or FACINGS.north
 
@@ -116,7 +120,9 @@ return function(robot, meta, constants)
             end
 
             robot.face(facing)
-            robot.forward(math.abs(dz), blocking)
+            robot.forward(math.abs(dz), function()
+                callback(robot.x, robot.y, robot.z + clamp(dz))
+            end)
         end
 
         return true
