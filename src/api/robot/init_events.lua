@@ -60,11 +60,11 @@ return function(_, meta)
 
     function meta.ensure(check, tick, strategy)
         if type(check) ~= "function" then
-            error("check must be a function")
+            error("check must be a function", 0)
         end
 
         if type(tick) ~= "function" then
-            error("tick must be a function")
+            error("tick must be a function", 0)
         end
 
         tick()
@@ -90,12 +90,22 @@ return function(_, meta)
     end
 
     function meta.ensureCleared(check, get, warning)
+        if type(check) ~= "function" then
+            error("check must be a function", 0)
+        end
+
+        if type(get) ~= "function" then
+            error("get must be a function", 0)
+        end
+
+        if not warning then
+            error("warning must not be nil", 0)
+        end
+
         local dispatched
 
         local function strategy()
-            local args = (type(get) == "function" and get()) or {}
-
-            meta.dispatchEvent(warning, args, dispatched)
+            meta.dispatchEvent(warning, table.unpack({get()}), dispatched)
             dispatched = true
         end
 
