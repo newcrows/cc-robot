@@ -2,6 +2,7 @@
 return function(_, meta)
     local listeners = {}
     local nextId = 1
+    local ON_Listener = {} -- all callbacks registered by meta.on(..) land here
 
     function meta.addEventListener(listener)
         assert(type(listener) == "table", "listener must be a table")
@@ -57,6 +58,10 @@ return function(_, meta)
                 listener[event](...)
             end
         end
+    end
+
+    function meta.on(event, callback)
+        ON_Listener[event] = callback -- it can be so simple..
     end
 
     -- TODO [JM] use this wherever we loop table keys!! maybe add similar helpers here (getValues ?)
@@ -130,4 +135,7 @@ return function(_, meta)
             meta.dispatchEvent(warning .. "_cleared")
         end
     end
+
+    -- initialize the special ON_Listener
+    meta.addEventListener(ON_Listener)
 end
