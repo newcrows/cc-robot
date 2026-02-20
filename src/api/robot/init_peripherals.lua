@@ -11,7 +11,7 @@ return function(robot, meta, constants)
         y = true,
         z = true,
         name = true,
-        side = true, -- TODO [JM] set by softWrap, cleared by softUnwrap
+        side = true,
         target = true
     }
     local STATE = {
