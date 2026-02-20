@@ -6,6 +6,11 @@ return {
         local meta = opts.meta
         local side = opts.side
         local target = opts.target
+
+        if not target then
+            return nil
+        end
+
         local inventory = {}
 
         local function listSlots(name, limit)
