@@ -8,10 +8,6 @@ return function(robot, meta, constants)
     robot.facing = FACINGS.north
 
     local acceptedFuels = {}
-    local fuelWarningListenerId
-    local fuelWarningClearedListenerId
-    local pathWarningListenerId
-    local pathWarningClearedListenerId
 
     local function moveHelper(moveFunc, delta, count, blocking)
         local moved = 0
@@ -283,56 +279,19 @@ return function(robot, meta, constants)
     end
 
     function robot.onFuelWarning(callback)
-        if fuelWarningListenerId then
-            meta.removeEventListener(fuelWarningListenerId)
-            fuelWarningListenerId = nil
-        end
-
-        if callback then
-            fuelWarningListenerId = meta.addEventListener({
-                fuel_warning = callback
-            })
-        end
+        meta.on("fuel_warning", callback)
     end
 
     function robot.onFuelWarningCleared(callback)
-        if fuelWarningClearedListenerId then
-            meta.removeEventListener(fuelWarningClearedListenerId)
-            fuelWarningClearedListenerId = nil
-        end
-
-        if callback then
-            fuelWarningClearedListenerId = meta.addEventListener({
-                fuel_warning_cleared = callback
-            })
-        end
+        meta.on("fuel_warning_cleared", callback)
     end
 
-    -- TODO [JM] introduce the concept of unique (or something) listeners, then make all robot.on* use that concept
     function robot.onPathWarning(callback)
-        if pathWarningListenerId then
-            meta.removeEventListener(pathWarningListenerId)
-            pathWarningListenerId = nil
-        end
-
-        if callback then
-            pathWarningListenerId = meta.addEventListener({
-                path_warning = callback
-            })
-        end
+        meta.on("path_warning", callback)
     end
 
     function robot.onPathWarningCleared(callback)
-        if pathWarningClearedListenerId then
-            meta.removeEventListener(pathWarningClearedListenerId)
-            pathWarningClearedListenerId = nil
-        end
-
-        if callback then
-            pathWarningClearedListenerId = meta.addEventListener({
-                path_warning_cleared = callback
-            })
-        end
+        meta.on("path_warning_cleared", callback)
     end
 
     robot.onFuelWarning(function(alreadyWarned, level, requiredLevel)

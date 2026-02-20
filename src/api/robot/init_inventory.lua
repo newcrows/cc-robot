@@ -1,10 +1,6 @@
 return function(robot, meta, constants)
     local selectedName
     local reservedSpaces = {}
-    local countWarningListenerId
-    local countWarningClearedListenerId
-    local spaceWarningListenerId
-    local spaceWarningClearedListenerId
 
     local function compact()
         for targetSlot = 1, 15 do

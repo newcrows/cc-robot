@@ -15,8 +15,6 @@ return function(robot, meta, constants)
     local constructors = {}
     local proxies = {}
     local softProxies = {}
-    local peripheralWarningListenerId
-    local peripheralWarningClearedListenerId
 
     local function loadConstructors()
         local dir = "%INSTALL_DIR%/peripherals"
