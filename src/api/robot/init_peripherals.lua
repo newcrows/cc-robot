@@ -98,12 +98,12 @@ return function(robot, meta, constants)
                     meta = meta,
                     constants = constants,
                     name = proxy.name,
+                    side = side,
+                    target = target,
+                    facing = facing,
                     x = proxy.x,
                     y = proxy.y,
-                    z = proxy.z,
-                    facing = facing,
-                    side = side,
-                    target = target
+                    z = proxy.z
                 }
 
                 target = constructor(opts)
