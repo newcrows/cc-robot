@@ -159,15 +159,15 @@ return function(robot, meta, constants)
             error("requiredLevel is bigger than turtle.getFuelLimit()!", 0)
         end
 
-        local function checkState()
+        local function check()
             return refuelTo(requiredLevel)
         end
 
-        local function getState()
+        local function get()
             return nativeTurtle.getFuelLevel(), requiredLevel, acceptedFuels
         end
 
-        meta.waitFor(checkState, getState, "fuel_warning")
+        meta.ensureCleared(check, get, "fuel_warning")
     end
 
     function robot.forward(count, blocking)
