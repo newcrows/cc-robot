@@ -393,18 +393,14 @@ return function(robot, meta, constants)
         return nativeTurtle.getFuelLimit()
     end
 
-    robot.onFuelWarning(function(level, requiredLevel, _, waited)
-        if not waited then
-            local acceptedNames = {}
-
-            for name, _ in pairs(acceptedFuels) do
-                table.insert(acceptedNames, name)
-            end
+    robot.onFuelWarning(function(level, requiredLevel, _, alreadyWarned)
+        if not alreadyWarned then
+            local acceptedNames = meta.getKeys(acceptedFuels)
 
             print("---- fuel_warning ----")
             print("level = " .. level)
             print("requiredLevel = " .. requiredLevel)
-            print("acceptedFuels = " .. textutils.serialize(acceptedNames))
+            print("acceptedFuels = [" .. table.concat(acceptedNames, ", ") .. "]")
             print("----------------------")
         end
     end)

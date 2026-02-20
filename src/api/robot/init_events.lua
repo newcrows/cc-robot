@@ -107,7 +107,7 @@ return function(_, meta)
         local dispatched
 
         local function strategy()
-            meta.dispatchEvent(warning, table.unpack({get()}), dispatched)
+            meta.dispatchEvent(warning, table.unpack({ get() }), dispatched)
             dispatched = true
         end
 
@@ -119,5 +119,15 @@ return function(_, meta)
         if dispatched then
             meta.dispatchEvent(warning .. "_cleared")
         end
+    end
+
+    function meta.getKeys(table)
+        local keys = {}
+
+        for key in pairs(table) do
+            keys[#keys + 1] = key
+        end
+
+        return keys
     end
 end
