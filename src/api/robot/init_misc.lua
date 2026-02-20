@@ -37,6 +37,40 @@ return function(robot, meta, constants)
         return placed
     end
 
+    local function dropHelper_0(dropFunc, name, remaining)
+        local continue = true
+
+        local function check()
+            return not continue or remaining == 0
+        end
+
+        local function tick()
+            local detail = meta.getFirstSlot(name)
+            local didDropSomething = false
+
+            if detail then
+                local amountToDrop = math.min(detail.count, remaining)
+                local before = physicalCountAll()
+
+                nativeTurtle.select(detail.id)
+
+                if dropFunc(amountToDrop) then
+                    local after = physicalCountAll()
+
+                    if after ~= before then
+                        didDropSomething = true
+                        remaining = remaining + (after - before)
+                    end
+                end
+            end
+
+            continue = didDropSomething
+        end
+
+        meta.try(check, tick, true)
+        return remaining
+    end
+
     local function dropHelper(dropFunc, name, count, blocking)
         if type(name) == "number" or name == nil then
             blocking, count, name = count, name, robot.getSelectedName()
@@ -56,19 +90,7 @@ return function(robot, meta, constants)
         end
 
         local function tick()
-            local detail = meta.getFirstSlot(name)
-
-            if detail then
-                local amountToDrop = math.min(detail.count, remaining)
-                local before = physicalCountAll()
-
-                nativeTurtle.select(detail.id)
-
-                if dropFunc(amountToDrop) then
-                    local after = physicalCountAll()
-                    remaining = remaining + (after - before)
-                end
-            end
+            remaining = dropHelper_0(dropFunc, name, remaining)
         end
 
         meta.try(check, tick, blocking)
