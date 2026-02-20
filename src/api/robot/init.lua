@@ -1,10 +1,10 @@
-local initTurtle = require((...) .. "/init_turtle")
-local initPositioning = require((...) .. "/init_positioning")
 local initCore = require((...) .. "/init_core")
-local initPeripherals = require((...) .. "/init_peripherals")
 local initEquipment = require((...) .. "/init_equipment")
 local initInventory = require((...) .. "/init_inventory")
 local initMisc = require((...) .. "/init_misc")
+local initPeripherals = require((...) .. "/init_peripherals")
+local initPositioning = require((...) .. "/init_positioning")
+local initTurtle = require((...) .. "/init_turtle")
 
 if not _G.nativeTurtle then
     _G.nativeTurtle = _G.turtle
@@ -97,10 +97,10 @@ robot.constants = constants
 
 initTurtle(robot, meta, constants)
 initCore(robot, meta, constants)
+initInventory(robot, meta, constants)
+initEquipment(robot, meta, constants)
 initPositioning(robot, meta, constants)
 initPeripherals(robot, meta, constants)
-initEquipment(robot, meta, constants)
-initInventory(robot, meta, constants)
 initMisc(robot, meta, constants)
 
 return robot
