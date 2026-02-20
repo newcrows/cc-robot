@@ -393,7 +393,7 @@ return function(robot, meta, constants)
         return nativeTurtle.getFuelLimit()
     end
 
-    robot.onFuelWarning(function(level, requiredLevel, _, alreadyWarned)
+    robot.onFuelWarning(function(alreadyWarned, level, requiredLevel)
         if not alreadyWarned then
             local acceptedNames = meta.getKeys(acceptedFuels)
 
