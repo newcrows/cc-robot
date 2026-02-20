@@ -242,6 +242,22 @@ return function(robot, meta, constants)
         return values
     end
 
+    local function getEntries(table, keyAlias, valueAlias)
+        keyAlias = keyAlias or "key"
+        valueAlias = valueAlias or "value"
+
+        local entries = {}
+
+        for k, v in pairs(table) do
+            entries[#entries + 1] = {
+                [keyAlias] = k,
+                [valueAlias] = v
+            }
+        end
+
+        return entries
+    end
+
     function meta.getPeripheralConstructorDetail(name)
         name = name or robot.getSelectedName()
 
@@ -252,7 +268,7 @@ return function(robot, meta, constants)
     end
 
     function meta.listPeripheralConstructors()
-        return meta.entries(constructors, "name", "constructor")
+        return getEntries(constructors, "name", "constructor")
     end
 
     -- NOTE [JM] should use meta.softUnwrapAll for better performance, peripherals auto-soft-wrap anyway
