@@ -1,4 +1,11 @@
 return function(robot, meta, constants)
+    -- TODO [JM] should this be based on physical or on robot?
+    -- if i.E. a sucked item goes into a reserved slot,
+    -- we would not get the expected amount returned by suck()
+    -- but from the robot's point of view, it is correct that it sucked less USABLE items than
+    -- physically sucked items
+    -- -> have to think on this, which is more coherent
+    -- -> same for drop() and the peripherals#inventory.import/export functions
     local function physicalCountAll()
         local total = 0
 
