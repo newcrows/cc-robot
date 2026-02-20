@@ -11,7 +11,12 @@ return function(robot, meta, constants)
         y = true,
         z = true,
         name = true,
-        target = true
+        side = true, -- TODO [JM] set by softWrap, cleared by softUnwrap
+        target = true,
+        call = true
+    }
+    local STATE = {
+        missing = "missing"
     }
 
     local constructors = {}
@@ -120,6 +125,37 @@ return function(robot, meta, constants)
             x = x, y = y, z = z,
             name = name
         }
+
+        function proxy.call(funcName, funcArgs, funcReturnTypes)
+            funcArgs = funcArgs or {}
+            funcReturnTypes = funcReturnTypes or {}
+            local result
+
+            local function check()
+                local pcallResult = { pcall(proxy.target[funcName], table.unpack(funcArgs))}
+                local ok = table.remove(pcallResult, 1)
+
+                if ok then
+                    for i = 1, #funcReturnTypes do
+                        if funcReturnTypes[i] ~= type(pcallResult[i]) then
+                            return false
+                        end
+                    end
+
+                    result = pcallResult
+                    return true
+                end
+
+                return false
+            end
+
+            local function get()
+                return STATE.missing, x, y, z, name
+            end
+
+            meta.ensureCleared(check, get, "peripheral_warning")
+            return table.unpack(result)
+        end
 
         local metatable = {
             __index = function(_, prop)
