@@ -14,9 +14,6 @@ return function(robot, meta, constants)
         side = true,
         target = true
     }
-    local STATE = {
-        missing = "missing"
-    }
 
     local constructors = {}
     local proxies = {}
