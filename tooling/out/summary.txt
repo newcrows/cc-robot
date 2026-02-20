@@ -77,10 +77,6 @@ meta.countItems(name, includeReservedItems)
 meta.arrangeSlots(layoutFunc)
 
 ---- robot functions ----
-robot.onCountWarning(callback)
-robot.onCountWarningCleared(callback)
-robot.onSpaceWarning(callback)
-robot.onSpaceWarningCleared(callback)
 robot.select(name)
 robot.getSelectedName()
 robot.getItemDetail(name)
@@ -99,6 +95,10 @@ robot.hasReservedItemCount(name, count)
 robot.getReservedItemSpace(name)
 robot.hasReservedItemSpace(name, space)
 robot.listReservedItems()
+robot.onCountWarning(callback)
+robot.onCountWarningCleared(callback)
+robot.onSpaceWarning(callback)
+robot.onSpaceWarningCleared(callback)
 
 #MODULE ../src/api/robot/init_misc.lua
 
@@ -147,6 +147,8 @@ local function getPositionFor(side)
 local function getKeyFor(x, y, z)
 local function getSideFor(facing)
 local function softWrap(key, proxy)
+local function check()
+local function get()
 local function createProxy(x, y, z, name)
 local function wrapHelper(x, y, z, wrapAs)
 local function unwrapHelper(x, y, z)
@@ -166,6 +168,8 @@ robot.unwrapUp()
 robot.unwrapDown()
 robot.getPeripheralDetail(x, y, z)
 robot.listPeripherals()
+robot.onPeripheralWarning(callback)
+robot.onPeripheralWarningCleared(callback)
 
 #MODULE ../src/api/robot/init_positioning.lua
 
@@ -197,10 +201,10 @@ robot.turnLeft(count)
 robot.moveTo(x, y, z, blocking)
 robot.face(facing)
 robot.setFuel(name, reserveCount)
-robot.onFuelWarning(callback)
-robot.onFuelWarningCleared(callback)
 robot.getFuelLevel()
 robot.getFuelLimit()
+robot.onFuelWarning(callback)
+robot.onFuelWarningCleared(callback)
 
 #MODULE ../src/api/robot/init_turtle.lua
 
