@@ -31,6 +31,8 @@ local function processRequirements(req)
 
     if req.acceptedFuels then
         robot.setFuel(req.acceptedFuels)
+    else
+        robot.setFuel("minecraft:coal_block", 64)
     end
 
     if req.fuelLevel then
