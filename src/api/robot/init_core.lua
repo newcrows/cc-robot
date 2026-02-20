@@ -84,6 +84,22 @@ return function(_, meta)
         return values
     end
 
+    function meta.getEntries(table, keyAlias, valueAlias)
+        keyAlias = keyAlias or "key"
+        valueAlias = valueAlias or "value"
+
+        local entries = {}
+
+        for k, v in pairs(table) do
+            entries[#entries + 1] = {
+                [keyAlias] = k,
+                [valueAlias] = v
+            }
+        end
+
+        return entries
+    end
+
     function meta.ensure(check, tick, strategy)
         if type(check) ~= "function" then
             error("check must be a function", 0)
