@@ -74,7 +74,7 @@ return function(robot, meta, constants)
             return check, name, count, getStackSize(name)
         end
 
-        meta.requireCleared(check, get, "count_warning")
+        meta.requireCleared(check, get, ITEM_COUNT_WARNING)
     end
 
     function meta.requireItemSpace(name, space)
@@ -86,7 +86,7 @@ return function(robot, meta, constants)
             return check, name, space, getStackSize(name)
         end
 
-        meta.requireCleared(check, get, "space_warning")
+        meta.requireCleared(check, get, ITEM_SPACE_WARNING)
     end
 
     function meta.requireItemSpaceForUnknown(stackSize, space)
