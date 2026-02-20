@@ -12,8 +12,7 @@ return function(robot, meta, constants)
         z = true,
         name = true,
         side = true, -- TODO [JM] set by softWrap, cleared by softUnwrap
-        target = true,
-        call = true
+        target = true
     }
     local STATE = {
         missing = "missing"
@@ -90,39 +89,48 @@ return function(robot, meta, constants)
         local facing = FACING_INDEX[deltaKey]
 
         if not facing then
-            -- NOTE [JM] turtle is not near the proxy,
-            -- this is a logical error of the callee and must crash
-            error("could not soft wrap", 0)
+            error("peripheral is not in range", 0)
         end
 
-        local side = getSideFor(facing)
-        local target = peripheral.wrap(side)
+        local function check()
+            local side = getSideFor(facing)
+            local target = peripheral.wrap(side)
 
-        local constructor = constructors[proxy.name]
+            local constructor = constructors[proxy.name]
 
-        if constructor then
-            local opts = {
-                robot = robot,
-                meta = meta,
-                constants = constants,
-                name = proxy.name,
-                x = proxy.x,
-                y = proxy.y,
-                z = proxy.z,
-                facing = facing,
-                side = side,
-                target = target
-            }
+            if constructor then
+                local opts = {
+                    robot = robot,
+                    meta = meta,
+                    constants = constants,
+                    name = proxy.name,
+                    x = proxy.x,
+                    y = proxy.y,
+                    z = proxy.z,
+                    facing = facing,
+                    side = side,
+                    target = target
+                }
 
-            target = constructor(opts)
+                target = constructor(opts)
+            end
+
+            if not target then
+                return false
+            end
+
+            proxy.side = side
+            proxy.target = target
+            softProxies[key] = proxy
+
+            return true
         end
 
-        if not target then
-            -- this is an actual error that can be fixed (i.E. chest was removed by player)
+        local function get()
+            return STATE.missing, proxy.x, proxy.y, proxy.z, proxy.name
         end
 
-        proxy.target = target
-        softProxies[key] = proxy
+        meta.ensureCleared(check, get, "peripheral_warning")
     end
 
     local function createProxy(x, y, z, name)
@@ -131,37 +139,6 @@ return function(robot, meta, constants)
             x = x, y = y, z = z,
             name = name
         }
-
-        function proxy.call(funcName, funcArgs, funcReturnTypes)
-            funcArgs = funcArgs or {}
-            funcReturnTypes = funcReturnTypes or {}
-            local result
-
-            local function check()
-                local pcallResult = { pcall(proxy.target[funcName], table.unpack(funcArgs))}
-                local ok = table.remove(pcallResult, 1)
-
-                if ok then
-                    for i = 1, #funcReturnTypes do
-                        if funcReturnTypes[i] ~= type(pcallResult[i]) then
-                            return false
-                        end
-                    end
-
-                    result = pcallResult
-                    return true
-                end
-
-                return false
-            end
-
-            local function get()
-                return STATE.missing, x, y, z, name
-            end
-
-            meta.ensureCleared(check, get, "peripheral_warning")
-            return table.unpack(result)
-        end
 
         local metatable = {
             __index = function(_, prop)
