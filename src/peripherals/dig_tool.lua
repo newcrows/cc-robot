@@ -6,16 +6,19 @@ return {
     },
     constructor = function(opts)
         local meta = opts.meta
-
-        -- TODO [JM] implement blocking
         local function digHelper(digFunc, blocking)
-            if digFunc() then
-                meta.softUnwrapAll()
+            local ok
 
-                return true
+            local function check()
+                return ok
             end
 
-            return false
+            local function tick()
+                ok = digFunc()
+            end
+
+            meta.require(check, tick, blocking)
+            return ok
         end
 
         return {
