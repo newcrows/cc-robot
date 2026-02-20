@@ -79,20 +79,8 @@ return function(robot, meta, constants)
         proxy.target = target
     end
 
-    local function requireItem(name)
-        local function check()
-            return meta.selectFirstSlot(name, true)
-        end
-
-        local function get()
-            return STATE.missing, name
-        end
-
-        meta.requireCleared(check, get, "equipment_warning")
-    end
-
     local function equipAndSoftWrap(side, proxy)
-        requireItem(proxy.name)
+        meta.requireEquipment(proxy.name)
 
         local equipFunc = side == SIDES.right and nativeTurtle.equipRight or nativeTurtle.equipLeft
         equipFunc()
@@ -108,7 +96,7 @@ return function(robot, meta, constants)
         nextSide = OPPOSITE_SIDES[nextSide]
     end
 
-    local function requireSpace(name)
+    local function requireSpaceToUnequip(name)
         local function check()
             -- Versucht einen leeren Slot zu finden und auszuwählen
             return meta.selectFirstEmptySlot(true)
@@ -178,7 +166,7 @@ return function(robot, meta, constants)
                 error("can't unuse pinned equipment", 0)
             end
 
-            requireSpace(proxy.name)
+            requireSpaceToUnequip(proxy.name)
 
             local equipFunc = proxy.side == SIDES.right and nativeTurtle.equipRight or nativeTurtle.equipLeft
             equipFunc()
@@ -224,6 +212,18 @@ return function(robot, meta, constants)
         end
 
         return proxy
+    end
+
+    function meta.requireEquipment(name)
+        local function check()
+            return meta.selectFirstSlot(name, true)
+        end
+
+        local function get()
+            return STATE.missing, name
+        end
+
+        meta.requireCleared(check, get, "equipment_warning")
     end
 
     function robot.equip(name, pinned)
