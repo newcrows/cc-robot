@@ -19,8 +19,6 @@ return function(robot, meta, constants)
 
     local proxies = {}
     local nextSide = SIDES.right
-    local equipmentWarningListenerId
-    local equipmentWarningClearedListenerId
 
     local function getEquippedSide(name)
         local rightDetail = nativeTurtle.getEquippedRight()
@@ -269,29 +267,11 @@ return function(robot, meta, constants)
     end
 
     function robot.onEquipmentWarning(callback)
-        if equipmentWarningListenerId then
-            meta.removeEventListener(equipmentWarningListenerId)
-            equipmentWarningListenerId = nil
-        end
-
-        if callback then
-            equipmentWarningListenerId = meta.addEventListener({
-                equipment_warning = callback
-            })
-        end
+        meta.on("equipment_warning", callback)
     end
 
     function robot.onEquipmentWarningCleared(callback)
-        if equipmentWarningClearedListenerId then
-            meta.removeEventListener(equipmentWarningClearedListenerId)
-            equipmentWarningClearedListenerId = nil
-        end
-
-        if callback then
-            equipmentWarningClearedListenerId = meta.addEventListener({
-                equipment_warning_cleared = callback
-            })
-        end
+        meta.on("equipment_warning_cleared", callback)
     end
 
     robot.onEquipmentWarning(function(alreadyWarned, state, name)
