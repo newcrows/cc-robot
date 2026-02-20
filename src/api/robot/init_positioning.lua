@@ -10,6 +10,8 @@ return function(robot, meta, constants)
     local acceptedFuels = {}
     local fuelWarningListenerId
     local fuelWarningClearedListenerId
+    local pathWarningListenerId
+    local pathWarningClearedListenerId
 
     local function moveHelper(moveFunc, delta, count, blocking)
         local moved = 0
@@ -306,6 +308,33 @@ return function(robot, meta, constants)
         end
     end
 
+    -- TODO [JM] introduce the concept of unique (or something) listeners, then make all robot.on* use that concept
+    function robot.onPathWarning(callback)
+        if pathWarningListenerId then
+            meta.removeEventListener(pathWarningListenerId)
+            pathWarningListenerId = nil
+        end
+
+        if callback then
+            pathWarningListenerId = meta.addEventListener({
+                path_warning = callback
+            })
+        end
+    end
+
+    function robot.onPathWarningCleared(callback)
+        if pathWarningClearedListenerId then
+            meta.removeEventListener(pathWarningClearedListenerId)
+            pathWarningClearedListenerId = nil
+        end
+
+        if callback then
+            pathWarningClearedListenerId = meta.addEventListener({
+                path_warning_cleared = callback
+            })
+        end
+    end
+
     robot.onFuelWarning(function(alreadyWarned, level, requiredLevel)
         if not alreadyWarned then
             local acceptedNames = meta.getKeys(acceptedFuels)
@@ -317,8 +346,9 @@ return function(robot, meta, constants)
             print("----------------------")
         end
     end)
-
     robot.onFuelWarningCleared(function()
         print("---- fuel_warning_cleared ----")
     end)
+
+    -- TODO [JM] default warning listeners for path_warning
 end
