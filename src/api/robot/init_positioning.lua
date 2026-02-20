@@ -3,6 +3,8 @@ return function(robot, meta, constants)
     local FACING_INDEX = constants.facing_index
     local FACINGS = constants.facings
     local OPPOSITE_FACINGS = constants.opposite_facings
+    local FUEL_LEVEL_WARNING = "fuel_level_warning"
+    local PATH_WARNING = "path_warning"
 
     robot.x, robot.y, robot.z = 0, 0, 0
     robot.facing = FACINGS.north
@@ -159,7 +161,7 @@ return function(robot, meta, constants)
             return nativeTurtle.getFuelLevel(), requiredLevel, acceptedFuels
         end
 
-        meta.requireCleared(check, get, "fuel_level_warning")
+        meta.requireCleared(check, get, FUEL_LEVEL_WARNING)
     end
 
     function robot.forward(count, blocking)
@@ -236,7 +238,7 @@ return function(robot, meta, constants)
                 return tx, ty, tz
             end
 
-            meta.requireCleared(check, get, "path_warning")
+            meta.requireCleared(check, get, PATH_WARNING)
         end
 
         moveInOrder(order, blocking)
@@ -289,44 +291,42 @@ return function(robot, meta, constants)
     end
 
     function robot.onFuelLevelWarning(callback)
-        meta.on("fuel_level_warning", callback)
+        meta.on(FUEL_LEVEL_WARNING, callback)
     end
 
     function robot.onFuelLevelWarningCleared(callback)
-        meta.on("fuel_level_warning_cleared", callback)
+        meta.on(FUEL_LEVEL_WARNING .. "_cleared", callback)
     end
 
     function robot.onPathWarning(callback)
-        meta.on("path_warning", callback)
+        meta.on(PATH_WARNING, callback)
     end
 
     function robot.onPathWarningCleared(callback)
-        meta.on("path_warning_cleared", callback)
+        meta.on(PATH_WARNING .. "_cleared", callback)
     end
 
     robot.onFuelLevelWarning(function(alreadyWarned, level, requiredLevel)
         if not alreadyWarned then
             local acceptedNames = getKeys(acceptedFuels)
 
-            print("---- fuel_level_warning ----")
+            print("---- " .. FUEL_LEVEL_WARNING .. " ----")
             print("level = " .. level)
             print("requiredLevel = " .. requiredLevel)
             print("acceptedFuels = [" .. table.concat(acceptedNames, ", ") .. "]")
-            print("----------------------")
         end
     end)
     robot.onFuelLevelWarningCleared(function()
-        print("---- fuel_level_warning_cleared ----")
+        print("---- " .. FUEL_LEVEL_WARNING .. "_cleared ----")
     end)
 
     robot.onPathWarning(function(alreadyWarned, x, y, z)
         if not alreadyWarned then
-            print("---- path_warning ----")
+            print("---- " .. PATH_WARNING .. " ----")
             print("path is obstructed at (" .. x .. ", " .. y .. ", " .. z .. ")")
-            print("----------------------")
         end
     end)
     robot.onPathWarningCleared(function()
-        print("---- path_warning_cleared ----")
+        print("---- " .. PATH_WARNING .. "_cleared ----")
     end)
 end
