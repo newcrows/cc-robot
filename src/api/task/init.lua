@@ -29,6 +29,10 @@ local function processRequirements(req)
         return
     end
 
+    if req.acceptedFuels then
+        robot.setFuel(req.acceptedFuels)
+    end
+
     if req.equipment then
         for _, name in ipairs(req.equipment) do
             robot.meta.requireEquipment(name)
