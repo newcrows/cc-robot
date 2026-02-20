@@ -49,9 +49,11 @@ return function(robot, meta, constants)
     end
 
     local function getEquippedProxy(side)
-        return meta.any(proxies, function()
-            return proxy.target and proxy.side == side
-        end)
+        for _, proxy in pairs(proxies) do
+            if proxy.target and proxy.side == side then
+                return proxy
+            end
+        end
     end
 
     local function softWrap(side, proxy)

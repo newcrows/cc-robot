@@ -70,14 +70,6 @@ return function(_, meta)
         callbacksListener[event] = callback -- it can be so simple..
     end
 
-    function meta.any(table, match)
-        for k, v in pairs(table) do
-            if match(v, k, table) then
-                return v
-            end
-        end
-    end
-
     function meta.require(check, tick, strategy)
         if type(check) ~= "function" then
             error("check must be a function", 0)
