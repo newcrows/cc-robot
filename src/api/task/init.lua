@@ -100,7 +100,7 @@ local function runProtected(_task, opts, ctrl)
     return "finished"
 end
 
-function task.run(name, opts, reloadGlobals)
+function task.run(name, opts)
     if not opts.resumed then
         writeConfigFile(name, opts)
         print("run: " .. name, table.unpack(opts))
@@ -116,10 +116,7 @@ function task.run(name, opts, reloadGlobals)
     }
 
     local _task = require(tasksDir .. "/" .. name)
-
-    if reloadGlobals then
-        _G.robot = require("%INSTALL_DIR%/api/robot")
-    end
+    _G.robot = require("%INSTALL_DIR%/api/robot")
 
     if not opts.resumed then
         processRequirements(_task.requirements)

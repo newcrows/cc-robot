@@ -8,6 +8,6 @@ local function runProtected(_task, opts, ctrl)
 ---- META FUNCTIONS ----
 
 ---- TASK FUNCTIONS ----
-task.run(name, opts, reloadGlobals)
+task.run(name, opts)
 task.resume()
 

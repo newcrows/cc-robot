@@ -7,4 +7,4 @@ for i = 2, #args do
     table.insert(opts, args[i])
 end
 
-task.run(name, opts, true)
+task.run(name, opts)

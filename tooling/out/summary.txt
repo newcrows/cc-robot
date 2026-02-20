@@ -204,6 +204,6 @@ robot.onPathWarning(callback)
 robot.onPathWarningCleared(callback)
 
 # api/task/init.lua
-task.run(name, opts, reloadGlobals)
+task.run(name, opts)
 task.resume()
 
