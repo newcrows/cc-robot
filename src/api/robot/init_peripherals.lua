@@ -91,6 +91,10 @@ return function(robot, meta, constants)
             local side = getSideFor(facing)
             local target = peripheral.wrap(side)
 
+            if not target then
+                return false
+            end
+
             local constructor = constructors[proxy.name]
 
             if constructor then
@@ -108,10 +112,6 @@ return function(robot, meta, constants)
                 }
 
                 target = constructor(opts)
-            end
-
-            if not target then
-                return false
             end
 
             proxy.side = side
