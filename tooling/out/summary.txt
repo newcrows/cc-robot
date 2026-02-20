@@ -6,6 +6,33 @@
 
 ---- robot functions ----
 
+#MODULE ../src/api/robot/init_constants.lua
+
+---- local functions ----
+
+---- meta functions ----
+
+---- robot functions ----
+
+#MODULE ../src/api/robot/init_core.lua
+
+---- local functions ----
+local function strategy()
+local function tick()
+
+---- meta functions ----
+meta.addEventListener(listener)
+meta.removeEventListener(id)
+meta.getEventListenerDetail(id)
+meta.listEventListeners()
+meta.dispatchEvent(event, ...)
+meta.on(event, callback)
+meta.getKeys(table)
+meta.ensure(check, tick, strategy)
+meta.ensureCleared(check, get, warning)
+
+---- robot functions ----
+
 #MODULE ../src/api/robot/init_equipment.lua
 
 ---- local functions ----
@@ -29,24 +56,6 @@ robot.equip(name, pinned)
 robot.unequip(name)
 robot.onEquipmentWarning(callback)
 robot.onEquipmentWarningCleared(callback)
-
-#MODULE ../src/api/robot/init_events.lua
-
----- local functions ----
-local function strategy()
-local function tick()
-
----- meta functions ----
-meta.addEventListener(listener)
-meta.removeEventListener(id)
-meta.getEventListenerDetail(id)
-meta.listEventListeners()
-meta.dispatchEvent(event, ...)
-meta.ensure(check, tick, strategy)
-meta.ensureCleared(check, get, warning)
-meta.getKeys(table)
-
----- robot functions ----
 
 #MODULE ../src/api/robot/init_inventory.lua
 
@@ -175,18 +184,20 @@ robot.onPeripheralWarningCleared(callback)
 
 ---- local functions ----
 local function moveHelper(moveFunc, delta, count, blocking)
+local function check()
+local function tick()
 local function turnHelper(turnFunc, direction, count)
 local function refuel(name, count)
 local function refuelTo(requiredLevel)
-local function move(dfb, dud, drl, blocking)
-local function wrap(d_dfb, d_dud, d_drl)
 local function clamp(val)
+local function moveX(targetFacing, dx, callback)
+local function moveY(targetFacing, dy, callback)
+local function moveZ(targetFacing, dz, callback)
+local function moveInOrder(order, blocking)
 local function check()
 local function get()
-local function wrap()
-local function move_x(targetFacing)
-local function move_y(targetFacing)
-local function move_z(targetFacing)
+local function check()
+local function get()
 
 ---- meta functions ----
 meta.requireFuelLevel(requiredLevel)
@@ -198,13 +209,15 @@ robot.up(count, blocking)
 robot.down(count, blocking)
 robot.turnRight(count)
 robot.turnLeft(count)
-robot.moveTo(x, y, z, blocking)
+robot.moveTo(x, y, z)
 robot.face(facing)
 robot.setFuel(name, reserveCount)
 robot.getFuelLevel()
 robot.getFuelLimit()
 robot.onFuelWarning(callback)
 robot.onFuelWarningCleared(callback)
+robot.onPathWarning(callback)
+robot.onPathWarningCleared(callback)
 
 #MODULE ../src/api/robot/init_turtle.lua
 
