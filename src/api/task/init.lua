@@ -29,6 +29,7 @@ local function processRequirements(req)
         return
     end
 
+    -- NOTE [JM] default fuel is coal_block because it has high fuel value per stack
     if req.acceptedFuels then
         robot.setFuel(req.acceptedFuels)
     else

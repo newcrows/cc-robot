@@ -133,9 +133,6 @@ end
 
 return {
     requirements = {
-        acceptedFuels = {
-            ["minecraft:coal"] = 64
-        },
         fuelLevel = 1000,
         equipment = {
             "computercraft:wireless_modem_normal",
