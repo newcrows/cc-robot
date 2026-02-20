@@ -117,7 +117,8 @@ return function(robot, meta, constants)
             error("check must be a function")
         end
 
-        tick = tick or function()
+        if type(tick) ~= "function" then
+            error("tick must be a function")
         end
 
         tick()
@@ -139,6 +140,24 @@ return function(robot, meta, constants)
             end
 
             os.sleep(1)
+        end
+    end
+
+    function meta.ensureCleared(check, get, warning)
+        local dispatched
+
+        local function strategy()
+            meta.dispatchEvent(warning, table.unpack(get()), dispatched)
+            dispatched = true
+        end
+
+        local function tick()
+        end
+
+        meta.ensure(check, tick, strategy)
+
+        if dispatched then
+            meta.dispatchEvent(warning .. "_cleared")
         end
     end
 
