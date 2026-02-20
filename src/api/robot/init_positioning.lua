@@ -78,7 +78,7 @@ return function(robot, meta, constants)
         return math.max(-1, math.min(1, val))
     end
 
-    local function move_x(targetFacing, dx, blocking)
+    local function moveX(targetFacing, dx, blocking)
         if dx ~= 0 then
             local facing = dx > 0 and FACINGS.east or FACINGS.west
 
@@ -93,15 +93,21 @@ return function(robot, meta, constants)
         return true
     end
 
-    local function move_y(targetFacing, dy, blocking)
+    local function moveY(targetFacing, dy, blocking)
         if dy ~= 0 then
-            -- TODO [JM] re-impl
+            local facing = dy > 0 and FACINGS.up or FACINGS.down
+            if facing ~= targetFacing then
+                return true
+            end
+
+            local moveFunc = dy > 0 and robot.up or robot.down
+            moveFunc(math.abs(dy), blocking)
         end
 
         return true
     end
 
-    local function move_z(targetFacing, dz, blocking)
+    local function moveZ(targetFacing, dz, blocking)
         if dz ~= 0 then
             local facing = dz > 0 and FACINGS.south or FACINGS.north
 
@@ -197,16 +203,16 @@ return function(robot, meta, constants)
         local dz = (z or robot.z) - robot.z
 
         local order = {
-            {move_x, FACINGS.east, dx},
-            {move_y, FACINGS.up, dy},
-            {move_z, FACINGS.north, dz},
-            {move_z, FACINGS.south, dz},
-            {move_y, FACINGS.down, dy},
-            {move_x, FACINGS.west, dx}
+            { moveX, FACINGS.east, dx},
+            { moveY, FACINGS.up, dy},
+            { moveZ, FACINGS.north, dz},
+            { moveZ, FACINGS.south, dz},
+            { moveY, FACINGS.down, dy},
+            { moveX, FACINGS.west, dx}
         }
-
         local blocking = function()
-            -- TODO [JM] will trigger meta.ensureCleared(.., .., "path_warning")
+            -- TODO [JM] will trigger meta.ensureCleared(.., "path_warning")
+            -- with get() -> alreadyWarned, x, y, z, facing, side
         end
 
         moveInOrder(order, blocking)
