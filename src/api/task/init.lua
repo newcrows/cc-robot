@@ -112,6 +112,11 @@ function task.run(name, opts)
         tick = function(progress)
             local percentage = math.floor(progress * 100)
             print(percentage .. "% complete")
+
+            -- potential SIG_TERM or something can be process here when
+            -- using the remote "task api" of tasks/worker.lua
+            -- nothing else is supported but reporting progress
+            -- and using ctrl internals of worker to manage terminating tasks
         end
     }
 
