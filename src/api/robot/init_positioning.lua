@@ -48,7 +48,7 @@ return function(robot, meta, constants)
         return count
     end
 
-    -- TODO [JM] consume up to <reserved count> number of fuel in one go
+    -- NOTE [JM] consumes the first stack it finds (partially if stack bigger than needed)
     local function refuel(name, count)
         local slot = meta.selectFirstSlot(name, true)
 
