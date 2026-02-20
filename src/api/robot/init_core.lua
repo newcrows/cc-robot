@@ -70,7 +70,7 @@ return function(_, meta)
         callbacksListener[event] = callback -- it can be so simple..
     end
 
-    function meta.try(check, tick, strategy)
+    function meta.try(check, tick, blocking)
         if type(check) ~= "function" then
             error("check must be a function", 0)
         end
@@ -82,22 +82,22 @@ return function(_, meta)
         tick()
 
         local ok = check()
-        if ok or not strategy then
+        if ok or not blocking then
             return
         end
 
-        strategy = type(strategy) == "function" and strategy or function()
+        blocking = type(blocking) == "function" and blocking or function()
         end
 
         while true do
-            local didStrategy = strategy()
+            local didBlocking = blocking()
             local didTick = tick()
 
             if check() then
                 return
             end
 
-            if not didStrategy and not didTick then
+            if not didBlocking and not didTick then
                 os.sleep(1)
             end
         end
@@ -118,7 +118,7 @@ return function(_, meta)
 
         local dispatched
 
-        local function strategy()
+        local function blocking()
             meta.dispatchEvent(warning, dispatched, get())
             dispatched = true
         end
@@ -126,7 +126,7 @@ return function(_, meta)
         local function tick()
         end
 
-        meta.try(check, tick, strategy)
+        meta.try(check, tick, blocking)
 
         if dispatched then
             meta.dispatchEvent(warning .. "_cleared")
