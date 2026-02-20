@@ -12,43 +12,24 @@ return function(robot, meta, constants)
     local fuelWarningClearedListenerId
 
     local function moveHelper(moveFunc, delta, count, blocking)
-        if type(count) == "function" or type(count) == "boolean" then
-            blocking = count
-            count = 1
-        else
-            count = count or 1
-        end
-
-        meta.requireFuelLevel(count)
-
         local moved = 0
-        while moved < count do
-            local waited = false
 
-            while not moveFunc() do
-                if blocking then
-                    if waited then
-                        os.sleep(1)
-                    end
-
-                    if type(blocking) == "function" then
-                        blocking()
-                    end
-
-                    waited = true
-                else
-                    return moved, "movement obstructed"
-                end
-            end
-
-            robot.x = robot.x + delta.x
-            robot.y = robot.y + delta.y
-            robot.z = robot.z + delta.z
-
-            moved = moved + 1
-            meta.softUnwrapAll()
+        local function check()
+            return moved < count
         end
 
+        local function tick()
+            if moveFunc() then
+                robot.x = robot.x + delta.x
+                robot.y = robot.y + delta.y
+                robot.z = robot.z + delta.z
+
+                moved = moved + 1
+                meta.softUnwrapAll()
+            end
+        end
+
+        meta.ensure(check, tick, blocking)
         return moved
     end
 
