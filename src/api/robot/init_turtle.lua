@@ -15,7 +15,6 @@ return function(robot, meta, constants)
     }
 
     local proxy = {}
-
     local metatable = {
         __index = function(_, prop)
             local mappedProp = PROP_MAPPING[prop]
@@ -38,5 +37,9 @@ return function(robot, meta, constants)
     }
 
     setmetatable(proxy, metatable)
-    _G.turtle = proxy
+
+    if not _G.nativeTurtle then
+        _G.nativeTurtle = _G.turtle
+        _G.turtle = proxy
+    end
 end
