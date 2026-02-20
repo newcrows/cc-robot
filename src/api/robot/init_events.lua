@@ -58,25 +58,52 @@ return function(_, meta)
         end
     end
 
-    function meta.waitForClear(checkState, getState, warningEvent)
-        local checked = checkState()
-        local waited = false
+    function meta.ensure(check, tick, strategy)
+        if type(check) ~= "function" then
+            error("check must be a function")
+        end
 
-        if checked then
+        if type(tick) ~= "function" then
+            error("tick must be a function")
+        end
+
+        tick()
+
+        local ok = check()
+        if ok or not strategy then
             return
         end
 
-        while not checked do
-            if waited then
-                os.sleep(1)
-            end
-
-            meta.dispatchEvent(warningEvent, table.unpack(getState()), waited)
-
-            checked = checkState()
-            waited = true
+        strategy = type(strategy) == "function" and strategy or function()
         end
 
-        meta.dispatchEvent(warningEvent .. "_cleared")
+        while true do
+            strategy()
+            tick()
+
+            if check() then
+                return
+            end
+
+            os.sleep(1)
+        end
+    end
+
+    function meta.ensureCleared(check, get, warning)
+        local dispatched
+
+        local function strategy()
+            meta.dispatchEvent(warning, table.unpack(get()), dispatched)
+            dispatched = true
+        end
+
+        local function tick()
+        end
+
+        meta.ensure(check, tick, strategy)
+
+        if dispatched then
+            meta.dispatchEvent(warning .. "_cleared")
+        end
     end
 end
