@@ -1,6 +1,6 @@
 return function(robot, meta, constants)
-    local ITEM_COUNT_WARNING = ITEM_COUNT_WARNING
-    local ITEM_SPACE_WARNING = ITEM_SPACE_WARNING
+    local ITEM_COUNT_WARNING = "item_count_warning"
+    local ITEM_SPACE_WARNING = "item_space_warning"
 
     local selectedName
     local reservedSpaces = {}

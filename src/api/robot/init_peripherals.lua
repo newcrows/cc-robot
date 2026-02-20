@@ -3,6 +3,7 @@ return function(robot, meta, constants)
     local SIDE_INDEX = constants.side_index
     local SIDES = constants.sides
     local DELTAS = constants.deltas
+    local PERIPHERAL_WARNING = "peripheral_warning"
     local RAW_PROPERTIES = {
         x = true,
         y = true,
@@ -124,7 +125,7 @@ return function(robot, meta, constants)
             return proxy.x, proxy.y, proxy.z, proxy.name
         end
 
-        meta.requireCleared(check, get, "peripheral_warning")
+        meta.requireCleared(check, get, PERIPHERAL_WARNING)
     end
 
     local function createProxy(x, y, z, name)
@@ -326,22 +327,21 @@ return function(robot, meta, constants)
     end
 
     function robot.onPeripheralWarning(callback)
-        meta.on("peripheral_warning", callback)
+        meta.on(PERIPHERAL_WARNING, callback)
     end
 
     function robot.onPeripheralWarningCleared(callback)
-        meta.on("peripheral_warning_cleared", callback)
+        meta.on(PERIPHERAL_WARNING .. "_cleared", callback)
     end
 
     robot.onPeripheralWarning(function(alreadyWarned, x, y, z, name)
         if not alreadyWarned then
-            print("---- peripheral_warning ----")
+            print("---- " .. PERIPHERAL_WARNING .. " ----")
             print("missing " .. name .. " at (" .. x .. ", " .. y .. ", " .. z .. ")")
-            print("---------------------------")
         end
     end)
     robot.onPeripheralWarningCleared(function()
-        print("---- peripheral_warning_cleared ----")
+        print("---- " .. PERIPHERAL_WARNING .. "_cleared ----")
     end)
 
     loadConstructors()
