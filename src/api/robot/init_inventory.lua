@@ -468,36 +468,36 @@ return function(robot, meta, constants)
         return arr
     end
 
-    function robot.onCountWarning(callback)
-        meta.on("count_warning", callback)
+    function robot.onItemCountWarning(callback)
+        meta.on("item_count_warning", callback)
     end
 
-    function robot.onCountWarningCleared(callback)
-        meta.on("count_warning_cleared", callback)
+    function robot.onItemCountWarningCleared(callback)
+        meta.on("item_count_warning_cleared", callback)
     end
 
-    function robot.onSpaceWarning(callback)
-        meta.on("space_warning", callback)
+    function robot.onItemSpaceWarning(callback)
+        meta.on("item_space_warning", callback)
     end
 
-    function robot.onSpaceWarningCleared(callback)
-        meta.on("space_warning_cleared", callback)
+    function robot.onItemSpaceWarningCleared(callback)
+        meta.on("item_space_warning_cleared", callback)
     end
 
-    robot.onCountWarning(function(alreadyWarned, _, name, count)
+    robot.onItemCountWarning(function(alreadyWarned, _, name, count)
         if not alreadyWarned then
-            print("---- count_warning ----")
+            print("---- item_count_warning ----")
             print("need " .. count .. " of " .. name)
             print("-----------------------")
         end
     end)
-    robot.onCountWarningCleared(function()
-        print("---- count_warning_cleared ----")
+    robot.onItemCountWarningCleared(function()
+        print("---- item_count_warning_cleared ----")
     end)
 
-    robot.onSpaceWarning(function(alreadyWarned, _, name, space)
+    robot.onItemSpaceWarning(function(alreadyWarned, _, name, space)
         if not alreadyWarned then
-            print("---- space_warning ----")
+            print("---- item_space_warning ----")
 
             if name == "unknown" then
                 print("need space for " .. space .. " unknown items")
@@ -508,7 +508,7 @@ return function(robot, meta, constants)
             print("-----------------------")
         end
     end)
-    robot.onSpaceWarningCleared(function()
-        print("---- space_warning_cleared ----")
+    robot.onItemSpaceWarningCleared(function()
+        print("---- item_space_warning_cleared ----")
     end)
 end
