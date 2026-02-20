@@ -49,7 +49,6 @@ return function(robot, meta, constants)
         end
 
         local function tick()
-            -- TODO [JM] rename meta.getFirstSlot to meta.getFirstSlotDetail to stay coherent with all other funcs
             local detail = meta.getFirstSlot(name)
 
             if detail then
