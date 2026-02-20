@@ -31,24 +31,24 @@ local function processRequirements(req)
 
     if req.equipment then
         for _, name in ipairs(req.equipment) do
-            robot.requireEquipment(name)
+            robot.meta.requireEquipment(name)
             robot.reserve(name, 1) -- mock reserve equipment
         end
     end
 
     if req.fuelLevel then
-        robot.requireFuelLevel(req.fuelLevel)
+        robot.meta.requireFuelLevel(req.fuelLevel)
     end
 
     if req.itemCount then
         for name, count in pairs(req.itemCount) do
-            robot.requireItemCount(name, count)
+            robot.meta.requireItemCount(name, count)
         end
     end
 
     if req.itemSpace then
         for name, space in pairs(req.itemSpace) do
-            robot.requireItemSpace(name, space)
+            robot.meta.requireItemSpace(name, space)
             robot.reserve(name, space) -- mock reserve to see whether all needed items fit together
         end
     end
