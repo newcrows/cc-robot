@@ -4,9 +4,12 @@ return {
     constructor = function(opts)
         local robot = opts.robot
         local meta = opts.meta
+        local side = opts.side
         local target = opts.target
+        local inventory = {}
 
         local function listSlots(name, limit)
+            name = name or robot.getSelectedName()
             limit = limit or target.size()
             local slots = {}
 
@@ -37,9 +40,9 @@ return {
             return slots[1]
         end
 
-        local function countItems(name, includeReservedItems)
+        local function countItems(name)
             local count = 0
-            local slots = meta.listSlots(name, nil, includeReservedItems)
+            local slots = meta.listSlots(name)
 
             for _, slot in ipairs(slots) do
                 count = count + slot.count
@@ -48,19 +51,58 @@ return {
             return count
         end
 
-        return {
-            import = function(name, count, blocking)
-                return robot.drop(name, count, blocking)
-            end,
-            export = function(name, count, blocking)
+        function inventory.import(name, count, blocking)
+            local dropFunc = ({
+                front = robot.drop,
+                top = robot.dropUp,
+                bottom = robot.dropDown
+            })[side]
 
-            end,
-            getItemDetail = function(name)
-
-            end,
-            listItems = function()
-
+            if not dropFunc then
+                error("can not robot.drop() to side " .. side)
             end
-        }
+
+            return dropFunc(name, count, blocking)
+        end
+
+        function inventory.export(name, count, blocking)
+            -- TODO [JM] implement
+        end
+
+        function inventory.getItemDetail(name)
+            name = name or robot.getSelectedName()
+            local count = countItems(name)
+
+            if count > 0 then
+                return {
+                    name = name,
+                    count = count
+                }
+            end
+        end
+
+        function inventory.listItems()
+            local slots = listSlots()
+            local names = {}
+
+            for _, slot in pairs(slots) do
+                names[slot.name] = true
+            end
+
+            local arr = {}
+
+            for name, _ in pairs(names) do
+                local count = countItems(name)
+
+                table.insert(arr, {
+                    name = name,
+                    count = count
+                })
+            end
+
+            return arr
+        end
+
+        return inventory
     end
 }
