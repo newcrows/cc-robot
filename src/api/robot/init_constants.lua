@@ -1,6 +1,4 @@
 return function(_, _, constants)
-    constants.auto_fuel_low_threshold = nativeTurtle.getFuelLimit() / 10 * 2
-    constants.auto_fuel_high_threshold = nativeTurtle.getFuelLimit() / 10 * 8
     constants.deltas = {
         north = { x = 0, y = 0, z = -1 },
         east = { x = 1, y = 0, z = 0 },
