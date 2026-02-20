@@ -309,14 +309,17 @@ return function(robot, meta, constants)
         meta.on(PATH_WARNING .. "_cleared", callback)
     end
 
+    local lastSeenLevel
     robot.onFuelLevelWarning(function(alreadyWarned, level, requiredLevel)
-        if not alreadyWarned then
+        if not alreadyWarned or lastSeenLevel ~= level then
             local acceptedNames = getKeys(acceptedFuels)
 
             print("---- " .. FUEL_LEVEL_WARNING .. " ----")
             print("level = " .. level)
             print("requiredLevel = " .. requiredLevel)
             print("acceptedFuels = [" .. table.concat(acceptedNames, ", ") .. "]")
+
+            lastSeenLevel = level
         end
     end)
     robot.onFuelLevelWarningCleared(function()

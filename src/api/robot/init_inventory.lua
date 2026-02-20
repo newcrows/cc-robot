@@ -487,18 +487,22 @@ return function(robot, meta, constants)
         meta.on(ITEM_SPACE_WARNING .. "_cleared", callback)
     end
 
+    local lastSeenCount
     robot.onItemCountWarning(function(alreadyWarned, _, name, count)
-        if not alreadyWarned then
+        if not alreadyWarned or lastSeenCount ~= count then
             print("---- " .. ITEM_COUNT_WARNING .. " ----")
             print("need " .. count .. " of " .. name)
+
+            lastSeenCount = count
         end
     end)
     robot.onItemCountWarningCleared(function()
         print("---- " .. ITEM_COUNT_WARNING .. "_cleared ----")
     end)
 
+    local lastSeenSpace
     robot.onItemSpaceWarning(function(alreadyWarned, _, name, space)
-        if not alreadyWarned then
+        if not alreadyWarned or lastSeenSpace ~= space then
             print("---- " .. ITEM_SPACE_WARNING .. " ----")
 
             if name == "unknown" then
@@ -506,6 +510,8 @@ return function(robot, meta, constants)
             else
                 print("need space for " .. space .. " " .. name)
             end
+
+            lastSeenSpace = space
         end
     end)
     robot.onItemSpaceWarningCleared(function()
