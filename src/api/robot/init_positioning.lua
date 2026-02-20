@@ -195,8 +195,6 @@ return function(robot, meta, constants)
     function robot.moveTo(x, y, z)
         if type(x) == "table" then
             local name = x.name
-
-            blocking = y
             x, y, z = x.x, x.y, x.z
 
             if name then
