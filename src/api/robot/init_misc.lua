@@ -54,10 +54,13 @@ return function(robot, meta, constants)
 
             if detail then
                 local amountToDrop = math.min(detail.count, remaining)
+                local before = physicalCountAll()
+
                 nativeTurtle.select(detail.id)
 
                 if dropFunc(amountToDrop) then
-                    remaining = remaining - amountToDrop
+                    local after = physicalCountAll()
+                    remaining = remaining + (after - before)
                 end
             end
         end
