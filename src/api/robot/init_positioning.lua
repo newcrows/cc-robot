@@ -190,6 +190,7 @@ return function(robot, meta, constants)
             if name then
                 local ox, oy, oz = x - robot.x, y - robot.y, z - robot.z
 
+                -- TODO [JM] will this move THROUGH target peripheral? or does it always come from correct side?
                 if ox ~= 0 then
                     x = x - clamp(ox)
                 elseif oy ~= 0 then
