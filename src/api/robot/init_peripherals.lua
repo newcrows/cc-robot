@@ -21,6 +21,8 @@ return function(robot, meta, constants)
     local constructors = {}
     local proxies = {}
     local softProxies = {}
+    local peripheralWarningListenerId
+    local peripheralWarningClearedListenerId
 
     local function loadConstructors()
         local dir = "%INSTALL_DIR%/peripherals"
@@ -127,7 +129,7 @@ return function(robot, meta, constants)
         end
 
         local function get()
-            return STATE.missing, proxy.x, proxy.y, proxy.z, proxy.name
+            return proxy.x, proxy.y, proxy.z, proxy.name
         end
 
         meta.ensureCleared(check, get, "peripheral_warning")
@@ -319,6 +321,44 @@ return function(robot, meta, constants)
 
         return arr
     end
+
+    function robot.onPeripheralWarning(callback)
+        if peripheralWarningListenerId then
+            meta.removeEventListener(peripheralWarningListenerId)
+            peripheralWarningListenerId = nil
+        end
+
+        if callback then
+            peripheralWarningListenerId = meta.addEventListener({
+                peripheral_warning = callback
+            })
+        end
+    end
+
+    function robot.onPeripheralWarningCleared(callback)
+        if peripheralWarningClearedListenerId then
+            meta.removeEventListener(peripheralWarningClearedListenerId)
+            peripheralWarningClearedListenerId = nil
+        end
+
+        if callback then
+            peripheralWarningClearedListenerId = meta.addEventListener({
+                peripheral_warning_cleared = callback
+            })
+        end
+    end
+
+    robot.onPeripheralWarning(function(alreadyWarned, x, y, z, name)
+        if not alreadyWarned then
+            print("---- peripheral_warning ----")
+            print("missing: " .. name .. " at (" .. x .. ", " .. y .. ", " .. z .. ")")
+            print("---------------------------")
+        end
+    end)
+
+    robot.onPeripheralWarningCleared(function()
+        print("---- peripheral_warning_cleared ----")
+    end)
 
     loadConstructors()
 end

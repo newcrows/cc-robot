@@ -359,6 +359,14 @@ return function(robot, meta, constants)
         end
     end
 
+    function robot.getFuelLevel()
+        return nativeTurtle.getFuelLevel()
+    end
+
+    function robot.getFuelLimit()
+        return nativeTurtle.getFuelLimit()
+    end
+
     function robot.onFuelWarning(callback)
         if fuelWarningListenerId then
             meta.removeEventListener(fuelWarningListenerId)
@@ -383,14 +391,6 @@ return function(robot, meta, constants)
                 fuel_warning_cleared = callback
             })
         end
-    end
-
-    function robot.getFuelLevel()
-        return nativeTurtle.getFuelLevel()
-    end
-
-    function robot.getFuelLimit()
-        return nativeTurtle.getFuelLimit()
     end
 
     robot.onFuelWarning(function(alreadyWarned, level, requiredLevel)

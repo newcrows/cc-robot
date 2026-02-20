@@ -318,58 +318,6 @@ return function(robot, meta, constants)
         return layoutFunc(setSlot, clearSlot)
     end
 
-    function robot.onCountWarning(callback)
-        if countWarningListenerId then
-            meta.removeEventListener(countWarningListenerId)
-            countWarningListenerId = nil
-        end
-
-        if callback then
-            countWarningListenerId = meta.addEventListener({
-                count_warning = callback
-            })
-        end
-    end
-
-    function robot.onCountWarningCleared(callback)
-        if countWarningClearedListenerId then
-            meta.removeEventListener(countWarningClearedListenerId)
-            countWarningClearedListenerId = nil
-        end
-
-        if callback then
-            countWarningClearedListenerId = meta.addEventListener({
-                count_warning_cleared = callback
-            })
-        end
-    end
-
-    function robot.onSpaceWarning(callback)
-        if spaceWarningListenerId then
-            meta.removeEventListener(spaceWarningListenerId)
-            spaceWarningListenerId = nil
-        end
-
-        if callback then
-            spaceWarningListenerId = meta.addEventListener({
-                space_warning = callback
-            })
-        end
-    end
-
-    function robot.onSpaceWarningCleared(callback)
-        if spaceWarningClearedListenerId then
-            meta.removeEventListener(spaceWarningClearedListenerId)
-            spaceWarningClearedListenerId = nil
-        end
-
-        if callback then
-            spaceWarningClearedListenerId = meta.addEventListener({
-                space_warning_cleared = callback
-            })
-        end
-    end
-
     function robot.select(name)
         selectedName = name
     end
@@ -523,6 +471,60 @@ return function(robot, meta, constants)
 
         return arr
     end
+
+    function robot.onCountWarning(callback)
+        if countWarningListenerId then
+            meta.removeEventListener(countWarningListenerId)
+            countWarningListenerId = nil
+        end
+
+        if callback then
+            countWarningListenerId = meta.addEventListener({
+                count_warning = callback
+            })
+        end
+    end
+
+    function robot.onCountWarningCleared(callback)
+        if countWarningClearedListenerId then
+            meta.removeEventListener(countWarningClearedListenerId)
+            countWarningClearedListenerId = nil
+        end
+
+        if callback then
+            countWarningClearedListenerId = meta.addEventListener({
+                count_warning_cleared = callback
+            })
+        end
+    end
+
+    function robot.onSpaceWarning(callback)
+        if spaceWarningListenerId then
+            meta.removeEventListener(spaceWarningListenerId)
+            spaceWarningListenerId = nil
+        end
+
+        if callback then
+            spaceWarningListenerId = meta.addEventListener({
+                space_warning = callback
+            })
+        end
+    end
+
+    function robot.onSpaceWarningCleared(callback)
+        if spaceWarningClearedListenerId then
+            meta.removeEventListener(spaceWarningClearedListenerId)
+            spaceWarningClearedListenerId = nil
+        end
+
+        if callback then
+            spaceWarningClearedListenerId = meta.addEventListener({
+                space_warning_cleared = callback
+            })
+        end
+    end
+
+    -- TODO [JM] default count_warning callbacks here
 
     robot.onSpaceWarning(function(alreadyWarned, _, name, space)
         if not alreadyWarned then
