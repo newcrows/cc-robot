@@ -93,7 +93,9 @@ return function(_, meta)
         local dispatched
 
         local function strategy()
-            meta.dispatchEvent(warning, table.unpack(get()), dispatched)
+            local args = (type(get) == "function" and get()) or {}
+
+            meta.dispatchEvent(warning, args, dispatched)
             dispatched = true
         end
 
