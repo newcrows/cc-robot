@@ -133,7 +133,6 @@ end
 
 return {
     requirements = {
-        fuelLevel = 1000,
         equipment = {
             "computercraft:wireless_modem_normal",
             "minecraft:compass"
