@@ -217,12 +217,12 @@ return function(robot, meta, constants)
         meta.requireFuelLevel(math.abs(dx) + math.abs(dy) + math.abs(dz))
 
         local order = {
-            { moveX, FACINGS.east, dx },
             { moveY, FACINGS.up, dy },
+            { moveX, FACINGS.east, dx },
             { moveZ, FACINGS.north, dz },
             { moveZ, FACINGS.south, dz },
-            { moveY, FACINGS.down, dy },
-            { moveX, FACINGS.west, dx }
+            { moveX, FACINGS.west, dx },
+            { moveY, FACINGS.down, dy }
         }
         local blocking = function(tx, ty, tz, tf)
             local function check()
