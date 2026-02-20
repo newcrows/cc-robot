@@ -113,6 +113,13 @@ return function(robot, meta, constants)
     end
 
     function meta.ensure(check, tick, strategy)
+        if type(check) ~= "function" then
+            error("check must be a function")
+        end
+
+        tick = tick or function()
+        end
+
         tick()
 
         local ok = check()
