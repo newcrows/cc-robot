@@ -5,6 +5,7 @@ return function(robot, meta, constants)
     local OPPOSITE_FACINGS = constants.opposite_facings
     local FUEL_LEVEL_WARNING = "fuel_level_warning"
     local PATH_WARNING = "path_warning"
+    local FUEL_SAFETY_MARGIN = nativeTurtle.getFuelLimit() / 10 * 2
 
     robot.x, robot.y, robot.z = 0, 0, 0
     robot.facing = FACINGS.north
@@ -152,6 +153,8 @@ return function(robot, meta, constants)
         if requiredLevel > nativeTurtle.getFuelLimit() then
             error("requiredLevel is bigger than turtle.getFuelLimit()!", 0)
         end
+
+        requiredLevel = math.min(requiredLevel + FUEL_SAFETY_MARGIN, nativeTurtle.getFuelLimit())
 
         local function check()
             return refuelTo(requiredLevel)
