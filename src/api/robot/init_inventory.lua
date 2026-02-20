@@ -384,21 +384,18 @@ return function(robot, meta, constants)
         local names = {}
 
         for _, slot in pairs(slots) do
-            local detail = nativeTurtle.getItemDetail(slot.id)
-
-            if detail then
-                names[detail.name] = true
-            end
+            names[slot.name] = true
         end
 
         local arr = {}
 
         for name, _ in pairs(names) do
-            local detail = robot.getItemDetail(name)
+            local count = meta.countItems(name)
 
-            if detail then
-                table.insert(arr, detail)
-            end
+            table.insert(arr, {
+                name = name,
+                count = count
+            })
         end
 
         return arr
