@@ -88,7 +88,7 @@ return function(robot, meta, constants)
 
             robot.face(facing)
             robot.forward(math.abs(dx), function()
-                callback(robot.x + clamp(dx), robot.y, robot.z)
+                callback(robot.x + clamp(dx), robot.y, robot.z, facing)
             end)
         end
 
@@ -104,7 +104,7 @@ return function(robot, meta, constants)
 
             local moveFunc = dy > 0 and robot.up or robot.down
             moveFunc(math.abs(dy), function()
-                callback(robot.x, robot.y + clamp(dy), robot.z)
+                callback(robot.x, robot.y + clamp(dy), robot.z, facing)
             end)
         end
 
@@ -121,7 +121,7 @@ return function(robot, meta, constants)
 
             robot.face(facing)
             robot.forward(math.abs(dz), function()
-                callback(robot.x, robot.y, robot.z + clamp(dz))
+                callback(robot.x, robot.y, robot.z + clamp(dz), facing)
             end)
         end
 
@@ -205,16 +205,30 @@ return function(robot, meta, constants)
         local dz = (z or robot.z) - robot.z
 
         local order = {
-            { moveX, FACINGS.east, dx},
-            { moveY, FACINGS.up, dy},
-            { moveZ, FACINGS.north, dz},
-            { moveZ, FACINGS.south, dz},
-            { moveY, FACINGS.down, dy},
-            { moveX, FACINGS.west, dx}
+            { moveX, FACINGS.east, dx },
+            { moveY, FACINGS.up, dy },
+            { moveZ, FACINGS.north, dz },
+            { moveZ, FACINGS.south, dz },
+            { moveY, FACINGS.down, dy },
+            { moveX, FACINGS.west, dx }
         }
-        local blocking = function()
-            -- TODO [JM] will trigger meta.ensureCleared(.., "path_warning")
-            -- with get() -> alreadyWarned, x, y, z, facing, side
+        local blocking = function(tx, ty, tz, tf)
+            local function check()
+                local detectFuncs = {
+                    [FACINGS.up] = nativeTurtle.detectUp,
+                    [FACINGS.down] = nativeTurtle.detectDown,
+                }
+
+                local detectFunc = detectFuncs[tf] or nativeTurtle.detect
+                return not detectFunc()
+            end
+
+            local function get()
+                -- the obstructing block's coordinates, NOT the turtle's coordinates
+                return tx, ty, tz
+            end
+
+            meta.ensureCleared(check, get, "path_warning")
         end
 
         moveInOrder(order, blocking)
