@@ -115,8 +115,8 @@ function task.run(name, opts)
         end
     }
 
-    local _task = require(tasksDir .. "/" .. name)
     _G.robot = require("%INSTALL_DIR%/api/robot")
+    local _task = require(tasksDir .. "/" .. name)
 
     if not opts.resumed then
         processRequirements(_task.requirements)
