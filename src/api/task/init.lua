@@ -114,7 +114,9 @@ function task.run(name, opts, reloadGlobals)
         _G.robot = require("%INSTALL_DIR%/api/robot")
     end
 
-    processRequirements(_task.requirements)
+    if not opts.resumed then
+        processRequirements(_task.requirements)
+    end
 
     local result = runProtected(_task.run, opts, ctrl)
 
