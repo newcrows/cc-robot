@@ -20,6 +20,7 @@ return function(robot, meta, constants)
         return #meta.listEmptySlots()
     end
 
+    -- TODO [JM] for consistency, must allow placing reservedItems as well
     local function placeHelper(placeFunc, name, blocking)
         local placed = false
 
@@ -71,6 +72,7 @@ return function(robot, meta, constants)
         return remaining
     end
 
+    -- TODO [JM] for consistency, must allow dropping reservedItems as well
     local function dropHelper(dropFunc, name, count, blocking)
         if type(name) == "number" or name == nil then
             blocking, count, name = count, name, robot.getSelectedName()
@@ -113,6 +115,10 @@ return function(robot, meta, constants)
         end
     end
 
+    local function suckHelper_0(suckFunc, name, remaining)
+
+    end
+
     local function suckHelper(suckFunc, count, blocking)
         if type(count) == "boolean" or type(count) == "function" then
             blocking, count = count, nil
@@ -123,6 +129,9 @@ return function(robot, meta, constants)
 
         local function check()
             local conditionA = count and totalSucked >= count
+
+            -- TODO [JM] must actually be "if suck did not suck anything"
+            -- instead of countEmptySlots() == 0
             local conditionB = not count and countEmptySlots() == 0
 
             return conditionA or conditionB
