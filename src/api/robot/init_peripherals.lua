@@ -25,6 +25,12 @@ return function(robot, meta, constants)
         for _, file in ipairs(files) do
             local cleanFile = string.gsub(file, "%.lua$", "")
             local detail = require(fs.combine(dir, cleanFile))
+
+            -- TODO [JM] debug only
+            print("load " .. cleanFile)
+            print(fs.combine(dir, cleanFile))
+            error("done", 0)
+
             local names = detail.names or { detail.name }
 
             for _, name in ipairs(names) do
