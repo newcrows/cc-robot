@@ -1,4 +1,7 @@
 return function(robot, meta, constants)
+    local ITEM_COUNT_WARNING = ITEM_COUNT_WARNING
+    local ITEM_SPACE_WARNING = ITEM_SPACE_WARNING
+
     local selectedName
     local reservedSpaces = {}
 
@@ -469,46 +472,43 @@ return function(robot, meta, constants)
     end
 
     function robot.onItemCountWarning(callback)
-        meta.on("item_count_warning", callback)
+        meta.on(ITEM_COUNT_WARNING, callback)
     end
 
     function robot.onItemCountWarningCleared(callback)
-        meta.on("item_count_warning_cleared", callback)
+        meta.on(ITEM_COUNT_WARNING .. "_cleared", callback)
     end
 
     function robot.onItemSpaceWarning(callback)
-        meta.on("item_space_warning", callback)
+        meta.on(ITEM_SPACE_WARNING, callback)
     end
 
     function robot.onItemSpaceWarningCleared(callback)
-        meta.on("item_space_warning_cleared", callback)
+        meta.on(ITEM_SPACE_WARNING .. "_cleared", callback)
     end
 
     robot.onItemCountWarning(function(alreadyWarned, _, name, count)
         if not alreadyWarned then
-            print("---- item_count_warning ----")
+            print("---- " .. ITEM_COUNT_WARNING .. " ----")
             print("need " .. count .. " of " .. name)
-            print("-----------------------")
         end
     end)
     robot.onItemCountWarningCleared(function()
-        print("---- item_count_warning_cleared ----")
+        print("---- " .. ITEM_COUNT_WARNING .. "_cleared ----")
     end)
 
     robot.onItemSpaceWarning(function(alreadyWarned, _, name, space)
         if not alreadyWarned then
-            print("---- item_space_warning ----")
+            print("---- " .. ITEM_SPACE_WARNING .. " ----")
 
             if name == "unknown" then
                 print("need space for " .. space .. " unknown items")
             else
                 print("need space for " .. space .. " " .. name)
             end
-
-            print("-----------------------")
         end
     end)
     robot.onItemSpaceWarningCleared(function()
-        print("---- item_space_warning_cleared ----")
+        print("---- " .. ITEM_SPACE_WARNING .. "_cleared ----")
     end)
 end
