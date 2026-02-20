@@ -33,7 +33,7 @@ return function(robot, meta, constants)
             end
         end
 
-        meta.require(check, tick, blocking)
+        meta.try(check, tick, blocking)
         return placed
     end
 
@@ -71,7 +71,7 @@ return function(robot, meta, constants)
             end
         end
 
-        meta.require(check, tick, blocking)
+        meta.try(check, tick, blocking)
         return totalAmount - remaining
     end
 
@@ -117,7 +117,7 @@ return function(robot, meta, constants)
             end
         end
 
-        meta.require(check, tick, blocking)
+        meta.try(check, tick, blocking)
         return totalSucked
     end
 

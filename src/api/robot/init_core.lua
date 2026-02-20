@@ -70,7 +70,7 @@ return function(_, meta)
         callbacksListener[event] = callback -- it can be so simple..
     end
 
-    function meta.require(check, tick, strategy)
+    function meta.try(check, tick, strategy)
         if type(check) ~= "function" then
             error("check must be a function", 0)
         end
@@ -103,7 +103,7 @@ return function(_, meta)
         end
     end
 
-    function meta.requireCleared(check, get, warning)
+    function meta.require(check, get, warning)
         if type(check) ~= "function" then
             error("check must be a function", 0)
         end
@@ -126,7 +126,7 @@ return function(_, meta)
         local function tick()
         end
 
-        meta.require(check, tick, strategy)
+        meta.try(check, tick, strategy)
 
         if dispatched then
             meta.dispatchEvent(warning .. "_cleared")

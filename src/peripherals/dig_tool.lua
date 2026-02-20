@@ -17,7 +17,7 @@ return {
                 ok = digFunc()
             end
 
-            meta.require(check, tick, blocking)
+            meta.try(check, tick, blocking)
             return ok
         end
 

@@ -89,7 +89,7 @@ return function(robot, meta, constants)
             return STATE.missing, name
         end
 
-        meta.requireCleared(check, get, EQUIPMENT_WARNING)
+        meta.require(check, get, EQUIPMENT_WARNING)
     end
 
     local function equipAndSoftWrap(side, proxy)
@@ -121,7 +121,7 @@ return function(robot, meta, constants)
             return STATE.no_space, name
         end
 
-        meta.requireCleared(check, get, EQUIPMENT_WARNING)
+        meta.require(check, get, EQUIPMENT_WARNING)
     end
 
     local function createProxy(name, pinned)
@@ -248,7 +248,7 @@ return function(robot, meta, constants)
             return STATE.missing, name
         end
 
-        meta.requireCleared(check, get, EQUIPMENT_WARNING)
+        meta.require(check, get, EQUIPMENT_WARNING)
     end
 
     function robot.equip(name, pinned)

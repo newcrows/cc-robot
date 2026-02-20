@@ -95,8 +95,8 @@ meta.getEventListenerDetail(id)
 meta.listEventListeners()
 meta.dispatchEvent(event, ...)
 meta.on(event, callback)
-meta.require(check, tick, strategy)
-meta.requireCleared(check, get, warning)
+meta.try(check, tick, strategy)
+meta.require(check, get, warning)
 
 # api/robot/init_equipment.lua
 meta.requireEquipment(name)

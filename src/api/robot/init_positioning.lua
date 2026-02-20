@@ -32,7 +32,7 @@ return function(robot, meta, constants)
             end
         end
 
-        meta.require(check, tick, blocking)
+        meta.try(check, tick, blocking)
         return moved
     end
 
@@ -166,7 +166,7 @@ return function(robot, meta, constants)
             return nativeTurtle.getFuelLevel(), requiredLevel, acceptedFuels
         end
 
-        meta.requireCleared(check, get, FUEL_LEVEL_WARNING)
+        meta.require(check, get, FUEL_LEVEL_WARNING)
     end
 
     function robot.forward(count, blocking)
@@ -242,7 +242,7 @@ return function(robot, meta, constants)
                 return tx, ty, tz
             end
 
-            meta.requireCleared(check, get, PATH_WARNING)
+            meta.require(check, get, PATH_WARNING)
         end
 
         moveInOrder(order, blocking)
