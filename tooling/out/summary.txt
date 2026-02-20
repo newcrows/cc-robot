@@ -1,7 +1,7 @@
 ---- LOCAL FUNCTIONS ----
 # api/robot/init_core.lua
 local function getEntries(table, keyAlias, valueAlias)
-local function strategy()
+local function blocking()
 local function tick()
 
 # api/robot/init_equipment.lua
@@ -95,7 +95,7 @@ meta.getEventListenerDetail(id)
 meta.listEventListeners()
 meta.dispatchEvent(event, ...)
 meta.on(event, callback)
-meta.try(check, tick, strategy)
+meta.try(check, tick, blocking)
 meta.require(check, get, warning)
 
 # api/robot/init_equipment.lua
