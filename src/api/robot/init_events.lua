@@ -58,6 +58,8 @@ return function(_, meta)
         end
     end
 
+    -- NOTE [JM] does not really belong into init_events
+    -- but there is no other module to put it and ensureCleared is based on ensure
     function meta.ensure(check, tick, strategy)
         if type(check) ~= "function" then
             error("check must be a function", 0)
