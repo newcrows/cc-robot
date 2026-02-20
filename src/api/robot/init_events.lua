@@ -58,8 +58,17 @@ return function(_, meta)
         end
     end
 
-    -- NOTE [JM] does not really belong into init_events
-    -- but there is no other module to put it and ensureCleared is based on ensure
+    -- TODO [JM] use this wherever we loop table keys!! maybe add similar helpers here (getValues ?)
+    function meta.getKeys(table)
+        local keys = {}
+
+        for key in pairs(table) do
+            keys[#keys + 1] = key
+        end
+
+        return keys
+    end
+
     function meta.ensure(check, tick, strategy)
         if type(check) ~= "function" then
             error("check must be a function", 0)
@@ -119,15 +128,5 @@ return function(_, meta)
         if dispatched then
             meta.dispatchEvent(warning .. "_cleared")
         end
-    end
-
-    function meta.getKeys(table)
-        local keys = {}
-
-        for key in pairs(table) do
-            keys[#keys + 1] = key
-        end
-
-        return keys
     end
 end
