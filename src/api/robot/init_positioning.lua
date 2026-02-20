@@ -317,6 +317,6 @@ return function(robot, meta, constants)
         end
     end)
     robot.onPathWarningCleared(function()
-        print("---- fuel_warning_cleared ----")
+        print("---- path_warning_cleared ----")
     end)
 end
