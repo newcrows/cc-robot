@@ -37,16 +37,7 @@ return function(_, meta)
     end
 
     function meta.listEventListeners()
-        local arr = {}
-
-        for id, listener in pairs(listeners) do
-            table.insert(arr, {
-                id = id,
-                listener = listener
-            })
-        end
-
-        return arr
+        return meta.getEntries(listeners, "id", "listener")
     end
 
     function meta.dispatchEvent(event, ...)
