@@ -2,11 +2,12 @@
 local function writeConfigFile(name, opts)
 local function readConfigFile()
 local function removeConfigFile()
+local function processRequirements(req)
 local function runProtected(_task, opts, ctrl)
 
 ---- META FUNCTIONS ----
 
 ---- TASK FUNCTIONS ----
-task.run(name, opts)
+task.run(name, opts, reloadGlobals)
 task.resume()
 

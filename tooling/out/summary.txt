@@ -81,6 +81,7 @@ local function get()
 local function writeConfigFile(name, opts)
 local function readConfigFile()
 local function removeConfigFile()
+local function processRequirements(req)
 local function runProtected(_task, opts, ctrl)
 
 ---- META FUNCTIONS ----
@@ -145,10 +146,10 @@ robot.hasReservedItemCount(name, count)
 robot.getReservedItemSpace(name)
 robot.hasReservedItemSpace(name, space)
 robot.listReservedItems()
-robot.onCountWarning(callback)
-robot.onCountWarningCleared(callback)
-robot.onSpaceWarning(callback)
-robot.onSpaceWarningCleared(callback)
+robot.onItemCountWarning(callback)
+robot.onItemCountWarningCleared(callback)
+robot.onItemSpaceWarning(callback)
+robot.onItemSpaceWarningCleared(callback)
 
 # api/robot/init_misc.lua
 robot.place(name, blocking)
@@ -194,12 +195,12 @@ robot.face(facing)
 robot.setFuel(name, reserveCount)
 robot.getFuelLevel()
 robot.getFuelLimit()
-robot.onFuelWarning(callback)
-robot.onFuelWarningCleared(callback)
+robot.onFuelLevelWarning(callback)
+robot.onFuelLevelWarningCleared(callback)
 robot.onPathWarning(callback)
 robot.onPathWarningCleared(callback)
 
 # api/task/init.lua
-task.run(name, opts)
+task.run(name, opts, reloadGlobals)
 task.resume()
 
