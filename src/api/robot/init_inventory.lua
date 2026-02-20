@@ -473,71 +473,45 @@ return function(robot, meta, constants)
     end
 
     function robot.onCountWarning(callback)
-        if countWarningListenerId then
-            meta.removeEventListener(countWarningListenerId)
-            countWarningListenerId = nil
-        end
-
-        if callback then
-            countWarningListenerId = meta.addEventListener({
-                count_warning = callback
-            })
-        end
+        meta.on("count_warning", callback)
     end
 
     function robot.onCountWarningCleared(callback)
-        if countWarningClearedListenerId then
-            meta.removeEventListener(countWarningClearedListenerId)
-            countWarningClearedListenerId = nil
-        end
-
-        if callback then
-            countWarningClearedListenerId = meta.addEventListener({
-                count_warning_cleared = callback
-            })
-        end
+        meta.on("count_warning_cleared", callback)
     end
 
     function robot.onSpaceWarning(callback)
-        if spaceWarningListenerId then
-            meta.removeEventListener(spaceWarningListenerId)
-            spaceWarningListenerId = nil
-        end
-
-        if callback then
-            spaceWarningListenerId = meta.addEventListener({
-                space_warning = callback
-            })
-        end
+        meta.on("space_warning", callback)
     end
 
     function robot.onSpaceWarningCleared(callback)
-        if spaceWarningClearedListenerId then
-            meta.removeEventListener(spaceWarningClearedListenerId)
-            spaceWarningClearedListenerId = nil
-        end
-
-        if callback then
-            spaceWarningClearedListenerId = meta.addEventListener({
-                space_warning_cleared = callback
-            })
-        end
+        meta.on("space_warning_cleared", callback)
     end
 
-    -- TODO [JM] default count_warning callbacks here
+    robot.onCountWarning(function(alreadyWarned, _, name, count)
+        if not alreadyWarned then
+            print("---- count_warning ----")
+            print("need " .. count .. " of " .. name)
+            print("-----------------------")
+        end
+    end)
+    robot.onCountWarningCleared(function()
+        print("---- count_warning_cleared ----")
+    end)
 
     robot.onSpaceWarning(function(alreadyWarned, _, name, space)
         if not alreadyWarned then
             print("---- space_warning ----")
+
             if name == "unknown" then
-                print("need space for " .. space .. "x unknown items")
+                print("need space for " .. space .. " unknown items")
             else
-                print("need space for " .. space .. "x " .. name)
+                print("need space for " .. space .. " " .. name)
             end
-            print("----------------------")
+
+            print("-----------------------")
         end
     end)
-
     robot.onSpaceWarningCleared(function()
         print("---- space_warning_cleared ----")
     end)

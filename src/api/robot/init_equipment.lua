@@ -287,7 +287,6 @@ return function(robot, meta, constants)
             print("---------------------------")
         end
     end)
-
     robot.onEquipmentWarningCleared(function()
         print("---- equipment_warning_cleared ----")
     end)
