@@ -115,6 +115,8 @@ return function(robot, meta, constants)
         end
     end
 
+    -- TODO [JM] implement the same "suck until nothing sucked or none remaining"
+    --  -> logic defined for drop in dropHelper_0
     local function suckHelper_0(suckFunc, name, remaining)
 
     end
