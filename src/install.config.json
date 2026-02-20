@@ -14,7 +14,6 @@
     "api/task/init.lua",
     "peripherals/inventory.lua",
     "peripherals/dig_tool.lua",
-    "peripherals/me_bridge.lua",
     "startup/init.lua",
     "tasks/simple.lua",
     "tasks/worker.lua",
