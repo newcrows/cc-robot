@@ -2,6 +2,8 @@ const fs = require("fs");
 const nodePath = require("path");
 const inputDir = "../src/api/robot";
 
+let globalStrOut = ""
+
 function extract(filename) {
   const outputFile = "./out/" + filename
     .replace(/^(\.)+\//, "")
@@ -52,6 +54,9 @@ function extract(filename) {
 
   fs.mkdirSync(nodePath.dirname(outputFile), {recursive: true});
   fs.writeFileSync(outputFile, strOut.toString(), {encoding: "utf-8"});
+
+  globalStrOut += "#MODULE " + filename + "\n\n";
+  globalStrOut += strOut.toString();
 }
 
 function traverse(path, callback) {
@@ -67,3 +72,5 @@ function traverse(path, callback) {
 }
 
 traverse(inputDir, extract);
+
+fs.writeFileSync("./out/summary.txt", globalStrOut.toString(), {encoding: "utf-8"});

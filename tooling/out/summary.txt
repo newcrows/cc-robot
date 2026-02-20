@@ -1,0 +1,207 @@
+#MODULE ../src/api/robot/init.lua
+
+---- local functions ----
+
+---- meta functions ----
+
+---- robot functions ----
+
+#MODULE ../src/api/robot/init_equipment.lua
+
+---- local functions ----
+local function getEquippedSide(name)
+local function getEmptySide()
+local function getEquippedProxy(side)
+local function softWrap(side, proxy)
+local function ensureItemAvailable(name)
+local function check()
+local function get()
+local function equipAndSoftWrap(side, proxy)
+local function ensureSpaceAvailable(name)
+local function check()
+local function get()
+local function createProxy(name, pinned)
+
+---- meta functions ----
+
+---- robot functions ----
+robot.equip(name, pinned)
+robot.unequip(name)
+robot.onEquipmentWarning(callback)
+robot.onEquipmentWarningCleared(callback)
+
+#MODULE ../src/api/robot/init_events.lua
+
+---- local functions ----
+local function strategy()
+local function tick()
+
+---- meta functions ----
+meta.addEventListener(listener)
+meta.removeEventListener(id)
+meta.getEventListenerDetail(id)
+meta.listEventListeners()
+meta.dispatchEvent(event, ...)
+meta.ensure(check, tick, strategy)
+meta.ensureCleared(check, get, warning)
+meta.getKeys(table)
+
+---- robot functions ----
+
+#MODULE ../src/api/robot/init_inventory.lua
+
+---- local functions ----
+local function compact()
+local function getStackSize(name)
+local function countReservedEmptySlots()
+local function check()
+local function get()
+local function check()
+local function get()
+local function setSlot(id, name, count)
+local function clearSlot(id)
+
+---- meta functions ----
+meta.requireItemSpace(name, space)
+meta.requireItemSpaceForUnknown(stackSize, space)
+meta.listSlots(name, limit, includeReservedItems)
+meta.getFirstSlot(name, includeReservedItems)
+meta.selectFirstSlot(name, includeReservedItems)
+meta.listEmptySlots(limit, includeReservedItems, shouldCompact)
+meta.getFirstEmptySlot(includeReservedItems)
+meta.selectFirstEmptySlot(includeReservedItems)
+meta.countItems(name, includeReservedItems)
+meta.arrangeSlots(layoutFunc)
+
+---- robot functions ----
+robot.onItemWarning(callback)
+robot.onItemWarningCleared(callback)
+robot.select(name)
+robot.getSelectedName()
+robot.getItemDetail(name)
+robot.getItemCount(name)
+robot.hasItemCount(name, count)
+robot.getItemSpace(name)
+robot.hasItemSpace(name, space)
+robot.getItemSpaceForUnknown(stackSize)
+robot.hasItemSpaceForUnknown(stackSize, space)
+robot.listItems()
+robot.reserve(name, space)
+robot.free(name, space)
+robot.getReservedItemDetail(name)
+robot.getReservedItemCount(name)
+robot.hasReservedItemCount(name, count)
+robot.getReservedItemSpace(name)
+robot.hasReservedItemSpace(name, space)
+robot.listReservedItems()
+
+#MODULE ../src/api/robot/init_misc.lua
+
+---- local functions ----
+local function physicalCountAll()
+local function countEmptySlots()
+local function placeHelper(placeFunc, name, blocking)
+local function check()
+local function tick()
+local function dropHelper(dropFunc, name, count, blocking)
+local function check()
+local function tick()
+local function compareHelper(inspectFunc, name)
+local function suckHelper(suckFunc, count, blocking)
+local function check()
+local function tick()
+
+---- meta functions ----
+
+---- robot functions ----
+robot.place(name, blocking)
+robot.placeUp(name, blocking)
+robot.placeDown(name, blocking)
+robot.drop(name, count, blocking)
+robot.dropUp(name, count, blocking)
+robot.dropDown(name, count, blocking)
+robot.detect()
+robot.detectUp()
+robot.detectDown()
+robot.compare(name)
+robot.compareUp(name)
+robot.compareDown(name)
+robot.suck(count, blocking)
+robot.suckUp(count, blocking)
+robot.suckDown(count, blocking)
+robot.inspect()
+robot.inspectUp()
+robot.inspectDown()
+
+#MODULE ../src/api/robot/init_peripherals.lua
+
+---- local functions ----
+local function loadConstructors()
+local function getNameFor(side)
+local function getPositionFor(side)
+local function getKeyFor(x, y, z)
+local function getSideFor(facing)
+local function softWrap(key, proxy)
+local function createProxy(x, y, z, name)
+local function wrapHelper(x, y, z, wrapAs)
+local function unwrapHelper(x, y, z)
+
+---- meta functions ----
+meta.getPeripheralConstructorDetail(name)
+meta.listPeripheralConstructors()
+meta.softUnwrap(side)
+meta.softUnwrapAll()
+
+---- robot functions ----
+robot.wrap(x, y, z, wrapAs)
+robot.wrapUp(wrapAs)
+robot.wrapDown(wrapAs)
+robot.unwrap(x, y, z)
+robot.unwrapUp()
+robot.unwrapDown()
+robot.getPeripheralDetail(x, y, z)
+robot.listPeripherals()
+
+#MODULE ../src/api/robot/init_positioning.lua
+
+---- local functions ----
+local function moveHelper(moveFunc, delta, count, blocking)
+local function turnHelper(turnFunc, direction, count)
+local function refuel(name, count)
+local function refuelTo(requiredLevel)
+local function move(dfb, dud, drl, blocking)
+local function wrap(d_dfb, d_dud, d_drl)
+local function clamp(val)
+local function check()
+local function get()
+local function wrap()
+local function move_x(targetFacing)
+local function move_y(targetFacing)
+local function move_z(targetFacing)
+
+---- meta functions ----
+meta.requireFuelLevel(requiredLevel)
+
+---- robot functions ----
+robot.forward(count, blocking)
+robot.back(count, blocking)
+robot.up(count, blocking)
+robot.down(count, blocking)
+robot.turnRight(count)
+robot.turnLeft(count)
+robot.moveTo(x, y, z, blocking)
+robot.face(facing)
+robot.setFuel(name, reserveCount)
+robot.onFuelWarning(callback)
+robot.onFuelWarningCleared(callback)
+robot.getFuelLevel()
+robot.getFuelLimit()
+
+#MODULE ../src/api/robot/init_turtle.lua
+
+---- local functions ----
+
+---- meta functions ----
+
+---- robot functions ----
+
