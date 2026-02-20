@@ -90,14 +90,14 @@ return function(_, meta)
         end
 
         while true do
-            strategy()
+            local didStrategy = strategy()
             local didTick = tick()
 
             if check() then
                 return
             end
 
-            if not didTick then
+            if not didStrategy and not didTick then
                 os.sleep(1)
             end
         end
