@@ -317,39 +317,20 @@ return function(robot, meta, constants)
     end
 
     function robot.onPeripheralWarning(callback)
-        if peripheralWarningListenerId then
-            meta.removeEventListener(peripheralWarningListenerId)
-            peripheralWarningListenerId = nil
-        end
-
-        if callback then
-            peripheralWarningListenerId = meta.addEventListener({
-                peripheral_warning = callback
-            })
-        end
+        meta.on("peripheral_warning", callback)
     end
 
     function robot.onPeripheralWarningCleared(callback)
-        if peripheralWarningClearedListenerId then
-            meta.removeEventListener(peripheralWarningClearedListenerId)
-            peripheralWarningClearedListenerId = nil
-        end
-
-        if callback then
-            peripheralWarningClearedListenerId = meta.addEventListener({
-                peripheral_warning_cleared = callback
-            })
-        end
+        meta.on("peripheral_warning_cleared", callback)
     end
 
     robot.onPeripheralWarning(function(alreadyWarned, x, y, z, name)
         if not alreadyWarned then
             print("---- peripheral_warning ----")
-            print("missing: " .. name .. " at (" .. x .. ", " .. y .. ", " .. z .. ")")
+            print("missing " .. name .. " at (" .. x .. ", " .. y .. ", " .. z .. ")")
             print("---------------------------")
         end
     end)
-
     robot.onPeripheralWarningCleared(function()
         print("---- peripheral_warning_cleared ----")
     end)
