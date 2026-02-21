@@ -108,7 +108,6 @@ return function(robot, meta, constants)
     end
 
     local function suckHelper_0(suckFunc, remaining)
-        print("suckHelper_0", remaining)
         local continue = true
 
         local function check()
