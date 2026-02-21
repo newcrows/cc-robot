@@ -1,12 +1,11 @@
 return {
     run = function(opts, ctrl)
-        local robot = opts.robot
-        local chest = robot.wrap()
+        local limit = tonumber(opts[1]) or 10
+        local interval = tonumber(opts[2]) or 1
 
-        chest.import("minecraft:cobblestone", 32)
-
-        for k, v in pairs(chest.listItems()) do
-            print(k .. " = " .. v)
+        for i = 1, limit do
+            os.sleep(interval)
+            ctrl.tick(i / limit)
         end
     end
 }
