@@ -137,7 +137,8 @@ return function(_, meta)
 
             e.alreadyWarned = dispatched
             e.stopRequire = function()
-               stopped = true
+                stopped = true
+                e.stopPropagation()
             end
 
             meta.dispatchEvent(e)
