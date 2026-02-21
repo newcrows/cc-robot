@@ -41,11 +41,6 @@ return function(robot, meta, constants)
                 return slots
             end
 
-            local function getFirstSlot(name)
-                local slots = listSlots(name, 1)
-                return slots[1]
-            end
-
             local function countItems(name)
                 local count = 0
                 local slots = meta.listSlots(name)
