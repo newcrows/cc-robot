@@ -291,11 +291,26 @@ return function(robot, meta, constants)
             end
 
             local function get()
-                -- the obstructing block's coordinates, NOT the turtle's coordinates
-                return tx, ty, tz
+                return {
+                    x = tx,
+                    y = ty,
+                    z = tz,
+                    facing = tf
+                }
             end
 
-            meta.require(check, get, PATH_WARNING)
+            local function constructor(detail)
+                local e = meta.createEvent(PATH_WARNING, detail)
+
+                e.targetX = x
+                e.targetY = y
+                e.targetZ = z
+                e.targetFacing = facing
+
+                return e
+            end
+
+            meta.require(check, get, constructor)
         end
 
         moveInOrder(order, blocking)
