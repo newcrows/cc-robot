@@ -83,7 +83,8 @@ return function(robot, meta, constants)
         -- this constructs events based von get() == detail result
         -- called once per tick, must always create a new event instance
         -- meta.createEvent creates an event that has the props: {name, detail, meta, stopPropagation}
-        -- and you should always use it to construct bare events you can then enrich with custom props
+        -- and you should always use it to construct bare events
+        -- you can then enrich it with custom props
         -- meta.require adds the following additional props to e: {alreadyWarned, stopRequire}
         local function constructor(detail)
             return meta.createEvent(ITEM_COUNT_WARNING, detail)
