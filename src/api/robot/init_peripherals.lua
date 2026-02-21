@@ -14,21 +14,23 @@ return function(robot, meta, constants)
         target = true
     }
 
-    local constructors = {}
+    local customPeripherals = {}
     local proxies = {}
     local softProxies = {}
 
-    local function loadConstructors()
+    local function loadCustomPeripherals()
         local dir = "%INSTALL_DIR%/peripherals"
         local files = fs.list(dir)
 
         for _, file in ipairs(files) do
             local cleanFile = string.gsub(file, "%.lua$", "")
-            local detail = require("/" .. fs.combine(dir, cleanFile))
+            local init = require("/" .. fs.combine(dir, cleanFile))
+
+            local detail = type(init) == "function" and init(robot, meta, constants) or init
             local names = detail.names or { detail.name }
 
             for _, name in ipairs(names) do
-                constructors[name] = detail.constructor
+                customPeripherals[name] = detail
             end
         end
     end
@@ -102,13 +104,25 @@ return function(robot, meta, constants)
                 return false
             end
 
-            local constructor = constructors[proxy.name]
+            local customPeripheral = customPeripherals[proxy.name]
 
-            if constructor then
+            if customPeripheral then
+                if customPeripheral.sides then
+                    local found = false
+
+                    for _, acceptedSide in pairs(customPeripheral.sides) do
+                        if acceptedSide == side then
+                            found = true
+                            break
+                        end
+                    end
+
+                    if not found then
+                        error("side " .. side .. " not accepted for " .. proxy.name)
+                    end
+                end
+
                 local opts = {
-                    robot = robot,
-                    meta = meta,
-                    constants = constants,
                     name = proxy.name,
                     side = side,
                     target = target,
@@ -118,7 +132,7 @@ return function(robot, meta, constants)
                     z = proxy.z
                 }
 
-                target = constructor(opts)
+                target = customPeripheral.constructor(opts)
             end
 
             proxy.side = side
@@ -250,37 +264,16 @@ return function(robot, meta, constants)
         return values
     end
 
-    local function getEntries(table, keyAlias, valueAlias)
-        keyAlias = keyAlias or "key"
-        valueAlias = valueAlias or "value"
-
-        local entries = {}
-
-        for k, v in pairs(table) do
-            entries[#entries + 1] = {
-                [keyAlias] = k,
-                [valueAlias] = v
-            }
-        end
-
-        return entries
-    end
-
     function meta.getPeripheralConstructorDetail(name)
         name = name or robot.getSelectedName()
 
-        return {
-            name = name,
-            constructor = constructors[name]
-        }
+        return customPeripherals[name]
     end
 
     function meta.listPeripheralConstructors()
-        return getEntries(constructors, "name", "constructor")
+        return getValues(customPeripherals)
     end
 
-    -- NOTE [JM] should use meta.softUnwrapAll for better performance, peripherals auto-soft-wrap anyway
-    -- this function just exists for consistency
     function meta.softUnwrap(side)
         side = side or SIDES.front
 
@@ -351,5 +344,5 @@ return function(robot, meta, constants)
         print("---- " .. PERIPHERAL_WARNING .. "_cleared ----")
     end)
 
-    loadConstructors()
+    loadCustomPeripherals()
 end

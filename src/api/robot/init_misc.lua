@@ -1,11 +1,4 @@
 return function(robot, meta, constants)
-    -- TODO [JM] should this be based on physical or on robot?
-    -- if i.E. a sucked item goes into a reserved slot,
-    -- we would not get the expected amount returned by suck()
-    -- but from the robot's point of view, it is correct that it sucked less USABLE items than
-    -- physically sucked items
-    -- -> have to think on this, which is more coherent
-    -- -> same for drop() and the peripherals#inventory.import/export functions
     local function physicalCountAll()
         local total = 0
 
@@ -20,7 +13,6 @@ return function(robot, meta, constants)
         return #meta.listEmptySlots()
     end
 
-    -- TODO [JM] for consistency, must allow placing reservedItems as well
     local function placeHelper(placeFunc, name, blocking)
         local placed = false
 
@@ -66,13 +58,13 @@ return function(robot, meta, constants)
             end
 
             continue = didDropSomething
+            return didDropSomething
         end
 
         meta.try(check, tick, true)
         return remaining
     end
 
-    -- TODO [JM] for consistency, must allow dropping reservedItems as well
     local function dropHelper(dropFunc, name, count, blocking)
         if type(name) == "number" or name == nil then
             blocking, count, name = count, name, robot.getSelectedName()
@@ -115,10 +107,35 @@ return function(robot, meta, constants)
         end
     end
 
-    -- TODO [JM] implement the same "suck until nothing sucked or none remaining"
-    --  -> logic defined for drop in dropHelper_0
-    local function suckHelper_0(suckFunc, name, remaining)
+    local function suckHelper_0(suckFunc, remaining)
+        print("suckHelper_0", remaining)
+        local continue = true
 
+        local function check()
+            return not continue or remaining == 0
+        end
+
+        local function tick()
+            local didSuckSomething = false
+
+            local amountToSuck = math.min(constants.default_stack_size, remaining)
+            local before = physicalCountAll()
+
+            if suckFunc(amountToSuck) then
+                local after = physicalCountAll()
+
+                if after ~= before then
+                    didSuckSomething = true
+                    remaining = remaining + (before - after)
+                end
+            end
+
+            continue = didSuckSomething
+            return didSuckSomething
+        end
+
+        meta.try(check, tick, true)
+        return remaining
     end
 
     local function suckHelper(suckFunc, count, blocking)
@@ -126,32 +143,22 @@ return function(robot, meta, constants)
             blocking, count = count, nil
         end
 
-        local totalSucked = 0
-        local stackSize = constants.default_stack_size
+        local totalAmount = count or 9999
+        local remaining = totalAmount
 
         local function check()
-            local conditionA = count and totalSucked >= count
-
-            -- TODO [JM] must actually be "if suck did not suck anything"
-            -- instead of countEmptySlots() == 0
-            local conditionB = not count and countEmptySlots() == 0
+            local conditionA = count and remaining == 0
+            local conditionB = count == 9999 and countEmptySlots() == 0
 
             return conditionA or conditionB
         end
 
         local function tick()
-            local nextAmount = count and math.min(stackSize, count - totalSucked) or stackSize
-            local before = physicalCountAll()
-
-            if suckFunc(nextAmount) then
-                local after = physicalCountAll()
-
-                totalSucked = totalSucked + (after - before)
-            end
+            remaining = suckHelper_0(suckFunc, remaining)
         end
 
         meta.try(check, tick, blocking)
-        return totalSucked
+        return totalAmount - remaining
     end
 
     function robot.place(name, blocking)
