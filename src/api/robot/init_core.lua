@@ -36,27 +36,30 @@ return function(_, meta)
     end
 
     function meta.createEvent(name, detail)
-        local e_meta = {}
-        local e = {
+        assert(name, "name must not be nil")
+
+        local eventMeta = {}
+        local event = {
             name = name,
             detail = detail, -- optional
             stopPropagation = function()
-                e_meta.stopped = true
+                eventMeta.stopped = true
             end
         }
 
-        e.meta = e_meta
-        return e
+        event.meta = eventMeta
+        return event
     end
 
-    function meta.dispatchEvent(e)
-        local e_callbacks = callbacks[e.name]
+    function meta.dispatchEvent(event)
+        assert(event, "event must not be nil")
+        local eventCallbacks = callbacks[event.name]
 
-        if e_callbacks then
-            for _, callback in ipairs(e_callbacks) do
-                callback(e)
+        if eventCallbacks then
+            for _, callback in ipairs(eventCallbacks) do
+                callback(event)
 
-                if e.meta.stopped then
+                if event.meta.stopped then
                     break
                 end
             end
