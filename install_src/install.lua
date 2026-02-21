@@ -1,5 +1,5 @@
 local baseUrl = "https://raw.githubusercontent.com/newcrows/cc-robot/refs/heads"
-local installRef = "install"
+local installRef = "install_src"
 
 local args = { ... }
 local flags
