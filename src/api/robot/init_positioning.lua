@@ -203,6 +203,13 @@ return function(robot, meta, constants)
     --      i.E. {0, 0, 0}, "east" -> robot should be WEST OF the target (facing "east" to connect)
     -- NOTE: basically, you can either move TO specific coordinates
     --  or NEXT TO specific coordinates (which are always peripheral coordinates)
+    -- SUPPORTED FUNCTION SIGNATURES:
+    -- robot.moveTo(1, 2, 3) // robot moves and does not turn specifically
+    -- robot.moveTo(FACINGS.north) // robot turns north
+    -- robot.moveTo(1, 2, 3, FACINGS.east) // robot moves and then turns north
+    -- robot.moveTo(chest) // moves to the chest and connects (picks the closest position next to chest)
+    -- robot.moveTo(chest, FACINGS.east) // robot faces east to connect
+    -- robot.moveTo(chest, SIDES.front) // connects on robot front side
     function robot.moveTo(x, y, z)
         if type(x) == "table" then
             local name = x.name
