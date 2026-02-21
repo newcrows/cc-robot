@@ -3,19 +3,11 @@ return function(_, meta)
     local singularCallbacks = {}
 
     local function remove(t, value)
-        local index = nil
-        for i, v in ipairs(t) do
-            if v == value then
-                index = i
-                break
+        for i = #t, 1, -1 do
+            if t[i] == value then
+                return table.remove(t, i)
             end
         end
-
-        if index then
-            return table.remove(t, index)
-        end
-
-        return nil
     end
 
     function meta.addEventListener(name, callback)
