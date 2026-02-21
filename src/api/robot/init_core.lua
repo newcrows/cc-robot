@@ -103,6 +103,19 @@ return function(_, meta)
         end
     end
 
+    -- TODO [JM] restructure so that callbacks all have the signature: callback(e)
+    -- -> e is all props returned from get (MAKE THESE NAMED INSTEAD OF ARRAY)
+    -- -> e has additional func e.cancelRequire() which cancels the meta.require call that triggered the event
+    -- -> e inherits the func e.stopPropagation() which means no other registered
+    --      listeners are called after the current one's callback ends
+    -- i.E.
+    -- robot.onPathWarning(function (e)
+    --   local rOrM = waitForResolutionOrManualMode()
+    --   if rOrM == "r" then return end --resolved externally
+    --
+    --   e.cancelRequire() --meta.require() will return after current callback and event will not propagate any more
+    --   -- YOU MUST HANDLE THE WARNING HERE YOURSELF, basically meta.require() yielded control to you!
+    -- end)
     function meta.require(check, get, warning)
         if type(check) ~= "function" then
             error("check must be a function", 0)
