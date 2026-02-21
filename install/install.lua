@@ -1,5 +1,5 @@
 local baseUrl = "https://raw.githubusercontent.com/newcrows/cc-robot/refs/heads"
-local installerRef = "installer"
+local installRef = "install"
 
 local args = { ... }
 local flags
@@ -54,11 +54,11 @@ local function download(relPath, ref)
 end
 
 local function downloadConfig()
-    local content = download("install.config.json", installerRef)
+    local content = download("install.config.json", installRef)
     local config = textutils.unserializeJSON(content)
 
     if config.pre_install and #config.pre_install > 0 then
-        local preInstallContent = download(config.pre_install, installerRef)
+        local preInstallContent = download(config.pre_install, installRef)
         local preInstallFunc = load(preInstallContent)
 
         if not preInstallFunc then
@@ -74,7 +74,7 @@ local function downloadConfig()
     end
 
     if config.post_install and #config.post_install > 0 then
-        local postInstallContent = download(config.post_install, installerRef)
+        local postInstallContent = download(config.post_install, installRef)
         local postInstallFunc = load(postInstallContent)
 
         if not postInstallFunc then
