@@ -1,7 +1,7 @@
 return function(_, meta)
     -- TODO [JM] listeners must be called IN THE ORDER THEY WERE REGISTERED!
-    local listeners = {}
-    local onCallbacks = {}
+    local callbacks = {}
+    local singularCallbacks = {}
 
     local function remove(t, value)
         local index = nil
@@ -23,16 +23,16 @@ return function(_, meta)
         assert(name, "name must not be nil")
         assert(type(callback) == "function", "callback must be a function")
 
-        listeners[name] = (listeners[name] or {})
-        table.insert(listeners[name], callback)
+        callbacks[name] = (callbacks[name] or {})
+        table.insert(callbacks[name], callback)
     end
 
     function meta.removeEventListener(name, callback)
         assert(name, "name must not be nil")
         assert(type(callback) == "function", "callback must be a function")
 
-        if listeners[name] then
-            remove(listeners[name], callback)
+        if callbacks[name] then
+            remove(callbacks[name], callback)
         end
     end
 
@@ -50,7 +50,7 @@ return function(_, meta)
     end
 
     function meta.dispatchEvent(e)
-        local callbacks = listeners[e.name]
+        local callbacks = callbacks[e.name]
 
         if callbacks then
             for _, callback in ipairs(callbacks) do
@@ -64,7 +64,7 @@ return function(_, meta)
     end
 
     function meta.on(name, callback)
-        local prevCallback = onCallbacks[name]
+        local prevCallback = singularCallbacks[name]
 
         if prevCallback then
             meta.removeEventListener(name, prevCallback)
@@ -74,7 +74,7 @@ return function(_, meta)
             meta.addEventListener(name, callback)
         end
 
-        onCallbacks[name] = callback
+        singularCallbacks[name] = callback
     end
 
     function meta.try(check, tick, blocking)
