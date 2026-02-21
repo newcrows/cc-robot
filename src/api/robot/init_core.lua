@@ -19,19 +19,6 @@ return function(_, meta)
         return nil
     end
 
-    local function createEvent(name, detail)
-        local e_meta = {}
-        local e = {
-            name = name,
-            detail = detail,
-            stopPropagation = function()
-                e_meta.stopped = true
-            end
-        }
-
-        return e, e_meta
-    end
-
     function meta.addEventListener(name, callback)
         assert(name, "name must not be nil")
         assert(type(callback) == "function", "callback must be a function")
@@ -49,19 +36,27 @@ return function(_, meta)
         end
     end
 
-    function meta.dispatchEvent(name, detail)
-        assert(name, "name must not be nil")
-        detail = detail or {}
+    function meta.createEvent(name)
+        local e_meta = {}
+        local e = {
+            name = name,
+            stopPropagation = function()
+                e_meta.stopped = true
+            end
+        }
 
-        local callbacks = listeners[name]
+        e.meta = e_meta
+        return e
+    end
+
+    function meta.dispatchEvent(e)
+        local callbacks = listeners[e.name]
 
         if callbacks then
-            local e, e_meta = createEvent(name, detail)
-
             for _, callback in ipairs(callbacks) do
                 callback(e)
 
-                if e_meta.stopped then
+                if e.meta.stopped then
                     break
                 end
             end
@@ -115,56 +110,10 @@ return function(_, meta)
         end
     end
 
-    -- TODO [JM] restructure so that callbacks all have the signature: callback(e)
-    -- -> e is all props returned from get (MAKE THESE NAMED INSTEAD OF ARRAY)
-    -- -> e has additional func e.cancelRequire() which cancels the meta.require call that triggered the event
-    -- -> e has the companion func e.getRequireArgs() which tells you what was required in the first place
-    -- -> e inherits the func e.stopPropagation() which means no other registered
-    --      listeners are called after the current one's callback ends
-    -- i.E.
-    -- robot.onPathWarning(function (e)
-    --   local rOrM = waitForResolutionOrManualMode()
-    --   if rOrM == "r" then return end --resolved externally
-    --
-    --   e.cancelRequire() --meta.require() will return after current callback and event will not propagate any more
-    --   YOU MUST HANDLE THE WARNING HERE YOURSELF, basically meta.require() yielded control to you!
-    --   use e.getRequireArgs() to reconstruct what SHOULD have happened and do it YOURSELF
-    --   !!! if you fail to achieve the required state, programs will behave unexpectedly and/or crash !!!
-    -- end)
-    -- TODO [JM] need to extend signature to (args, check, get, warning)
-    -- -> need this so that custom warning handling knows what was required in the first place
-    -- -> i.E.
-    -- e.cancelRequire()
-    -- local args = e.getRequireArgs()
-    -- -> args == {x, y, z, facing} in case of path_warning
-    --  (the original moveTo args, NOT the obstructing block args, these are already in e)
-    -- -> move to the required position by yourself, using any method you deem good enough
-    -- maybe we can inline for brevity and have e.cancelRequire return the args already:
-    -- local args = e.cancelRequire()
-    -- // handle the original task
-    -- this is only possible however IF THE TASK IS CANCELLABLE
-    -- -> maybe returns a boolean?
-    -- i.E.
-    -- local cancelled = e.cancelRequire()
-    --
-    -- if cancelled then
-    --   local args = e.getRequireArgs()
-    --   // fix it!
-    --   // by the time you return from here, it MUST be the correct state and state return value (if any)!!
-    -- else
-    -- // let the loop pass and meta.require continues to handle the problem
-    -- NOTE: e must still carry e.alreadyWarned, we need that prop!
-    -- NOTE: e.alreadyWarned, e.cancelRequire, e.getRequireArgs only exist if the event is a meta.require event
-    --  any other event does not have those (duh)
-    -- NOTE: e.name should be the dispatched event name
-    -- i.E. e.name == "path_warning" in this case
-    -- this IS a default event prop and always exists
-    -- -> we do this because maybe we change the signature of meta.addEventListener
-    -- i.E. meta.addEventListener("path_warning", callback)
-    -- -> this is MUCH more aligned with the standard javascript way of doing things and I like that way
-    -- TODO [JM] meta.addEventListener(name, callback) is superior!
-    -- -> we don't need the special callbackListener anymore then, which is a massive plus for maintainability
-    function meta.require(check, get, warning)
+    -- TODO [JM] events are now created with constructor() which must return instance of createEvent
+    -- all custom event props can be specified in the constructor
+    -- this includes e.stopRequire, e.getRequireArgs, alreadyWarned, etc.
+    function meta.require(check, get, constructor)
         if type(check) ~= "function" then
             error("check must be a function", 0)
         end
@@ -173,15 +122,21 @@ return function(_, meta)
             error("get must be a function", 0)
         end
 
-        if not warning then
-            error("warning must not be nil", 0)
+        if type(constructor) ~= "function" then
+            error("constructor must be a function", 0)
         end
 
         local dispatched
+        local name
 
         local function blocking()
-            meta.dispatchEvent(warning, dispatched, get())
+            local e = constructor(get())
+            e.alreadyWarned = dispatched
+
+            meta.dispatchEvent(e)
+
             dispatched = true
+            name = e.name
         end
 
         local function tick()
@@ -190,9 +145,8 @@ return function(_, meta)
         meta.try(check, tick, blocking)
 
         if dispatched then
-            meta.dispatchEvent(warning .. "_cleared")
+            local e = meta.createEvent(name .. "_cleared")
+            meta.dispatchEvent(e)
         end
     end
-
-    meta.addEventListener(onCallbacks)
 end
