@@ -253,8 +253,6 @@ return function(robot, meta, constants)
     function robot.equip(name, pinned)
         name = name or robot.getSelectedName()
 
-        meta.requireEquipment(name) -- program doesn't continue beyond the equip call until equipment is present
-
         if type(name) == "table" then
             proxies[name] = name
             name.invalid = nil
