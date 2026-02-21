@@ -121,6 +121,14 @@ return function(_, meta)
     --   use e.getRequireArgs() to reconstruct what SHOULD have happened and do it YOURSELF
     --   !!! if you fail to achieve the required state, programs will behave unexpectedly and/or crash !!!
     -- end)
+    -- TODO [JM] need to extend signature to (args, check, get, warning)
+    -- -> need this so that custom warning handling knows what was required in the first place
+    -- -> i.E.
+    -- e.cancelRequire()
+    -- local args = e.getRequireArgs()
+    -- -> args == {x, y, z, facing} in case of path_warning
+    --  (the original moveTo args, NOT the obstructing block args, these are already in e)
+    -- -> move to the required position by yourself, using any method you deem good enough
     function meta.require(check, get, warning)
         if type(check) ~= "function" then
             error("check must be a function", 0)
