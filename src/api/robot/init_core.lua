@@ -142,8 +142,8 @@ return function(_, meta)
     -- if cancelled then
     --   local args = e.getRequireArgs()
     --   // fix it!
-    -- end
-    --
+    --   // by the time you return from here, it MUST be the correct state and state return value (if any)!!
+    -- else
     -- // let the loop pass and meta.require continues to handle the problem
     -- NOTE: e must still carry e.alreadyWarned, we need that prop!
     -- NOTE: e.alreadyWarned, e.cancelRequire, e.getRequireArgs only exist if the event is a meta.require event
