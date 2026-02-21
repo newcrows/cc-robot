@@ -108,6 +108,7 @@ return function(_, meta)
     -- TODO [JM] restructure so that callbacks all have the signature: callback(e)
     -- -> e is all props returned from get (MAKE THESE NAMED INSTEAD OF ARRAY)
     -- -> e has additional func e.cancelRequire() which cancels the meta.require call that triggered the event
+    -- -> e has the companion func e.getRequireArgs() which tells you what was required in the first place
     -- -> e inherits the func e.stopPropagation() which means no other registered
     --      listeners are called after the current one's callback ends
     -- i.E.
@@ -116,7 +117,9 @@ return function(_, meta)
     --   if rOrM == "r" then return end --resolved externally
     --
     --   e.cancelRequire() --meta.require() will return after current callback and event will not propagate any more
-    --   -- YOU MUST HANDLE THE WARNING HERE YOURSELF, basically meta.require() yielded control to you!
+    --   YOU MUST HANDLE THE WARNING HERE YOURSELF, basically meta.require() yielded control to you!
+    --   use e.getRequireArgs() to reconstruct what SHOULD have happened and do it YOURSELF
+    --   !!! if you fail to achieve the required state, programs will behave unexpectedly and/or crash !!!
     -- end)
     function meta.require(check, get, warning)
         if type(check) ~= "function" then
