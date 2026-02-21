@@ -266,6 +266,7 @@ return function(robot, meta, constants)
         return robot.x, robot.y, robot.z
     end
 
+    -- TODO [JM] obsolete because moveTo() will support FACING as well
     function robot.face(facing)
         local diff = (FACING_INDEX[facing] - FACING_INDEX[robot.facing]) % 4
 
