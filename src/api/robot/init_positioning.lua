@@ -180,10 +180,17 @@ return function(robot, meta, constants)
         end
 
         local function get()
-            return nativeTurtle.getFuelLevel(), requiredLevel, acceptedFuels
+            return {
+                missingFuelLevel = requiredLevel - nativeTurtle.getFuelLevel(),
+                acceptedFuels = acceptedFuels
+            }
         end
 
-        meta.require(check, get, FUEL_LEVEL_WARNING)
+        local function constructor(detail)
+            return meta.createEvent(FUEL_LEVEL_WARNING, detail)
+        end
+
+        meta.require(check, get, constructor)
     end
 
     function robot.forward(count, blocking)
