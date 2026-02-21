@@ -1,14 +1,3 @@
--- TODO [JM] implement the generic inventory api
--- TODO [JM] must be function(robot, meta, constants) -> return instead of plain return
---  -> we can pass robot, meta, constants so custom peripherals have access to context
---  -> this means we can lighten the opts passed by softWrap()
---      and remove robot, meta, constants from the opts object passed to constructor
--- sides is optional, but:
--- -> inventory (i.E. chest) needs to use robot.drop / robot.suck
--- -> drop/suck only work on front, top and bottom of the robot
--- -> so we generally constrict sides to {front, top, bottom} of robot
--- -> this makes it work correctly with peripheral#softWrap() and robot.moveTo(peripheral)
--- TODO [JM] peripheral#softWrap() must throw error when robot side not in sides
 return function(robot, meta, constants)
     local SIDES = constants.sides
 

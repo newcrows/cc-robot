@@ -65,9 +65,6 @@ return function(robot, meta, constants)
 
         if constructor then
             local opts = {
-                robot = robot,
-                meta = meta,
-                constants = constants,
                 name = proxy.name,
                 side = side,
                 target = target
