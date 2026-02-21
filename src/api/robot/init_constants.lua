@@ -74,7 +74,7 @@ return function(_, _, constants)
         bottom = "top"
     }
     constants.default_stack_size = 64
-    constants.dropTable = {
+    constants.block_drop_map = {
         ["minecraft:stone"] = "minecraft_cobblestone",
         -- NOTE [JM] add more block aliases for vanilla ores, etc. here!
     }
