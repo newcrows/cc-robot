@@ -1,10 +1,12 @@
 ---- LOCAL FUNCTIONS ----
 # api/robot/init_core.lua
-local function getEntries(table, keyAlias, valueAlias)
+local function remove(t, value)
+local function checkRequire()
 local function blocking()
 local function tick()
 
 # api/robot/init_equipment.lua
+local function warningConstructor(detail)
 local function getEquippedSide(name)
 local function getEmptySide()
 local function getEquippedProxy(side)
@@ -26,6 +28,7 @@ local function getStackSize(name)
 local function countReservedEmptySlots()
 local function check()
 local function get()
+local function constructor(detail)
 local function check()
 local function get()
 local function check()
@@ -95,14 +98,13 @@ local function runProtected(_task, opts, ctrl)
 
 ---- META FUNCTIONS ----
 # api/robot/init_core.lua
-meta.addEventListener(listener)
-meta.removeEventListener(id)
-meta.getEventListenerDetail(id)
-meta.listEventListeners()
-meta.dispatchEvent(event, ...)
-meta.on(event, callback)
+meta.addEventListener(name, callback)
+meta.removeEventListener(name, callback)
+meta.createEvent(name, detail)
+meta.dispatchEvent(e)
+meta.on(name, callback)
 meta.try(check, tick, blocking)
-meta.require(check, get, warning)
+meta.require(check, get, constructor)
 
 # api/robot/init_equipment.lua
 meta.requireEquipment(name)

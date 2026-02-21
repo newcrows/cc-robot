@@ -1,17 +1,17 @@
 ---- LOCAL FUNCTIONS ----
-local function getEntries(table, keyAlias, valueAlias)
+local function remove(t, value)
+local function checkRequire()
 local function blocking()
 local function tick()
 
 ---- META FUNCTIONS ----
-meta.addEventListener(listener)
-meta.removeEventListener(id)
-meta.getEventListenerDetail(id)
-meta.listEventListeners()
-meta.dispatchEvent(event, ...)
-meta.on(event, callback)
+meta.addEventListener(name, callback)
+meta.removeEventListener(name, callback)
+meta.createEvent(name, detail)
+meta.dispatchEvent(e)
+meta.on(name, callback)
 meta.try(check, tick, blocking)
-meta.require(check, get, warning)
+meta.require(check, get, constructor)
 
 ---- ROBOT FUNCTIONS ----
 

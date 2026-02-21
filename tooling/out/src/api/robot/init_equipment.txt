@@ -1,4 +1,5 @@
 ---- LOCAL FUNCTIONS ----
+local function warningConstructor(detail)
 local function getEquippedSide(name)
 local function getEmptySide()
 local function getEquippedProxy(side)
