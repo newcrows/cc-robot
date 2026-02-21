@@ -146,8 +146,8 @@ return function(_, meta)
         end
 
         local dispatched
-        local name
         local stopped
+        local name
 
         local function checkRequire()
             return stopped or check()
