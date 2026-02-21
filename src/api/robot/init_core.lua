@@ -57,6 +57,7 @@ return function(_, meta)
         return getEntries(listeners, "id", "listener")
     end
 
+    -- TODO [JM] payload must be table instead of ...!
     function meta.dispatchEvent(event, ...)
         assert(event, "event must not be nil")
 
