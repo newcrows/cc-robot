@@ -68,6 +68,8 @@ return function(_, meta)
         end
     end
 
+    -- TODO [JM] this stays special because we do not want the robot.on* methods
+    -- TODO to register more than once.. only meta.addEventListener can do that
     function meta.on(event, callback)
         callbacksListener[event] = callback -- it can be so simple..
     end
