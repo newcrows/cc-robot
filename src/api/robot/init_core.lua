@@ -1,77 +1,85 @@
 return function(_, meta)
     -- TODO [JM] listeners must be called IN THE ORDER THEY WERE REGISTERED!
     local listeners = {}
-    local nextId = 1
-    local callbacksListener = {}
+    local onCallbacks = {}
 
-    local function getEntries(table, keyAlias, valueAlias)
-        keyAlias = keyAlias or "key"
-        valueAlias = valueAlias or "value"
-
-        local entries = {}
-
-        for k, v in pairs(table) do
-            entries[#entries + 1] = {
-                [keyAlias] = k,
-                [valueAlias] = v
-            }
+    local function remove(t, value)
+        local index = nil
+        for i, v in ipairs(t) do
+            if v == value then
+                index = i
+                break
+            end
         end
 
-        return entries
-    end
-
-    function meta.addEventListener(listener)
-        assert(type(listener) == "table", "listener must be a table")
-
-        local id = nextId
-
-        listeners[id] = listener
-        nextId = nextId + 1
-
-        return id
-    end
-
-    function meta.removeEventListener(id)
-        assert(type(id) == "number", "id must be a number")
-
-        listeners[id] = nil
-        return true
-    end
-
-    function meta.getEventListenerDetail(id)
-        assert(type(id) == "number", "id must be a number")
-
-        local listener = listeners[id]
-
-        if listener then
-            return {
-                id = id,
-                listener = listener
-            }
+        if index then
+            return table.remove(t, index)
         end
 
         return nil
     end
 
-    function meta.listEventListeners()
-        return getEntries(listeners, "id", "listener")
+    local function createEvent(name, detail)
+        local e_meta = {}
+        local e = {
+            name = name,
+            detail = detail,
+            stopPropagation = function()
+                e_meta.stopped = true
+            end
+        }
+
+        return e, e_meta
     end
 
-    -- TODO [JM] payload must be table instead of ...!
-    function meta.dispatchEvent(event, ...)
-        assert(event, "event must not be nil")
+    function meta.addEventListener(name, callback)
+        assert(name, "name must not be nil")
+        assert(type(callback) == "function", "callback must be a function")
 
-        for _, listener in pairs(listeners) do
-            if listener[event] then
-                listener[event](...)
+        listeners[name] = (listeners[name] or {})
+        table.insert(listeners[name], callback)
+    end
+
+    function meta.removeEventListener(name, callback)
+        assert(name, "name must not be nil")
+        assert(type(callback) == "function", "callback must be a function")
+
+        if listeners[name] then
+            remove(listeners[name], callback)
+        end
+    end
+
+    function meta.dispatchEvent(name, detail)
+        assert(name, "name must not be nil")
+        detail = detail or {}
+
+        local callbacks = listeners[name]
+
+        if callbacks then
+            local e, e_meta = createEvent(name, detail)
+
+            for _, callback in ipairs(callbacks) do
+                callback(e)
+
+                if e_meta.stopped then
+                    break
+                end
             end
         end
     end
 
-    -- TODO [JM] this stays special because we do not want the robot.on* methods
-    -- TODO to register more than once.. only meta.addEventListener can do that
-    function meta.on(event, callback)
-        callbacksListener[event] = callback -- it can be so simple..
+    function meta.on(name, callback)
+        local prevCallback = onCallbacks[name]
+
+        if prevCallback then
+            meta.removeEventListener(name, prevCallback)
+        end
+
+        if callback then
+            meta.addEventListener(name, callback)
+        end
+
+        onCallbacks[name] = callback
     end
 
     function meta.try(check, tick, blocking)
@@ -186,5 +194,5 @@ return function(_, meta)
         end
     end
 
-    meta.addEventListener(callbacksListener)
+    meta.addEventListener(onCallbacks)
 end
