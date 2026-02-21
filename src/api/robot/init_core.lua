@@ -23,7 +23,7 @@ return function(_, meta)
         assert(type(callback) == "function", "callback must be a function")
 
         callbacks[name] = (callbacks[name] or {})
-        table.insert(callbacks[name], callback)
+        table.insert(callbacks[name], 1, callback)
     end
 
     function meta.removeEventListener(name, callback)
@@ -36,30 +36,34 @@ return function(_, meta)
     end
 
     function meta.createEvent(name, detail)
-        assert(name, "name must not be nil")
+        if not name then
+            error("name must not be nil", 0)
+        end
 
-        local eventMeta = {}
         local event = {
             name = name,
-            detail = detail, -- optional
-            stopPropagation = function()
-                eventMeta.stopped = true
-            end
+            detail = detail
         }
 
-        event.meta = eventMeta
+        function event.stopPropagation()
+            event.stopped = true
+        end
+
         return event
     end
 
     function meta.dispatchEvent(event)
-        assert(event, "event must not be nil")
+        if not event then
+            error("event must not be nil", 0)
+        end
+
         local eventCallbacks = callbacks[event.name]
 
         if eventCallbacks then
-            for _, callback in ipairs(eventCallbacks) do
-                callback(event)
+            for i = #eventCallbacks, 1, -1 do
+                eventCallbacks[i](event)
 
-                if event.meta.stopped then
+                if event.stopped then
                     break
                 end
             end
