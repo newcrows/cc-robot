@@ -27,7 +27,7 @@ robot.constants = constants
 EQUIPMENT_WARNING -> meta.requireEquipment(name) | any <equipment> function called
 ITEM_COUNT_WARNING -> meta.requireItemCount(name, count)
 ITEM_SPACE_WARNING -> meta.requireItemSpace(name, space) | meta.requireItemSpaceForUnknown(stackSize, space)
-PERIPHERAL_WARNING -> <peripheral> in range and any <peripheral> function called
+PERIPHERAL_WARNING -> any <peripheral> function called and <peripheral> is in range
 FUEL_LEVEL_WARNING -> meta.requireFuelLevel(requiredLevel) | robot.moveTo(x, y, z)
 PATH_WARNING -> robot.moveTo(x, y, z) and path is obstructed
 ]]--
