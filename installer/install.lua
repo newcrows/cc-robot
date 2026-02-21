@@ -1,4 +1,5 @@
 local baseUrl = "https://raw.githubusercontent.com/newcrows/cc-robot/refs/heads"
+local installerRef = "installer"
 
 local args = { ... }
 local flags
@@ -44,19 +45,20 @@ local function readableSize(numBytes)
     error("numBytes is too big", 0)
 end
 
-local function download(relPath)
-    local response = http.get(baseUrl .. "/" .. branch .. "/src/" .. relPath)
+local function download(relPath, ref)
+    ref = ref or "src"
+    local response = http.get(baseUrl .. "/" .. branch .. "/" .. ref .. "/" .. relPath)
     local content = response.readAll()
 
     return content
 end
 
 local function downloadConfig()
-    local content = download("install.config.json")
+    local content = download("install.config.json", installerRef)
     local config = textutils.unserializeJSON(content)
 
     if config.pre_install and #config.pre_install > 0 then
-        local preInstallContent = download(config.pre_install)
+        local preInstallContent = download(config.pre_install, installerRef)
         local preInstallFunc = load(preInstallContent)
 
         if not preInstallFunc then
@@ -72,7 +74,7 @@ local function downloadConfig()
     end
 
     if config.post_install and #config.post_install > 0 then
-        local postInstallContent = download(config.post_install)
+        local postInstallContent = download(config.post_install, installerRef)
         local postInstallFunc = load(postInstallContent)
 
         if not postInstallFunc then
