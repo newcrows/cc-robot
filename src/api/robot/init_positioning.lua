@@ -2,6 +2,8 @@ return function(robot, meta, constants)
     local DELTAS = constants.deltas
     local FACING_INDEX = constants.facing_index
     local FACINGS = constants.facings
+    local SIDES = constants.sides
+    local SIDE_INDEX = constants.side_index
     local OPPOSITE_FACINGS = constants.opposite_facings
     local FUEL_LEVEL_WARNING = "fuel_level_warning"
     local PATH_WARNING = "path_warning"
@@ -11,6 +13,21 @@ return function(robot, meta, constants)
     robot.facing = FACINGS.north
 
     local acceptedFuels = {}
+
+    local function face(facing)
+        local diff = (FACING_INDEX[facing] - FACING_INDEX[robot.facing]) % 4
+
+        if diff == 1 then
+            nativeTurtle.turnRight()
+        elseif diff == 2 then
+            nativeTurtle.turnRight()
+            nativeTurtle.turnRight()
+        elseif diff == 3 then
+            nativeTurtle.turnLeft()
+        end
+
+        robot.facing = facing
+    end
 
     local function moveHelper(moveFunc, delta, count, blocking)
         local moved = 0
@@ -89,7 +106,7 @@ return function(robot, meta, constants)
                 return true
             end
 
-            robot.face(facing)
+            face(facing)
             robot.forward(math.abs(dx), function()
                 callback(robot.x + clamp(dx), robot.y, robot.z, facing)
             end)
@@ -122,7 +139,7 @@ return function(robot, meta, constants)
                 return true
             end
 
-            robot.face(facing)
+            face(facing)
             robot.forward(math.abs(dz), function()
                 callback(robot.x, robot.y, robot.z + clamp(dz), facing)
             end)
@@ -194,38 +211,38 @@ return function(robot, meta, constants)
         return turnHelper(nativeTurtle.turnLeft, -1, count)
     end
 
-    -- TODO [JM] if the first argument is table {x, y, z, name} then
-    -- -> the second argument can be side/facing (optional)
-    -- -> if side then the ROBOT's side should be the side connecting to the position
-    --      i.E: {0, 0, 0}, "top" -> robot should be BELOW the target (facing "up" to connect)
-    --      NOTE: "up" is a valid facing for robot.face() which does.. nothing.. because robot can't turn up/down
-    -- -> if facing then the ROBOT's facing should be the facing connecting to the position
-    --      i.E. {0, 0, 0}, "east" -> robot should be WEST OF the target (facing "east" to connect)
-    -- NOTE: basically, you can either move TO specific coordinates
-    --  or NEXT TO specific coordinates (which are always peripheral coordinates)
-    -- SUPPORTED FUNCTION SIGNATURES:
-    -- robot.moveTo(1, 2, 3) // robot moves and does not turn specifically
-    -- robot.moveTo(FACINGS.north) // robot turns north
-    -- robot.moveTo(1, 2, 3, FACINGS.east) // robot moves and then turns north
-    -- robot.moveTo(chest) // moves to the chest and connects (picks the closest position next to chest)
-    --  -> we might need "valid sides" or something in peripherals/inventory.lua for this to work correctly
-    -- robot.moveTo(chest, FACINGS.east) // robot faces east to connect
-    -- robot.moveTo(chest, SIDES.front) // connects on robot front side (picks the closest position next to chest)
-    function robot.moveTo(x, y, z)
+    function robot.moveTo(x, y, z, facing)
         if type(x) == "table" then
-            local name = x.name
+            local side = y
             x, y, z = x.x, x.y, x.z
 
-            if name then
-                local ox, oy, oz = x - robot.x, y - robot.y, z - robot.z
+            local ox, oy, oz = x - robot.x, y - robot.y, z - robot.z
 
-                if ox ~= 0 then
-                    x = x - clamp(ox)
-                elseif oy ~= 0 then
-                    y = y - clamp(oy)
-                elseif oz ~= 0 then
-                    z = z - clamp(oz)
+            if side and side ~= SIDES.top and side ~= SIDES.bottom then
+                local willFace
+
+                if ox == 0 and oz ~= 0 then
+                    willFace = oz > 0 and FACINGS.south or FACINGS.north
+                elseif cx ~= 0 then
+                    willFace = ox > 0 and FACINGS.east or FACINGS.west
                 end
+
+                local facingI = (FACING_INDEX[willFace] + SIDE_INDEX[side]) % 4
+                facing = FACING_INDEX[facingI]
+            elseif side == SIDES.top then
+                oy = oy + 1
+            elseif side == SIDES.bottom then
+                oy = oy - 1
+            end
+
+            local cx, cy, cz = clamp(ox), clamp(oy), clamp(oz)
+
+            if cx ~= 0 then
+                x = x - cx
+            elseif cy ~= 0 then
+                y = y - cy
+            elseif cz ~= 0 then
+                z = z - cz
             end
         end
 
@@ -263,23 +280,12 @@ return function(robot, meta, constants)
         end
 
         moveInOrder(order, blocking)
-        return robot.x, robot.y, robot.z
-    end
 
-    -- TODO [JM] obsolete because moveTo() will support FACING as well
-    function robot.face(facing)
-        local diff = (FACING_INDEX[facing] - FACING_INDEX[robot.facing]) % 4
-
-        if diff == 1 then
-            nativeTurtle.turnRight()
-        elseif diff == 2 then
-            nativeTurtle.turnRight()
-            nativeTurtle.turnRight()
-        elseif diff == 3 then
-            nativeTurtle.turnLeft()
+        if facing then
+            face(facing)
         end
 
-        robot.facing = facing
+        return robot.x, robot.y, robot.z, robot.facing
     end
 
     function robot.setFuel(name, reserveCount)
