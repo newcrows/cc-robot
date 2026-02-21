@@ -1,5 +1,4 @@
 return function(_, meta)
-    -- TODO [JM] listeners must be called IN THE ORDER THEY WERE REGISTERED!
     local callbacks = {}
     local singularCallbacks = {}
 
