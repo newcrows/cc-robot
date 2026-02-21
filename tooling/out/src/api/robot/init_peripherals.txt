@@ -1,5 +1,5 @@
 ---- LOCAL FUNCTIONS ----
-local function loadConstructors()
+local function loadCustomPeripherals()
 local function getNameFor(side)
 local function getPositionFor(side)
 local function getKeyFor(x, y, z)
@@ -11,11 +11,10 @@ local function createProxy(x, y, z, name)
 local function wrapHelper(x, y, z, wrapAs)
 local function unwrapHelper(x, y, z)
 local function getValues(table)
-local function getEntries(table, keyAlias, valueAlias)
 
 ---- META FUNCTIONS ----
-meta.getPeripheralConstructorDetail(name)
-meta.listPeripheralConstructors()
+meta.getCustomPeripheralDetail(name)
+meta.listCustomPeripherals()
 meta.softUnwrap(side)
 meta.softUnwrapAll()
 
