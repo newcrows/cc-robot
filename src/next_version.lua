@@ -159,7 +159,7 @@ robot.drop("*")
 
 -- additional filters must still be possible though, ONLY @reserved and @items are mutually exclusive
 robot.select("@reserved")
-robot.drop("@nbt:<nbt>") -- drop reserved item with nbt == <nbt>
+robot.drop("@nbt:<nbt>") -- drop any reserved item with nbt == <nbt>
 
 -- selection ambiguity (is this a thing)?
 robot.select("*") -- this is the default when starting program
