@@ -21,13 +21,8 @@ return function(robot, meta, constants)
     local proxies = {}
     local nextSide = SIDES.right
 
-    local function warningConstructor(detail)
-        local e = meta.createEvent(EQUIPMENT_WARNING, detail)
-
-        -- custom e.props here as needed
-        -- i.E. for manual resolution in case e.stopRequire() was called
-
-        return e
+    local function eventConstructor(detail)
+        return meta.createEvent(EQUIPMENT_WARNING, detail)
     end
 
     local function getEquippedSide(name)
@@ -95,7 +90,7 @@ return function(robot, meta, constants)
             return { state = STATE.missing, name = name }
         end
 
-        meta.require(check, get, warningConstructor)
+        meta.require(check, get, eventConstructor)
     end
 
     local function equipAndSoftWrap(side, proxy)
@@ -125,7 +120,7 @@ return function(robot, meta, constants)
             return { state = STATE.no_space, name = name }
         end
 
-        meta.require(check, get, warningConstructor)
+        meta.require(check, get, eventConstructor)
     end
 
     local function createProxy(name, pinned)
@@ -245,14 +240,14 @@ return function(robot, meta, constants)
                 return true
             end
 
-            return meta.selectFirstSlot(name, true)
+            return meta.getFirstSlot(name, true) ~= nil
         end
 
         local function get()
             return { state = STATE.missing, name = name }
         end
 
-        meta.require(check, get, warningConstructor)
+        meta.require(check, get, eventConstructor)
     end
 
     function robot.equip(name, pinned)
