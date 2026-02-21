@@ -370,11 +370,13 @@ return function(robot, meta, constants)
         return robot.getItemSpace(name) >= (space or 1)
     end
 
+    -- TODO [JM] generic get space for unknown must still work after new select logic implemented
     function robot.getItemSpaceForUnknown(stackSize)
         local emptySlots = meta.listEmptySlots()
         return #emptySlots * (stackSize or getStackSize())
     end
 
+    -- TODO [JM] generic has space for unknown must still work after new select logic implemented
     function robot.hasItemSpaceForUnknown(stackSize, space)
         return robot.getItemSpaceForUnknown(stackSize) > (space or 0)
     end
