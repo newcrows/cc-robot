@@ -111,7 +111,7 @@ pickaxe.dig() -- dig the block in front of the turtle -> may pick up reserved it
 
 -- essentially, robot behaves (almost) like turtle if no special filters are set
 robot.select("minecraft:cobblestone")
-robot.drop() -- drop all cobblestone
+robot.drop() -- drop all cobblestone (because default $name is "*" for drop(name) call)
 robot.place() -- place any cobblestone found in inventory
 robot.suck() -- suck all cobblestones found in $inventory on front
 pickaxe.dig() -- dig the block in front if it is cobblestone
