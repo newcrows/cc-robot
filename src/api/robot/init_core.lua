@@ -152,6 +152,8 @@ return function(_, meta)
     -- -> we do this because maybe we change the signature of meta.addEventListener
     -- i.E. meta.addEventListener("path_warning", callback)
     -- -> this is MUCH more aligned with the standard javascript way of doing things and I like that way
+    -- TODO [JM] meta.addEventListener(name, callback) is superior!
+    -- -> we don't need the special callbackListener anymore then, which is a massive plus for maintainability
     function meta.require(check, get, warning)
         if type(check) ~= "function" then
             error("check must be a function", 0)
