@@ -65,14 +65,14 @@ return function(robot, meta, constants)
                 })[side]
 
                 if not dropFunc then
-                    error("can not robot.drop() to side " .. side)
+                    error("can not robot.drop() to side " .. side, 0)
                 end
 
                 return dropFunc(name, count, blocking)
             end
 
             function inventory.export(name, count, blocking)
-                -- TODO [JM] implement
+                error("inventory.export is not implemented yet", 0)
             end
 
             function inventory.getItemDetail(name)

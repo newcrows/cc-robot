@@ -118,7 +118,7 @@ return function(robot, meta, constants)
                     end
 
                     if not found then
-                        error("side " .. side .. " not accepted for " .. proxy.name)
+                        error("side " .. side .. " not accepted for " .. proxy.name, 0)
                     end
                 end
 

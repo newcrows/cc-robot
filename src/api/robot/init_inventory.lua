@@ -242,7 +242,7 @@ return function(robot, meta, constants)
 
         local function setSlot(id, name, count)
             if id < 1 or id > 16 then
-                error("id must be in range 1 <= id <= 16")
+                error("id must be in range 1 <= id <= 16", 0)
             end
 
             count = count or 1
