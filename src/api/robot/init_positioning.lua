@@ -77,6 +77,8 @@ return function(robot, meta, constants)
         end
     end
 
+    -- TODO [JM] in the same style as dropHelper / suckHelper
+    -- -> immediately try to process all slots containing acceptedFuels until none found or requiredLevel met
     local function refuelTo(requiredLevel)
         if nativeTurtle.getFuelLevel() >= requiredLevel then
             return true
@@ -218,6 +220,12 @@ return function(robot, meta, constants)
         return turnHelper(nativeTurtle.turnLeft, -1, count)
     end
 
+    -- TODO [JM] rework this to just stupidly move toward peripheral{x,y,z}
+    -- -> if path_warning and target is peripheral and obstruction{x,y,z} == peripheral{x,y,z}
+    --      call e.stopRequire()
+    -- -> much cleaner code this way
+    -- -> customerPeripheral.sides must still be respected, as does the optional "side" argument
+    --      used by moveTo(peripheral, side) to move the robot so that robot.side faces the peripheral
     function robot.moveTo(x, y, z, facing)
         if type(x) == "table" then
             local side = y
