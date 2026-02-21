@@ -146,6 +146,12 @@ return function(_, meta)
     -- NOTE: e must still carry e.alreadyWarned, we need that prop!
     -- NOTE: e.alreadyWarned, e.cancelRequire, e.getRequireArgs only exist if the event is a meta.require event
     --  any other event does not have those (duh)
+    -- NOTE: e.name should be the dispatched event name
+    -- i.E. e.name == "path_warning" in this case
+    -- this IS a default event prop and always exists
+    -- -> we do this because maybe we change the signature of meta.addEventListener
+    -- i.E. meta.addEventListener("path_warning", callback)
+    -- -> this is MUCH more aligned with the standard javascript way of doing things and I like that way
     function meta.require(check, get, warning)
         if type(check) ~= "function" then
             error("check must be a function", 0)
