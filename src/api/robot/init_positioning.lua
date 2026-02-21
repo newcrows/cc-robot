@@ -2,53 +2,54 @@ return function(robot, meta, constants)
     local DELTAS = constants.deltas
     local FACING_INDEX = constants.facing_index
     local FACINGS = constants.facings
+    local SIDES = constants.sides
+    local SIDE_INDEX = constants.side_index
     local OPPOSITE_FACINGS = constants.opposite_facings
+    local FUEL_LEVEL_WARNING = "fuel_level_warning"
+    local PATH_WARNING = "path_warning"
+    local FUEL_SAFETY_MARGIN = math.min(nativeTurtle.getFuelLimit() / 10 * 2, 1000)
 
     robot.x, robot.y, robot.z = 0, 0, 0
     robot.facing = FACINGS.north
 
     local acceptedFuels = {}
-    local fuelWarningListenerId
-    local fuelWarningClearedListenerId
+
+    local function face(facing)
+        local diff = (FACING_INDEX[facing] - FACING_INDEX[robot.facing]) % 4
+
+        if diff == 1 then
+            nativeTurtle.turnRight()
+        elseif diff == 2 then
+            nativeTurtle.turnRight()
+            nativeTurtle.turnRight()
+        elseif diff == 3 then
+            nativeTurtle.turnLeft()
+        end
+
+        robot.facing = facing
+    end
 
     local function moveHelper(moveFunc, delta, count, blocking)
-        if type(count) == "function" or type(count) == "boolean" then
-            blocking = count
-            count = 1
-        else
-            count = count or 1
-        end
-
-        meta.requireFuelLevel(count)
-
         local moved = 0
-        while moved < count do
-            local waited = false
 
-            while not moveFunc() do
-                if blocking then
-                    if waited then
-                        os.sleep(1)
-                    end
-
-                    if type(blocking) == "function" then
-                        blocking()
-                    end
-
-                    waited = true
-                else
-                    return moved, "movement obstructed"
-                end
-            end
-
-            robot.x = robot.x + delta.x
-            robot.y = robot.y + delta.y
-            robot.z = robot.z + delta.z
-
-            moved = moved + 1
-            meta.softUnwrapAll()
+        local function check()
+            return moved >= count
         end
 
+        local function tick()
+            if moveFunc() then
+                robot.x = robot.x + delta.x
+                robot.y = robot.y + delta.y
+                robot.z = robot.z + delta.z
+
+                moved = moved + 1
+                meta.softUnwrapAll()
+
+                return true
+            end
+        end
+
+        meta.try(check, tick, blocking)
         return moved
     end
 
@@ -67,7 +68,6 @@ return function(robot, meta, constants)
         return count
     end
 
-    -- TODO [JM] consume up to <reserved count> number of fuel in one go
     local function refuel(name, count)
         local slot = meta.selectFirstSlot(name, true)
 
@@ -78,6 +78,10 @@ return function(robot, meta, constants)
     end
 
     local function refuelTo(requiredLevel)
+        if nativeTurtle.getFuelLevel() >= requiredLevel then
+            return true
+        end
+
         for name, reserveCount in pairs(acceptedFuels) do
             local availableCount = math.min(robot.getReservedItemCount(name), reserveCount)
             refuel(name, availableCount)
@@ -90,64 +94,76 @@ return function(robot, meta, constants)
         return false
     end
 
-    local function move(dfb, dud, drl, blocking)
-        if type(dfb) == "function" or type(dfb) == "boolean" then
-            blocking, dfb, dud, drl = dfb, 0, 0, 0
-        elseif type(dud) == "function" or type(dud) == "boolean" then
-            blocking, dud, drl = dud, 0, 0
-        elseif type(drl) == "function" or type(drl) == "boolean" then
-            blocking, drl = drl, 0
-        end
-
-        dfb, dud, drl = dfb or 0, dud or 0, drl or 0
-
-        local function wrap(d_dfb, d_dud, d_drl)
-            if type(blocking) == "function" then
-                local c_dfb = d_dfb > 0 and 1 or (d_dfb < 0 and -1 or 0)
-                local c_dud = d_dud > 0 and 1 or (d_dud < 0 and -1 or 0)
-                local c_drl = d_drl > 0 and 1 or (d_drl < 0 and -1 or 0)
-
-                return function()
-                    blocking(c_dfb, c_dud, c_drl)
-                end
-            end
-
-            return blocking
-        end
-
-        local dfbBlocking = wrap(dfb, 0, 0)
-        local dudBlocking = wrap(0, dud, 0)
-        local drlBlocking = wrap(0, 0, drl)
-
-        local forward = robot.forward
-        local back = robot.back
-        local up = robot.up
-        local down = robot.down
-        local turnRight = robot.turnRight
-        local turnLeft = robot.turnLeft
-
-        local m_dfb = dfb > 0 and forward(dfb, dfbBlocking) or -back(-dfb, dfbBlocking)
-        if m_dfb ~= dfb then
-            return m_dfb, 0, 0
-        end
-
-        local m_dud = dud > 0 and up(dud, dudBlocking) or -down(-dud, dudBlocking)
-        if m_dud ~= dud then
-            return m_dfb, m_dud, 0
-        end
-
-        local _ = drl > 0 and turnRight() or (drl < 0 and turnLeft())
-        local m_drl = drl > 0 and forward(drl, drlBlocking) or -forward(-drl, drlBlocking)
-
-        return m_dfb, m_dud, m_drl
-    end
-
     local function clamp(val)
         return math.max(-1, math.min(1, val))
     end
 
-    -- TODO [JM] fix the warning dispatch logic
-    -- make it work like item_warning and equipment_warning, much cleaner loops
+    local function moveX(targetFacing, dx, callback)
+        if dx ~= 0 then
+            local facing = dx > 0 and FACINGS.east or FACINGS.west
+
+            if facing ~= targetFacing then
+                return true
+            end
+
+            face(facing)
+            robot.forward(math.abs(dx), function()
+                callback(robot.x + clamp(dx), robot.y, robot.z, facing)
+            end)
+        end
+
+        return true
+    end
+
+    local function moveY(targetFacing, dy, callback)
+        if dy ~= 0 then
+            local facing = dy > 0 and FACINGS.up or FACINGS.down
+            if facing ~= targetFacing then
+                return true
+            end
+
+            local moveFunc = dy > 0 and robot.up or robot.down
+            moveFunc(math.abs(dy), function()
+                callback(robot.x, robot.y + clamp(dy), robot.z, facing)
+            end)
+        end
+
+        return true
+    end
+
+    local function moveZ(targetFacing, dz, callback)
+        if dz ~= 0 then
+            local facing = dz > 0 and FACINGS.south or FACINGS.north
+
+            if facing ~= targetFacing then
+                return true
+            end
+
+            face(facing)
+            robot.forward(math.abs(dz), function()
+                callback(robot.x, robot.y, robot.z + clamp(dz), facing)
+            end)
+        end
+
+        return true
+    end
+
+    local function moveInOrder(order, blocking)
+        for _, entry in ipairs(order) do
+            entry[1](entry[2], entry[3], blocking)
+        end
+    end
+
+    local function getKeys(table)
+        local keys = {}
+
+        for key in pairs(table) do
+            keys[#keys + 1] = key
+        end
+
+        return keys
+    end
+
     function meta.requireFuelLevel(requiredLevel)
         if not next(acceptedFuels) then
             error("no accepted fuels configured! use robot.setFuel() first.", 0)
@@ -157,27 +173,17 @@ return function(robot, meta, constants)
             error("requiredLevel is bigger than turtle.getFuelLimit()!", 0)
         end
 
-        local level = nativeTurtle.getFuelLevel()
-        local waited = false
+        requiredLevel = math.min(requiredLevel + FUEL_SAFETY_MARGIN, nativeTurtle.getFuelLimit())
 
-        while level < requiredLevel do
-            if refuelTo(requiredLevel) then
-                if waited then
-                    meta.dispatchEvent("fuel_warning_cleared")
-                end
-
-                return
-            end
-
-            if waited then
-                os.sleep(1)
-            end
-
-            level = nativeTurtle.getFuelLevel()
-            meta.dispatchEvent("fuel_warning", level, requiredLevel, acceptedFuels, waited)
-
-            waited = true
+        local function check()
+            return refuelTo(requiredLevel)
         end
+
+        local function get()
+            return nativeTurtle.getFuelLevel(), requiredLevel, acceptedFuels
+        end
+
+        meta.require(check, get, FUEL_LEVEL_WARNING)
     end
 
     function robot.forward(count, blocking)
@@ -205,23 +211,50 @@ return function(robot, meta, constants)
         return turnHelper(nativeTurtle.turnLeft, -1, count)
     end
 
-    function robot.moveTo(x, y, z, blocking)
+    function robot.moveTo(x, y, z, facing)
         if type(x) == "table" then
-            local name = x.name
-
-            blocking = y
+            local side = y
             x, y, z = x.x, x.y, x.z
 
-            if name then
-                local ox, oy, oz = x - robot.x, y - robot.y, z - robot.z
+            if not side then
+                local customPeripheral = meta.getCustomPeripheralDetail(x.name)
 
-                if ox ~= 0 then
-                    x = x - clamp(ox)
-                elseif oy ~= 0 then
-                    y = y - clamp(oy)
-                elseif oz ~= 0 then
-                    z = z - clamp(oz)
+                if customPeripheral then
+                    local sides = customPeripheral.sides
+
+                    if sides then
+                        side = sides[1]
+                    end
                 end
+            end
+
+            local ox, oy, oz = robot.x - x, robot.y - y, robot.z - z
+
+            if side and side ~= SIDES.top and side ~= SIDES.bottom then
+                local willFace
+
+                if ox == 0 and oz ~= 0 then
+                    willFace = oz < 0 and FACINGS.south or FACINGS.north
+                elseif cx ~= 0 then
+                    willFace = ox < 0 and FACINGS.east or FACINGS.west
+                end
+
+                local facingI = (FACING_INDEX[willFace] - SIDE_INDEX[side]) % 4
+                facing = FACING_INDEX[facingI]
+            elseif side == SIDES.top then
+                oy = -1
+            elseif side == SIDES.bottom then
+                oy = 1
+            end
+
+            local cx, cy, cz = clamp(ox), clamp(oy), clamp(oz)
+
+            if cy ~= 0 then
+                y = y + cy
+            elseif cx ~= 0 then
+                x = x + cx
+            elseif cz ~= 0 then
+                z = z + cz
             end
         end
 
@@ -229,122 +262,42 @@ return function(robot, meta, constants)
         local dy = (y or robot.y) - robot.y
         local dz = (z or robot.z) - robot.z
 
-        local function wrap()
-            if type(blocking) ~= "function" then
-                return blocking
+        meta.requireFuelLevel(math.abs(dx) + math.abs(dy) + math.abs(dz))
+
+        local order = {
+            { moveY, FACINGS.up, dy },
+            { moveX, FACINGS.east, dx },
+            { moveZ, FACINGS.north, dz },
+            { moveZ, FACINGS.south, dz },
+            { moveX, FACINGS.west, dx },
+            { moveY, FACINGS.down, dy }
+        }
+        local blocking = function(tx, ty, tz, tf)
+            local function check()
+                local detectFuncs = {
+                    [FACINGS.up] = nativeTurtle.detectUp,
+                    [FACINGS.down] = nativeTurtle.detectDown,
+                }
+
+                local detectFunc = detectFuncs[tf] or nativeTurtle.detect
+                return not detectFunc()
             end
 
-            return function(dfb, dud)
-                if dud ~= 0 then
-                    return blocking(0, dud > 0 and 1 or -1, 0)
-                end
-
-                if dfb > 0 then
-                    local d = constants.deltas[robot.facing]
-                    return blocking(d.x, 0, d.z)
-                end
-            end
-        end
-
-        local moveBlocking = wrap()
-        local forward = robot.forward
-        local face = robot.face
-
-        local function move_x(targetFacing)
-            if dx ~= 0 then
-                local facing = dx > 0 and FACINGS.east or FACINGS.west
-
-                if facing ~= targetFacing then
-                    return true
-                end
-
-                face(facing)
-
-                local moved = forward(math.abs(dx), moveBlocking)
-                if moved ~= math.abs(dx) then
-                    return false
-                end
+            local function get()
+                -- the obstructing block's coordinates, NOT the turtle's coordinates
+                return tx, ty, tz
             end
 
-            return true
+            meta.require(check, get, PATH_WARNING)
         end
 
-        local function move_y(targetFacing)
-            if dy ~= 0 then
-                local facing = dy > 0 and FACINGS.up or FACINGS.down
+        moveInOrder(order, blocking)
 
-                if facing ~= targetFacing then
-                    return true
-                end
-
-                local _, m_dud = move(0, dy, 0, moveBlocking)
-                if m_dud ~= dy then
-                    return false
-                end
-            end
-
-            return true
+        if facing then
+            face(facing)
         end
 
-        local function move_z(targetFacing)
-            if dz ~= 0 then
-                local facing = dz > 0 and FACINGS.south or FACINGS.north
-
-                if facing ~= targetFacing then
-                    return true
-                end
-
-                face(facing)
-
-                local moved = forward(math.abs(dz), moveBlocking)
-                if moved ~= math.abs(dz) then
-                    return false
-                end
-            end
-
-            return true
-        end
-
-        if not move_x(FACINGS.east) then
-            return robot.x, robot.y, robot.z
-        end
-
-        if not move_y(FACINGS.up) then
-            return robot.x, robot.y, robot.z
-        end
-
-        if not move_z(FACINGS.north) then
-            return robot.x, robot.y, robot.z
-        end
-
-        if not move_z(FACINGS.south) then
-            return robot.x, robot.y, robot.z
-        end
-
-        if not move_y(FACINGS.down) then
-            return robot.x, robot.y, robot.z
-        end
-
-        if not move_x(FACINGS.west) then
-            return robot.x, robot.y, robot.z
-        end
-
-        return robot.x, robot.y, robot.z
-    end
-
-    function robot.face(facing)
-        local diff = (FACING_INDEX[facing] - FACING_INDEX[robot.facing]) % 4
-
-        if diff == 1 then
-            nativeTurtle.turnRight()
-        elseif diff == 2 then
-            nativeTurtle.turnRight()
-            nativeTurtle.turnRight()
-        elseif diff == 3 then
-            nativeTurtle.turnLeft()
-        end
-
-        robot.facing = facing
+        return robot.x, robot.y, robot.z, robot.facing
     end
 
     function robot.setFuel(name, reserveCount)
@@ -369,32 +322,6 @@ return function(robot, meta, constants)
         end
     end
 
-    function robot.onFuelWarning(callback)
-        if fuelWarningListenerId then
-            meta.removeEventListener(fuelWarningListenerId)
-            fuelWarningListenerId = nil
-        end
-
-        if callback then
-            fuelWarningListenerId = meta.addEventListener({
-                fuel_warning = callback
-            })
-        end
-    end
-
-    function robot.onFuelWarningCleared(callback)
-        if fuelWarningClearedListenerId then
-            meta.removeEventListener(fuelWarningClearedListenerId)
-            fuelWarningClearedListenerId = nil
-        end
-
-        if callback then
-            fuelWarningClearedListenerId = meta.addEventListener({
-                fuel_warning_cleared = callback
-            })
-        end
-    end
-
     function robot.getFuelLevel()
         return nativeTurtle.getFuelLevel()
     end
@@ -402,4 +329,47 @@ return function(robot, meta, constants)
     function robot.getFuelLimit()
         return nativeTurtle.getFuelLimit()
     end
+
+    function robot.onFuelLevelWarning(callback)
+        meta.on(FUEL_LEVEL_WARNING, callback)
+    end
+
+    function robot.onFuelLevelWarningCleared(callback)
+        meta.on(FUEL_LEVEL_WARNING .. "_cleared", callback)
+    end
+
+    function robot.onPathWarning(callback)
+        meta.on(PATH_WARNING, callback)
+    end
+
+    function robot.onPathWarningCleared(callback)
+        meta.on(PATH_WARNING .. "_cleared", callback)
+    end
+
+    local lastSeenLevel
+    robot.onFuelLevelWarning(function(alreadyWarned, level, requiredLevel)
+        if not alreadyWarned or lastSeenLevel ~= level then
+            local acceptedNames = getKeys(acceptedFuels)
+
+            print("---- " .. FUEL_LEVEL_WARNING .. " ----")
+            print("level = " .. level)
+            print("requiredLevel = " .. requiredLevel)
+            print("acceptedFuels = [" .. table.concat(acceptedNames, ", ") .. "]")
+
+            lastSeenLevel = level
+        end
+    end)
+    robot.onFuelLevelWarningCleared(function()
+        print("---- " .. FUEL_LEVEL_WARNING .. "_cleared ----")
+    end)
+
+    robot.onPathWarning(function(alreadyWarned, x, y, z)
+        if not alreadyWarned then
+            print("---- " .. PATH_WARNING .. " ----")
+            print("path is obstructed at (" .. x .. ", " .. y .. ", " .. z .. ")")
+        end
+    end)
+    robot.onPathWarningCleared(function()
+        print("---- " .. PATH_WARNING .. "_cleared ----")
+    end)
 end

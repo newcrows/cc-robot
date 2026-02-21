@@ -1,21 +1,25 @@
----- local functions ----
+---- LOCAL FUNCTIONS ----
 local function loadConstructors()
 local function getNameFor(side)
 local function getPositionFor(side)
 local function getKeyFor(x, y, z)
 local function getSideFor(facing)
 local function softWrap(key, proxy)
+local function check()
+local function get()
 local function createProxy(x, y, z, name)
 local function wrapHelper(x, y, z, wrapAs)
 local function unwrapHelper(x, y, z)
+local function getValues(table)
+local function getEntries(table, keyAlias, valueAlias)
 
----- meta functions ----
+---- META FUNCTIONS ----
 meta.getPeripheralConstructorDetail(name)
 meta.listPeripheralConstructors()
 meta.softUnwrap(side)
 meta.softUnwrapAll()
 
----- robot functions ----
+---- ROBOT FUNCTIONS ----
 robot.wrap(x, y, z, wrapAs)
 robot.wrapUp(wrapAs)
 robot.wrapDown(wrapAs)
@@ -24,4 +28,6 @@ robot.unwrapUp()
 robot.unwrapDown()
 robot.getPeripheralDetail(x, y, z)
 robot.listPeripherals()
+robot.onPeripheralWarning(callback)
+robot.onPeripheralWarningCleared(callback)
 

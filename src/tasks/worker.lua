@@ -1,6 +1,6 @@
 local tasksDir = "%INSTALL_DIR%/tasks"
-local configFile = "%STARTUP_DIR%/task.config"
-local task = {}
+local configFile = "%STARTUP_DIR%/worker.task.config"
+local worker = {}
 
 local function writeConfigFile(name, opts)
     local file = fs.open(configFile, "w")
@@ -29,33 +29,26 @@ local function processRequirements(req)
         return
     end
 
-    -- NOTE [JM] default fuel is coal_block because it has high fuel value per stack
-    if req.acceptedFuels then
-        robot.setFuel(req.acceptedFuels)
-    else
-        robot.setFuel("minecraft:coal_block", 64)
-    end
-
-    if req.fuelLevel then
-        robot.meta.requireFuelLevel(req.fuelLevel)
-    end
-
     if req.equipment then
         for _, name in ipairs(req.equipment) do
-            robot.meta.requireEquipment(name)
+            robot.requireEquipment(name)
             robot.reserve(name, 1) -- mock reserve equipment
         end
     end
 
+    if req.fuelLevel then
+        robot.requireFuelLevel(req.fuelLevel)
+    end
+
     if req.itemCount then
         for name, count in pairs(req.itemCount) do
-            robot.meta.requireItemCount(name, count)
+            robot.requireItemCount(name, count)
         end
     end
 
     if req.itemSpace then
         for name, space in pairs(req.itemSpace) do
-            robot.meta.requireItemSpace(name, space)
+            robot.requireItemSpace(name, space)
             robot.reserve(name, space) -- mock reserve to see whether all needed items fit together
         end
     end
@@ -100,7 +93,7 @@ local function runProtected(_task, opts, ctrl)
     return "finished"
 end
 
-function task.run(name, opts)
+function worker.run(name, opts, reloadGlobals)
     if not opts.resumed then
         writeConfigFile(name, opts)
         print("run: " .. name, table.unpack(opts))
@@ -112,34 +105,51 @@ function task.run(name, opts)
         tick = function(progress)
             local percentage = math.floor(progress * 100)
             print(percentage .. "% complete")
-
-            -- potential SIG_TERM or something can be process here when
-            -- using the remote "task api" of tasks/worker.lua
-            -- nothing else is supported but reporting progress
-            -- and using ctrl internals of worker to manage terminating tasks
         end
     }
 
     local _task = require(tasksDir .. "/" .. name)
 
-    if not opts.resumed then
-        processRequirements(_task.requirements)
+    if reloadGlobals then
+        _G.robot = require("%INSTALL_DIR%/api/robot")
     end
 
-    opts.robot = require("%INSTALL_DIR%/api/robot")
+    processRequirements(_task.requirements)
+
     local result = runProtected(_task.run, opts, ctrl)
 
     removeConfigFile()
     print(result .. ": " .. name, table.unpack(opts))
 end
 
-function task.resume()
+function worker.resume()
     if fs.exists(configFile) then
         local config = readConfigFile()
         config.opts.resumed = true
 
-        task.run(config.name, config.opts)
+        worker.run(config.name, config.opts)
     end
 end
 
-return task
+return {
+    requirements = {
+        equipment = {
+            "computercraft:wireless_modem_normal",
+            "minecraft:compass"
+        }
+    },
+    run = function(opts, ctrl)
+        worker.resume()
+
+        -- _G.robot injected by startup (or by task api called with #reloadGlobals)
+        local modem = robot.equip("computercraft:wireless_modem_normal")
+        local compass = robot.equip("minecraft:compass")
+
+        -- refresh position data
+        modem.use()
+        robot.x, robot.y, robot.z = gps.locate()
+        robot.facing = compass.getFacing()
+
+        -- TODO [JM] wait for new tasks via rednet here
+    end
+}

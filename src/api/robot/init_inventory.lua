@@ -1,8 +1,9 @@
 return function(robot, meta, constants)
+    local ITEM_COUNT_WARNING = "item_count_warning"
+    local ITEM_SPACE_WARNING = "item_space_warning"
+
     local selectedName
     local reservedSpaces = {}
-    local spaceWarningListenerId
-    local spaceWarningClearedListenerId
 
     local function compact()
         for targetSlot = 1, 15 do
@@ -64,27 +65,16 @@ return function(robot, meta, constants)
         return reservedEmptySlots
     end
 
-    local function waitForSpace(check)
-        local checked = check()
-        local waited = false
-
-        if checked then
-            return
+    function meta.requireItemCount(name, count)
+        local function check()
+            return robot.hasItemCount(name, count)
         end
 
-        while not checked do
-            if waited then
-                compact()
-                os.sleep(1)
-            end
-
-            meta.dispatchEvent("item_warning", check, waited)
-
-            checked = check()
-            waited = true
+        local function get()
+            return check, name, count, getStackSize(name)
         end
 
-        meta.dispatchEvent("item_warning_cleared")
+        meta.require(check, get, ITEM_COUNT_WARNING)
     end
 
     function meta.requireItemSpace(name, space)
@@ -92,7 +82,11 @@ return function(robot, meta, constants)
             return robot.hasItemSpace(name, space)
         end
 
-        waitForSpace(check)
+        local function get()
+            return check, name, space, getStackSize(name)
+        end
+
+        meta.require(check, get, ITEM_SPACE_WARNING)
     end
 
     function meta.requireItemSpaceForUnknown(stackSize, space)
@@ -100,7 +94,11 @@ return function(robot, meta, constants)
             return robot.hasItemSpaceForUnknown(stackSize, space)
         end
 
-        waitForSpace(check)
+        local function get()
+            return check, "unknown", space, stackSize
+        end
+
+        meta.require(check, get, "space_warning")
     end
 
     function meta.listSlots(name, limit, includeReservedItems)
@@ -244,7 +242,7 @@ return function(robot, meta, constants)
 
         local function setSlot(id, name, count)
             if id < 1 or id > 16 then
-                error("id must be in range 1 <= id <= 16")
+                error("id must be in range 1 <= id <= 16", 0)
             end
 
             count = count or 1
@@ -319,32 +317,6 @@ return function(robot, meta, constants)
         return layoutFunc(setSlot, clearSlot)
     end
 
-    function robot.onItemWarning(callback)
-        if spaceWarningListenerId then
-            meta.removeEventListener(spaceWarningListenerId)
-            spaceWarningListenerId = nil
-        end
-
-        if callback then
-            spaceWarningListenerId = meta.addEventListener({
-                item_warning = callback
-            })
-        end
-    end
-
-    function robot.onItemWarningCleared(callback)
-        if spaceWarningClearedListenerId then
-            meta.removeEventListener(spaceWarningClearedListenerId)
-            spaceWarningClearedListenerId = nil
-        end
-
-        if callback then
-            spaceWarningClearedListenerId = meta.addEventListener({
-                item_warning_cleared = callback
-            })
-        end
-    end
-
     function robot.select(name)
         selectedName = name
     end
@@ -398,11 +370,13 @@ return function(robot, meta, constants)
         return robot.getItemSpace(name) >= (space or 1)
     end
 
+    -- TODO [JM] generic get space for unknown must still work after new select logic implemented
     function robot.getItemSpaceForUnknown(stackSize)
         local emptySlots = meta.listEmptySlots()
         return #emptySlots * (stackSize or getStackSize())
     end
 
+    -- TODO [JM] generic has space for unknown must still work after new select logic implemented
     function robot.hasItemSpaceForUnknown(stackSize, space)
         return robot.getItemSpaceForUnknown(stackSize) > (space or 0)
     end
@@ -412,21 +386,18 @@ return function(robot, meta, constants)
         local names = {}
 
         for _, slot in pairs(slots) do
-            local detail = nativeTurtle.getItemDetail(slot.id)
-
-            if detail then
-                names[detail.name] = true
-            end
+            names[slot.name] = true
         end
 
         local arr = {}
 
         for name, _ in pairs(names) do
-            local detail = robot.getItemDetail(name)
+            local count = meta.countItems(name)
 
-            if detail then
-                table.insert(arr, detail)
-            end
+            table.insert(arr, {
+                name = name,
+                count = count
+            })
         end
 
         return arr
@@ -448,6 +419,7 @@ return function(robot, meta, constants)
         reservedSpaces[name] = (reservedSpaces[name] or 0) - (space or getStackSize(name))
     end
 
+    -- TODO [JM] obsolete when new select logic with  *, @items, @reserved is implemented
     function robot.getReservedItemDetail(name)
         name = name or selectedName
         local count = robot.getReservedItemCount(name)
@@ -459,6 +431,7 @@ return function(robot, meta, constants)
         return { name = name, count = count }
     end
 
+    -- TODO [JM] obsolete when new select logic with  *, @items, @reserved is implemented
     function robot.getReservedItemCount(name)
         name = name or selectedName
 
@@ -468,11 +441,13 @@ return function(robot, meta, constants)
         return total - free
     end
 
+    -- TODO [JM] obsolete when new select logic with  *, @items, @reserved is implemented
     function robot.hasReservedItemCount(name, count)
         name = name or selectedName
         return robot.getReservedItemCount(name) >= (count or 1)
     end
 
+    -- TODO [JM] obsolete when new select logic with  *, @items, @reserved is implemented
     function robot.getReservedItemSpace(name)
         name = name or selectedName
 
@@ -480,11 +455,13 @@ return function(robot, meta, constants)
         return reservedSpaces[name] - count
     end
 
+    -- TODO [JM] obsolete when new select logic with  *, @items, @reserved is implemented
     function robot.hasReservedItemSpace(name, space)
         name = name or selectedName
         return robot.getReservedItemSpace(name) >= (space or 1)
     end
 
+    -- TODO [JM] obsolete when new select logic with  *, @items, @reserved is implemented
     function robot.listReservedItems()
         local arr = {}
 
@@ -498,4 +475,51 @@ return function(robot, meta, constants)
 
         return arr
     end
+
+    function robot.onItemCountWarning(callback)
+        meta.on(ITEM_COUNT_WARNING, callback)
+    end
+
+    function robot.onItemCountWarningCleared(callback)
+        meta.on(ITEM_COUNT_WARNING .. "_cleared", callback)
+    end
+
+    function robot.onItemSpaceWarning(callback)
+        meta.on(ITEM_SPACE_WARNING, callback)
+    end
+
+    function robot.onItemSpaceWarningCleared(callback)
+        meta.on(ITEM_SPACE_WARNING .. "_cleared", callback)
+    end
+
+    local lastSeenCount
+    robot.onItemCountWarning(function(alreadyWarned, _, name, count)
+        if not alreadyWarned or lastSeenCount ~= count then
+            print("---- " .. ITEM_COUNT_WARNING .. " ----")
+            print("need " .. count .. " of " .. name)
+
+            lastSeenCount = count
+        end
+    end)
+    robot.onItemCountWarningCleared(function()
+        print("---- " .. ITEM_COUNT_WARNING .. "_cleared ----")
+    end)
+
+    local lastSeenSpace
+    robot.onItemSpaceWarning(function(alreadyWarned, _, name, space)
+        if not alreadyWarned or lastSeenSpace ~= space then
+            print("---- " .. ITEM_SPACE_WARNING .. " ----")
+
+            if name == "unknown" then
+                print("need space for " .. space .. " unknown items")
+            else
+                print("need space for " .. space .. " " .. name)
+            end
+
+            lastSeenSpace = space
+        end
+    end)
+    robot.onItemSpaceWarningCleared(function()
+        print("---- " .. ITEM_SPACE_WARNING .. "_cleared ----")
+    end)
 end

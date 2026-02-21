@@ -3,19 +3,20 @@
   "post_install": "post_install.lua",
   "files": [
     "api/robot/init.lua",
+    "api/robot/init_constants.lua",
+    "api/robot/init_core.lua",
     "api/robot/init_equipment.lua",
-    "api/robot/init_events.lua",
     "api/robot/init_inventory.lua",
     "api/robot/init_misc.lua",
     "api/robot/init_peripherals.lua",
     "api/robot/init_positioning.lua",
     "api/robot/init_turtle.lua",
     "api/task/init.lua",
-    "peripherals/chest.lua",
+    "peripherals/inventory.lua",
     "peripherals/dig_tool.lua",
-    "peripherals/me_bridge.lua",
     "startup/init.lua",
     "tasks/simple.lua",
+    "tasks/worker.lua",
     "task.lua"
   ]
 }

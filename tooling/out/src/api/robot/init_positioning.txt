@@ -1,31 +1,38 @@
----- local functions ----
+---- LOCAL FUNCTIONS ----
 local function moveHelper(moveFunc, delta, count, blocking)
+local function check()
+local function tick()
 local function turnHelper(turnFunc, direction, count)
 local function refuel(name, count)
 local function refuelTo(requiredLevel)
-local function move(dfb, dud, drl, blocking)
-local function wrap(d_dfb, d_dud, d_drl)
 local function clamp(val)
-local function wrap()
-local function move_x(targetFacing)
-local function move_y(targetFacing)
-local function move_z(targetFacing)
+local function moveX(targetFacing, dx, callback)
+local function moveY(targetFacing, dy, callback)
+local function moveZ(targetFacing, dz, callback)
+local function moveInOrder(order, blocking)
+local function getKeys(table)
+local function check()
+local function get()
+local function check()
+local function get()
 
----- meta functions ----
+---- META FUNCTIONS ----
 meta.requireFuelLevel(requiredLevel)
 
----- robot functions ----
+---- ROBOT FUNCTIONS ----
 robot.forward(count, blocking)
 robot.back(count, blocking)
 robot.up(count, blocking)
 robot.down(count, blocking)
 robot.turnRight(count)
 robot.turnLeft(count)
-robot.moveTo(x, y, z, blocking)
+robot.moveTo(x, y, z)
 robot.face(facing)
 robot.setFuel(name, reserveCount)
-robot.onFuelWarning(callback)
-robot.onFuelWarningCleared(callback)
 robot.getFuelLevel()
 robot.getFuelLimit()
+robot.onFuelLevelWarning(callback)
+robot.onFuelLevelWarningCleared(callback)
+robot.onPathWarning(callback)
+robot.onPathWarningCleared(callback)
 

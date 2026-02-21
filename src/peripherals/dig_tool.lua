@@ -1,33 +1,37 @@
-return {
-    names = {
-        "minecraft:diamond_pickaxe",
-        "minecraft:diamond_axe",
-        "minecraft:diamond_shovel"
-    },
-    constructor = function(opts)
-        local meta = opts.meta
+return function(_, meta)
+    return {
+        names = {
+            "minecraft:diamond_pickaxe",
+            "minecraft:diamond_axe",
+            "minecraft:diamond_shovel"
+        },
+        constructor = function()
+            local function digHelper(digFunc, blocking)
+                local ok
 
-        -- TODO [JM] implement blocking
-        local function digHelper(digFunc, blocking)
-            if digFunc() then
-                meta.softUnwrapAll()
+                local function check()
+                    return ok
+                end
 
-                return true
+                local function tick()
+                    ok = digFunc()
+                end
+
+                meta.try(check, tick, blocking)
+                return ok
             end
 
-            return false
+            return {
+                dig = function(blocking)
+                    return digHelper(nativeTurtle.dig, blocking)
+                end,
+                digUp = function(blocking)
+                    return digHelper(nativeTurtle.digUp, blocking)
+                end,
+                digDown = function(blocking)
+                    return digHelper(nativeTurtle.digDown, blocking)
+                end
+            }
         end
-
-        return {
-            dig = function(blocking)
-                return digHelper(nativeTurtle.dig, blocking)
-            end,
-            digUp = function(blocking)
-                return digHelper(nativeTurtle.digUp, blocking)
-            end,
-            digDown = function(blocking)
-                return digHelper(nativeTurtle.digDown, blocking)
-            end
-        }
-    end
-}
+    }
+end

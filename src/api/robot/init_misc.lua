@@ -14,42 +14,55 @@ return function(robot, meta, constants)
     end
 
     local function placeHelper(placeFunc, name, blocking)
-        if type(name) == "boolean" or type(name) == "function" then
-            blocking, name = name, robot.getSelectedName()
+        local placed = false
+
+        local function check()
+            return placed
         end
 
-        if not name then
-            error("name must not be nil", 0)
-        end
-
-        local success = false
-        local waited = false
-
-        while not success do
-            success = meta.selectFirstSlot(name)
-
-            if success then
-                success = placeFunc()
+        local function tick()
+            if meta.selectFirstSlot(name) then
+                placed = placeFunc()
             end
+        end
 
-            if not success then
-                if blocking then
-                    if waited then
-                        os.sleep(1)
+        meta.try(check, tick, blocking)
+        return placed
+    end
+
+    local function dropHelper_0(dropFunc, name, remaining)
+        local continue = true
+
+        local function check()
+            return not continue or remaining == 0
+        end
+
+        local function tick()
+            local detail = meta.getFirstSlot(name)
+            local didDropSomething = false
+
+            if detail then
+                local amountToDrop = math.min(detail.count, remaining)
+                local before = physicalCountAll()
+
+                nativeTurtle.select(detail.id)
+
+                if dropFunc(amountToDrop) then
+                    local after = physicalCountAll()
+
+                    if after ~= before then
+                        didDropSomething = true
+                        remaining = remaining + (after - before)
                     end
-
-                    if type(blocking) == "function" then
-                        blocking()
-                    end
-
-                    waited = true
-                else
-                    return false
                 end
             end
+
+            continue = didDropSomething
+            return didDropSomething
         end
 
-        return true
+        meta.try(check, tick, true)
+        return remaining
     end
 
     local function dropHelper(dropFunc, name, count, blocking)
@@ -63,40 +76,19 @@ return function(robot, meta, constants)
             error("name must not be nil", 0)
         end
 
-        local remaining = count or robot.getItemCount(name)
-        local amount = remaining
-        local waited = false
+        local totalAmount = count or robot.getItemCount(name)
+        local remaining = totalAmount
 
-        while remaining > 0 do
-            local slotInfo = meta.getFirstSlot(name)
-            local amountToDrop = 0
-
-            if slotInfo then
-                local currentInSlot = slotInfo.count
-                amountToDrop = math.min(currentInSlot, remaining)
-            end
-
-            if amountToDrop > 0 and dropFunc(amountToDrop) then
-                remaining = remaining - amountToDrop
-                waited = false
-            else
-                if blocking then
-                    if waited then
-                        os.sleep(1)
-                    end
-
-                    if type(blocking) == "function" then
-                        blocking()
-                    end
-
-                    waited = true
-                else
-                    return amount - remaining
-                end
-            end
+        local function check()
+            return remaining <= 0
         end
 
-        return amount
+        local function tick()
+            remaining = dropHelper_0(dropFunc, name, remaining)
+        end
+
+        meta.try(check, tick, blocking)
+        return totalAmount - remaining
     end
 
     local function compareHelper(inspectFunc, name)
@@ -113,8 +105,36 @@ return function(robot, meta, constants)
         else
             return name == "air" or name == "minecraft:air"
         end
+    end
 
-        return false
+    local function suckHelper_0(suckFunc, remaining)
+        local continue = true
+
+        local function check()
+            return not continue or remaining == 0
+        end
+
+        local function tick()
+            local didSuckSomething = false
+
+            local amountToSuck = math.min(constants.default_stack_size, remaining)
+            local before = physicalCountAll()
+
+            if suckFunc(amountToSuck) then
+                local after = physicalCountAll()
+
+                if after ~= before then
+                    didSuckSomething = true
+                    remaining = remaining + (before - after)
+                end
+            end
+
+            continue = didSuckSomething
+            return didSuckSomething
+        end
+
+        meta.try(check, tick, true)
+        return remaining
     end
 
     local function suckHelper(suckFunc, count, blocking)
@@ -122,48 +142,22 @@ return function(robot, meta, constants)
             blocking, count = count, nil
         end
 
-        local totalSucked = 0
-        local waited = false
-        local stackSize = constants.default_stack_size
+        local totalAmount = count or 9999
+        local remaining = totalAmount
 
-        while (count and totalSucked < count) or (not count and countEmptySlots() > 0) or (blocking and totalSucked == 0) do
-            local nextAmount = count and math.min(stackSize, count - totalSucked) or stackSize
+        local function check()
+            local conditionA = count and remaining == 0
+            local conditionB = count == 9999 and countEmptySlots() == 0
 
-            local before = physicalCountAll()
-            local success = suckFunc(nextAmount)
-
-            if success then
-                local after = physicalCountAll()
-                local amount = after - before
-
-                totalSucked = totalSucked + amount
-                waited = false
-
-                if count and totalSucked >= count then
-                    return totalSucked
-                end
-            else
-                if blocking then
-                    if countEmptySlots() <= 0 then
-                        return totalSucked
-                    end
-
-                    if waited then
-                        os.sleep(1)
-                    end
-
-                    if type(blocking) == "function" then
-                        blocking()
-                    end
-
-                    waited = true
-                else
-                    return totalSucked
-                end
-            end
+            return conditionA or conditionB
         end
 
-        return totalSucked
+        local function tick()
+            remaining = suckHelper_0(suckFunc, remaining)
+        end
+
+        meta.try(check, tick, blocking)
+        return totalAmount - remaining
     end
 
     function robot.place(name, blocking)

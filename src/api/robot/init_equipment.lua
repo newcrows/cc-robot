@@ -16,11 +16,10 @@ return function(robot, meta, constants)
         missing = "missing",
         no_space = "no_space"
     }
+    local EQUIPMENT_WARNING = "equipment_warning"
 
     local proxies = {}
     local nextSide = SIDES.right
-    local equipmentWarningListenerId
-    local equipmentWarningClearedListenerId
 
     local function getEquippedSide(name)
         local rightDetail = nativeTurtle.getEquippedRight()
@@ -61,14 +60,11 @@ return function(robot, meta, constants)
     local function softWrap(side, proxy)
         local target = peripheral.wrap(side)
 
-        local constructorDetail = meta.getPeripheralConstructorDetail(proxy.name)
+        local constructorDetail = meta.getCustomPeripheralDetail(proxy.name)
         local constructor = constructorDetail and constructorDetail.constructor or nil
 
         if constructor then
             local opts = {
-                robot = robot,
-                meta = meta,
-                constants = constants,
                 name = proxy.name,
                 side = side,
                 target = target
@@ -81,34 +77,20 @@ return function(robot, meta, constants)
         proxy.target = target
     end
 
-    local function checkEquipment(check, state, name)
-        local checked = check()
-        local waited = false
-
-        if checked then
-            return
+    local function requireItemToEquip(name)
+        local function check()
+            return meta.selectFirstSlot(name, true)
         end
 
-        while not checked do
-            if waited then
-                os.sleep(1)
-            end
-
-            meta.dispatchEvent("equipment_warning", state, name, waited)
-
-            checked = check()
-            waited = true
+        local function get()
+            return STATE.missing, name
         end
 
-        meta.dispatchEvent("equipment_warning_cleared")
+        meta.require(check, get, EQUIPMENT_WARNING)
     end
 
     local function equipAndSoftWrap(side, proxy)
-        local function check()
-            return meta.selectFirstSlot(proxy.name, true)
-        end
-
-        checkEquipment(check, STATE.missing, proxy.name)
+        requireItemToEquip(proxy.name)
 
         local equipFunc = side == SIDES.right and nativeTurtle.equipRight or nativeTurtle.equipLeft
         equipFunc()
@@ -122,6 +104,21 @@ return function(robot, meta, constants)
 
         softWrap(side, proxy)
         nextSide = OPPOSITE_SIDES[nextSide]
+    end
+
+    local function requireSpaceToUnequip(name)
+        local function check()
+            -- Versucht einen leeren Slot zu finden und auszuwählen
+            return meta.selectFirstEmptySlot(true)
+        end
+
+        local function get()
+            -- Übergibt den Status 'no_space' und den Namen des Items,
+            -- das eigentlich abgelegt werden soll
+            return STATE.no_space, name
+        end
+
+        meta.require(check, get, EQUIPMENT_WARNING)
     end
 
     local function createProxy(name, pinned)
@@ -179,11 +176,7 @@ return function(robot, meta, constants)
                 error("can't unuse pinned equipment", 0)
             end
 
-            local function check()
-                return meta.selectFirstEmptySlot(true)
-            end
-
-            checkEquipment(check, STATE.no_space, proxy.name)
+            requireSpaceToUnequip(proxy.name)
 
             local equipFunc = proxy.side == SIDES.right and nativeTurtle.equipRight or nativeTurtle.equipLeft
             equipFunc()
@@ -231,6 +224,30 @@ return function(robot, meta, constants)
         return proxy
     end
 
+    function meta.requireEquipment(name)
+        local function check()
+            local rightDetail = nativeTurtle.getEquippedRight()
+
+            if rightDetail and rightDetail.name == name then
+                return true
+            end
+
+            local leftDetail = nativeTurtle.getEquippedLeft()
+
+            if leftDetail and leftDetail.name == name then
+                return true
+            end
+
+            return meta.selectFirstSlot(name, true)
+        end
+
+        local function get()
+            return STATE.missing, name
+        end
+
+        meta.require(check, get, EQUIPMENT_WARNING)
+    end
+
     function robot.equip(name, pinned)
         name = name or robot.getSelectedName()
 
@@ -257,6 +274,10 @@ return function(robot, meta, constants)
     end
 
     function robot.unequip(name)
+        if type(name) == "table" then
+            name = name.name
+        end
+
         name = name or robot.getSelectedName()
         local proxy = proxies[name]
 
@@ -272,28 +293,25 @@ return function(robot, meta, constants)
     end
 
     function robot.onEquipmentWarning(callback)
-        if equipmentWarningListenerId then
-            meta.removeEventListener(equipmentWarningListenerId)
-            equipmentWarningListenerId = nil
-        end
-
-        if callback then
-            equipmentWarningListenerId = meta.addEventListener({
-                equipment_warning = callback
-            })
-        end
+        meta.on(EQUIPMENT_WARNING, callback)
     end
 
     function robot.onEquipmentWarningCleared(callback)
-        if equipmentWarningClearedListenerId then
-            meta.removeEventListener(equipmentWarningClearedListenerId)
-            equipmentWarningClearedListenerId = nil
-        end
-
-        if callback then
-            equipmentWarningClearedListenerId = meta.addEventListener({
-                equipment_warning_cleared = callback
-            })
-        end
+        meta.on(EQUIPMENT_WARNING .. "_cleared", callback)
     end
+
+    robot.onEquipmentWarning(function(alreadyWarned, state, name)
+        if not alreadyWarned then
+            print("---- " .. EQUIPMENT_WARNING .. " ----")
+
+            if state == STATE.missing then
+                print("missing: " .. name .. " (please insert)")
+            elseif state == STATE.no_space then
+                print("no space for " .. name .. " (please clear)")
+            end
+        end
+    end)
+    robot.onEquipmentWarningCleared(function()
+        print("---- " .. EQUIPMENT_WARNING .. "_cleared ----")
+    end)
 end

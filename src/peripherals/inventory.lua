@@ -1,19 +1,110 @@
--- TODO [JM] rename this to "inventory.lua" and implement the generic inventory api
--- then use names = {"chest", "barrel", etc..} to register this for all inventory-like peripherals
-return {
-    name = "minecraft:chest",
-    constructor = function(opts)
-        local side = opts.side
+return function(robot, meta, constants)
+    local SIDES = constants.sides
 
-        return {
-            info = function()
-                if not peripheral.isPresent(side) then
-                    print("I am not present")
-                    return
+    return {
+        name = "minecraft:chest",
+        sides = {
+            SIDES.front,
+            SIDES.top,
+            SIDES.bottom
+        },
+        constructor = function(opts)
+            local side = opts.side
+            local target = opts.target
+
+            local inventory = {}
+
+            local function listSlots(name, limit)
+                name = name or robot.getSelectedName()
+                limit = limit or target.size()
+                local slots = {}
+
+                for i = 1, target.size() do
+                    local detail = target.getItemDetail(i)
+
+                    if detail and (not name or detail.name == name) then
+                        local count = detail.count
+
+                        if count > 0 then
+                            table.insert(slots, {
+                                id = i,
+                                name = detail.name,
+                                count = count
+                            })
+                        end
+
+                        if #slots >= limit then
+                            return slots
+                        end
+                    end
+                end
+                return slots
+            end
+
+            local function countItems(name)
+                local count = 0
+                local slots = meta.listSlots(name)
+
+                for _, slot in ipairs(slots) do
+                    count = count + slot.count
                 end
 
-                print("I am a chest on " .. side)
+                return count
             end
-        }
-    end
-}
+
+            function inventory.import(name, count, blocking)
+                local dropFunc = ({
+                    front = robot.drop,
+                    top = robot.dropUp,
+                    bottom = robot.dropDown
+                })[side]
+
+                if not dropFunc then
+                    error("can not robot.drop() to side " .. side, 0)
+                end
+
+                return dropFunc(name, count, blocking)
+            end
+
+            function inventory.export(name, count, blocking)
+                error("inventory.export is not implemented yet", 0)
+            end
+
+            function inventory.getItemDetail(name)
+                name = name or robot.getSelectedName()
+                local count = countItems(name)
+
+                if count > 0 then
+                    return {
+                        name = name,
+                        count = count
+                    }
+                end
+            end
+
+            function inventory.listItems()
+                local slots = listSlots()
+                local names = {}
+
+                for _, slot in pairs(slots) do
+                    names[slot.name] = true
+                end
+
+                local arr = {}
+
+                for name, _ in pairs(names) do
+                    local count = countItems(name)
+
+                    table.insert(arr, {
+                        name = name,
+                        count = count
+                    })
+                end
+
+                return arr
+            end
+
+            return inventory
+        end
+    }
+end

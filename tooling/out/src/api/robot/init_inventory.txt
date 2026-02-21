@@ -1,14 +1,18 @@
----- local functions ----
+---- LOCAL FUNCTIONS ----
 local function compact()
 local function getStackSize(name)
 local function countReservedEmptySlots()
-local function waitForSpace(check)
 local function check()
+local function get()
 local function check()
+local function get()
+local function check()
+local function get()
 local function setSlot(id, name, count)
 local function clearSlot(id)
 
----- meta functions ----
+---- META FUNCTIONS ----
+meta.requireItemCount(name, count)
 meta.requireItemSpace(name, space)
 meta.requireItemSpaceForUnknown(stackSize, space)
 meta.listSlots(name, limit, includeReservedItems)
@@ -20,9 +24,7 @@ meta.selectFirstEmptySlot(includeReservedItems)
 meta.countItems(name, includeReservedItems)
 meta.arrangeSlots(layoutFunc)
 
----- robot functions ----
-robot.onItemWarning(callback)
-robot.onItemWarningCleared(callback)
+---- ROBOT FUNCTIONS ----
 robot.select(name)
 robot.getSelectedName()
 robot.getItemDetail(name)
@@ -41,4 +43,8 @@ robot.hasReservedItemCount(name, count)
 robot.getReservedItemSpace(name)
 robot.hasReservedItemSpace(name, space)
 robot.listReservedItems()
+robot.onItemCountWarning(callback)
+robot.onItemCountWarningCleared(callback)
+robot.onItemSpaceWarning(callback)
+robot.onItemSpaceWarningCleared(callback)
 

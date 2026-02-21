@@ -1,31 +1,36 @@
 return function(robot, meta, constants)
+    local FACINGS = constants.facings
     local FACING_INDEX = constants.facing_index
     local SIDE_INDEX = constants.side_index
     local SIDES = constants.sides
     local DELTAS = constants.deltas
+    local PERIPHERAL_WARNING = "peripheral_warning"
     local RAW_PROPERTIES = {
         x = true,
         y = true,
         z = true,
         name = true,
+        side = true,
         target = true
     }
 
-    local constructors = {}
+    local customPeripherals = {}
     local proxies = {}
     local softProxies = {}
 
-    local function loadConstructors()
+    local function loadCustomPeripherals()
         local dir = "%INSTALL_DIR%/peripherals"
         local files = fs.list(dir)
 
         for _, file in ipairs(files) do
             local cleanFile = string.gsub(file, "%.lua$", "")
-            local detail = require(fs.combine(dir, cleanFile))
+            local init = require("/" .. fs.combine(dir, cleanFile))
+
+            local detail = type(init) == "function" and init(robot, meta, constants) or init
             local names = detail.names or { detail.name }
 
             for _, name in ipairs(names) do
-                constructors[name] = detail.constructor
+                customPeripherals[name] = detail
             end
         end
     end
@@ -69,6 +74,12 @@ return function(robot, meta, constants)
     end
 
     local function getSideFor(facing)
+        if facing == FACINGS.up then
+            return SIDES.top
+        elseif facing == FACINGS.down then
+            return SIDES.bottom
+        end
+
         local facingI = FACING_INDEX[facing]
         local robotFacingI = FACING_INDEX[robot.facing]
 
@@ -82,33 +93,60 @@ return function(robot, meta, constants)
         local facing = FACING_INDEX[deltaKey]
 
         if not facing then
-            error("could not soft wrap", 0)
+            error("peripheral is not in range", 0)
         end
 
-        local side = getSideFor(facing)
-        local target = peripheral.wrap(side)
+        local function check()
+            local side = getSideFor(facing)
+            local target = peripheral.wrap(side)
 
-        local constructor = constructors[proxy.name]
+            if not target then
+                return false
+            end
 
-        if constructor then
-            local opts = {
-                robot = robot,
-                meta = meta,
-                constants = constants,
-                name = proxy.name,
-                x = proxy.x,
-                y = proxy.y,
-                z = proxy.z,
-                facing = facing,
-                side = side,
-                target = target
-            }
+            local customPeripheral = customPeripherals[proxy.name]
 
-            target = constructor(opts)
+            if customPeripheral then
+                if customPeripheral.sides then
+                    local found = false
+
+                    for _, acceptedSide in pairs(customPeripheral.sides) do
+                        if acceptedSide == side then
+                            found = true
+                            break
+                        end
+                    end
+
+                    if not found then
+                        error("side " .. side .. " not accepted for " .. proxy.name, 0)
+                    end
+                end
+
+                local opts = {
+                    name = proxy.name,
+                    side = side,
+                    target = target,
+                    facing = facing,
+                    x = proxy.x,
+                    y = proxy.y,
+                    z = proxy.z
+                }
+
+                target = customPeripheral.constructor(opts)
+            end
+
+            proxy.side = side
+            proxy.target = target
+
+            softProxies[key] = proxy
+            return true
         end
 
-        proxy.target = target
-        softProxies[key] = proxy
+        local function get()
+            return proxy.x, proxy.y, proxy.z, proxy.name
+        end
+
+        meta.require(check, get, PERIPHERAL_WARNING)
     end
 
     local function createProxy(x, y, z, name)
@@ -130,7 +168,11 @@ return function(robot, meta, constants)
                     end
 
                     if not softProxies[key] then
-                        softWrap(key, proxies[key])
+                        softWrap(key, proxy)
+                    end
+
+                    if not peripheral.isPresent(proxy.side) then
+                        softWrap(key, proxy)
                     end
 
                     return proxy.target[prop](...)
@@ -155,7 +197,6 @@ return function(robot, meta, constants)
 
         if type(x) == "table" then
             if x.name then
-                print("rewrap " .. x.name .. " at (" .. x.x .. ", " .. x.y .. ", " .. x.z .. ")")
                 local key = getKeyFor(x.x, x.y, x.z)
                 proxies[key] = x
 
@@ -185,11 +226,9 @@ return function(robot, meta, constants)
                 error("already wrapped as something else", 0)
             end
 
-            print("return " .. name .. " at (" .. x .. ", " .. y .. ", " .. z .. ")")
             return proxy
         end
 
-        print("create " .. name .. " at (" .. x .. ", " .. y .. ", " .. z .. ")")
         return createProxy(x, y, z, name)
     end
 
@@ -210,37 +249,31 @@ return function(robot, meta, constants)
         if proxy then
             softProxies[key] = nil
             proxies[key] = nil
-
-            print("unwrap " .. proxy.name .. " at (" .. x .. ", " .. y .. ", " .. z .. ")")
         end
 
         return true
     end
 
-    function meta.getPeripheralConstructorDetail(name)
-        name = name or robot.getSelectedName()
+    local function getValues(table)
+        local values = {}
 
-        return {
-            name = name,
-            constructor = constructors[name]
-        }
-    end
-
-    function meta.listPeripheralConstructors()
-        local arr = {}
-
-        for name, constructor in pairs(constructors) do
-            table.insert(arr, {
-                name = name,
-                constructor = constructor
-            })
+        for _, value in pairs(table) do
+            values[#values + 1] = value
         end
 
-        return arr
+        return values
     end
 
-    -- NOTE [JM] should use meta.softUnwrapAll for better performance, peripherals auto-soft-wrap anyway
-    -- this function just exists for consistency
+    function meta.getCustomPeripheralDetail(name)
+        name = name or robot.getSelectedName()
+
+        return customPeripherals[name]
+    end
+
+    function meta.listCustomPeripherals()
+        return getValues(customPeripherals)
+    end
+
     function meta.softUnwrap(side)
         side = side or SIDES.front
 
@@ -278,17 +311,38 @@ return function(robot, meta, constants)
         return unwrapHelper(SIDES.bottom)
     end
 
-    -- TODO [JM] implement this in a useful manner, like accepting {x,y,z} and {x,y,z,name} as well
-    -- should probably support getWrappedPeripheralDetail(SIDE) too
-    -- if peripheral doesn't exist in proxies, return nil (like all other getDetail() functions)
     function robot.getPeripheralDetail(x, y, z)
+        x = x or SIDES.front
 
+        if type(x) == "string" then
+            x, y, z = getPositionFor(x)
+        end
+
+        local key = getKeyFor(x, y, z)
+        return proxies[key]
     end
 
-    -- TODO [JM] implement, array with entries like getPeripheralDetail() for all known peripherals
     function robot.listPeripherals()
-
+        return getValues(proxies)
     end
 
-    loadConstructors()
+    function robot.onPeripheralWarning(callback)
+        meta.on(PERIPHERAL_WARNING, callback)
+    end
+
+    function robot.onPeripheralWarningCleared(callback)
+        meta.on(PERIPHERAL_WARNING .. "_cleared", callback)
+    end
+
+    robot.onPeripheralWarning(function(alreadyWarned, x, y, z, name)
+        if not alreadyWarned then
+            print("---- " .. PERIPHERAL_WARNING .. " ----")
+            print("missing " .. name .. " at (" .. x .. ", " .. y .. ", " .. z .. ")")
+        end
+    end)
+    robot.onPeripheralWarningCleared(function()
+        print("---- " .. PERIPHERAL_WARNING .. "_cleared ----")
+    end)
+
+    loadCustomPeripherals()
 end
