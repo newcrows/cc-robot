@@ -208,6 +208,7 @@ return function(robot, meta, constants)
     -- robot.moveTo(FACINGS.north) // robot turns north
     -- robot.moveTo(1, 2, 3, FACINGS.east) // robot moves and then turns north
     -- robot.moveTo(chest) // moves to the chest and connects (picks the closest position next to chest)
+    --  -> we might need "valid sides" or something in peripherals/inventory.lua for this to work correctly
     -- robot.moveTo(chest, FACINGS.east) // robot faces east to connect
     -- robot.moveTo(chest, SIDES.front) // connects on robot front side (picks the closest position next to chest)
     function robot.moveTo(x, y, z)
