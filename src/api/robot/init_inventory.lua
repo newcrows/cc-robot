@@ -515,28 +515,34 @@ return function(robot, meta, constants)
         meta.on(ITEM_SPACE_WARNING .. "_cleared", callback)
     end
 
+    local lastMissingCount
     robot.onItemCountWarning(function(e)
         local alreadyWarned = e.alreadyWarned
         local name = e.detail.name
         local missingCount = e.detail.missingCount
 
-        if not alreadyWarned then
+        if not alreadyWarned or lastMissingCount ~= missingCount then
             print("---- " .. ITEM_COUNT_WARNING .. " ----")
             print("missing " .. missingCount .. " of " .. name)
+
+            lastMissingCount = missingCount
         end
     end)
     robot.onItemCountWarningCleared(function()
         print("---- " .. ITEM_COUNT_WARNING .. "_cleared ----")
     end)
 
+    local lastMissingSpace
     robot.onItemSpaceWarning(function(e)
         local alreadyWarned = e.alreadyWarned
         local name = e.detail.name
         local missingSpace = e.detail.missingSpace
 
-        if not alreadyWarned then
+        if not alreadyWarned or lastMissingSpace ~= missingSpace then
             print("---- " .. ITEM_SPACE_WARNING .. " ----")
             print("missing " .. missingSpace .. " space for " .. name)
+
+            lastMissingSpace = missingSpace
         end
     end)
     robot.onItemSpaceWarningCleared(function()
