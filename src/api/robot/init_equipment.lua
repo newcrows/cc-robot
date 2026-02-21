@@ -276,6 +276,9 @@ return function(robot, meta, constants)
         return createProxy(name, pinned)
     end
 
+    -- TODO [JM] support robot.unequip(proxy) as well so we can do:
+    -- local pickaxe = robot.equip("minecraft:diamond_pickaxe")
+    -- robot.unequip(pickaxe)
     function robot.unequip(name)
         name = name or robot.getSelectedName()
         local proxy = proxies[name]
