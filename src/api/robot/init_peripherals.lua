@@ -143,10 +143,19 @@ return function(robot, meta, constants)
         end
 
         local function get()
-            return proxy.x, proxy.y, proxy.z, proxy.name
+            return {
+                name = proxy.name,
+                x = proxy.x,
+                y = proxy.y,
+                z = proxy.z
+            }
         end
 
-        meta.require(check, get, PERIPHERAL_WARNING)
+        local function constructor(detail)
+            return meta.createEvent(PERIPHERAL_WARNING, detail)
+        end
+
+        meta.require(check, get, constructor)
     end
 
     local function createProxy(x, y, z, name)
