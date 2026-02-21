@@ -65,18 +65,33 @@ return function(robot, meta, constants)
         return reservedEmptySlots
     end
 
+    -- TODO [JM] make sure this works!
     function meta.requireItemCount(name, count)
+        -- this is the loop condition (and pre checked once to avoid waiting 1 second immediately)
         local function check()
             return robot.hasItemCount(name, count)
         end
 
+        -- this is called every tick so you can update e.detail (or other event fields)
         local function get()
-            return check, name, count, getStackSize(name)
+            return {
+                name = name,
+                missingCount = count - robot.getItemCount(name)
+            }
         end
 
-        meta.require(check, get, ITEM_COUNT_WARNING)
+        -- this constructs events based von get() == detail result
+        -- called once per tick, must always create a new event instance
+        -- meta.createEvent creates an event that supports {name, detail, meta, stopPropagation}
+        -- and you should always use it to construct bare events you can then enrich with custom fields
+        local function constructor(detail)
+            return meta.createEvent(ITEM_COUNT_WARNING, detail)
+        end
+
+        meta.require(check, get, constructor)
     end
 
+    -- TODO [JM] refactor to new event system
     function meta.requireItemSpace(name, space)
         local function check()
             return robot.hasItemSpace(name, space)
@@ -89,6 +104,7 @@ return function(robot, meta, constants)
         meta.require(check, get, ITEM_SPACE_WARNING)
     end
 
+    -- TODO [JM] refactor to new event system
     function meta.requireItemSpaceForUnknown(stackSize, space)
         local function check()
             return robot.hasItemSpaceForUnknown(stackSize, space)
@@ -492,6 +508,8 @@ return function(robot, meta, constants)
         meta.on(ITEM_SPACE_WARNING .. "_cleared", callback)
     end
 
+    -- TODO [JM] implicitly pass e.detail.missingCount (or something like that)
+    -- instead of remembering lastSeenCount here (which doesnt work anyway, btw)
     local lastSeenCount
     robot.onItemCountWarning(function(alreadyWarned, _, name, count)
         if not alreadyWarned or lastSeenCount ~= count then
