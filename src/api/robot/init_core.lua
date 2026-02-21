@@ -51,10 +51,10 @@ return function(_, meta)
     end
 
     function meta.dispatchEvent(e)
-        local callbacks = callbacks[e.name]
+        local e_callbacks = callbacks[e.name]
 
-        if callbacks then
-            for _, callback in ipairs(callbacks) do
+        if e_callbacks then
+            for _, callback in ipairs(e_callbacks) do
                 callback(e)
 
                 if e.meta.stopped then
