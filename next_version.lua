@@ -200,3 +200,5 @@ local detail = {
     }
 }
 -- -> should work like this
+
+-- branch is now named "advanced_selectors"
