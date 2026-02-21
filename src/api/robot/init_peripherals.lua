@@ -343,10 +343,10 @@ return function(robot, meta, constants)
         meta.on(PERIPHERAL_WARNING .. "_cleared", callback)
     end
 
-    robot.onPeripheralWarning(function(alreadyWarned, x, y, z, name)
-        if not alreadyWarned then
+    robot.onPeripheralWarning(function(e)
+        if not e.alreadyWarned then
             print("---- " .. PERIPHERAL_WARNING .. " ----")
-            print("missing " .. name .. " at (" .. x .. ", " .. y .. ", " .. z .. ")")
+            print("missing " .. e.name .. " at (" .. e.x .. ", " .. e.y .. ", " .. e.z .. ")")
         end
     end)
     robot.onPeripheralWarningCleared(function()
