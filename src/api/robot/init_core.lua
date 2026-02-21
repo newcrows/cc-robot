@@ -146,6 +146,7 @@ return function(_, meta)
         end
 
         local function tick()
+            -- nop
         end
 
         meta.try(checkRequire, tick, blocking)
