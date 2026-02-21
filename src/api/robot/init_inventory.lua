@@ -417,6 +417,7 @@ return function(robot, meta, constants)
         reservedSpaces[name] = (reservedSpaces[name] or 0) - (space or getStackSize(name))
     end
 
+    -- TODO [JM] obsolete when new select logic with  *, @items, @reserved is implemented
     function robot.getReservedItemDetail(name)
         name = name or selectedName
         local count = robot.getReservedItemCount(name)
@@ -428,6 +429,7 @@ return function(robot, meta, constants)
         return { name = name, count = count }
     end
 
+    -- TODO [JM] obsolete when new select logic with  *, @items, @reserved is implemented
     function robot.getReservedItemCount(name)
         name = name or selectedName
 
@@ -437,11 +439,13 @@ return function(robot, meta, constants)
         return total - free
     end
 
+    -- TODO [JM] obsolete when new select logic with  *, @items, @reserved is implemented
     function robot.hasReservedItemCount(name, count)
         name = name or selectedName
         return robot.getReservedItemCount(name) >= (count or 1)
     end
 
+    -- TODO [JM] obsolete when new select logic with  *, @items, @reserved is implemented
     function robot.getReservedItemSpace(name)
         name = name or selectedName
 
@@ -449,11 +453,13 @@ return function(robot, meta, constants)
         return reservedSpaces[name] - count
     end
 
+    -- TODO [JM] obsolete when new select logic with  *, @items, @reserved is implemented
     function robot.hasReservedItemSpace(name, space)
         name = name or selectedName
         return robot.getReservedItemSpace(name) >= (space or 1)
     end
 
+    -- TODO [JM] obsolete when new select logic with  *, @items, @reserved is implemented
     function robot.listReservedItems()
         local arr = {}
 
