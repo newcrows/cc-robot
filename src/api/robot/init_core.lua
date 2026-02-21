@@ -110,9 +110,6 @@ return function(_, meta)
         end
     end
 
-    -- TODO [JM] events are now created with constructor() which must return instance of createEvent
-    -- all custom event props can be specified in the constructor
-    -- this includes e.stopRequire, e.getRequireArgs, alreadyWarned, etc.
     function meta.require(check, get, constructor)
         if type(check) ~= "function" then
             error("check must be a function", 0)

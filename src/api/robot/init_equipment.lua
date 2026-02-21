@@ -21,6 +21,13 @@ return function(robot, meta, constants)
     local proxies = {}
     local nextSide = SIDES.right
 
+    local function eventConstructor(detail)
+        local e = meta.createEvent(EQUIPMENT_WARNING)
+        e.detail = detail
+
+        return e
+    end
+
     local function getEquippedSide(name)
         local rightDetail = nativeTurtle.getEquippedRight()
 
@@ -83,10 +90,10 @@ return function(robot, meta, constants)
         end
 
         local function get()
-            return STATE.missing, name
+            return { state = STATE.missing, name = name }
         end
 
-        meta.require(check, get, EQUIPMENT_WARNING)
+        meta.require(check, get, eventConstructor)
     end
 
     local function equipAndSoftWrap(side, proxy)
@@ -113,12 +120,10 @@ return function(robot, meta, constants)
         end
 
         local function get()
-            -- Übergibt den Status 'no_space' und den Namen des Items,
-            -- das eigentlich abgelegt werden soll
-            return STATE.no_space, name
+            return { state = STATE.no_space, name = name }
         end
 
-        meta.require(check, get, EQUIPMENT_WARNING)
+        meta.require(check, get, eventConstructor)
     end
 
     local function createProxy(name, pinned)
@@ -242,10 +247,10 @@ return function(robot, meta, constants)
         end
 
         local function get()
-            return STATE.missing, name
+            return { state = STATE.missing, name = name }
         end
 
-        meta.require(check, get, EQUIPMENT_WARNING)
+        meta.require(check, get, eventConstructor)
     end
 
     function robot.equip(name, pinned)
