@@ -60,7 +60,7 @@ return function(robot, meta, constants)
     local function softWrap(side, proxy)
         local target = peripheral.wrap(side)
 
-        local constructorDetail = meta.getPeripheralConstructorDetail(proxy.name)
+        local constructorDetail = meta.getCustomPeripheralDetail(proxy.name)
         local constructor = constructorDetail and constructorDetail.constructor or nil
 
         if constructor then

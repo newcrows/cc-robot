@@ -264,13 +264,13 @@ return function(robot, meta, constants)
         return values
     end
 
-    function meta.getPeripheralConstructorDetail(name)
+    function meta.getCustomPeripheralDetail(name)
         name = name or robot.getSelectedName()
 
         return customPeripherals[name]
     end
 
-    function meta.listPeripheralConstructors()
+    function meta.listCustomPeripherals()
         return getValues(customPeripherals)
     end
 

@@ -216,33 +216,45 @@ return function(robot, meta, constants)
             local side = y
             x, y, z = x.x, x.y, x.z
 
-            local ox, oy, oz = x - robot.x, y - robot.y, z - robot.z
+            if not side then
+                local customPeripheral = meta.getCustomPeripheralDetail(x.name)
+
+                if customPeripheral then
+                    local sides = customPeripheral.sides
+
+                    if sides then
+                        side = sides[1]
+                    end
+                end
+            end
+
+            local ox, oy, oz = robot.x - x, robot.y - y, robot.z - z
 
             if side and side ~= SIDES.top and side ~= SIDES.bottom then
                 local willFace
 
                 if ox == 0 and oz ~= 0 then
-                    willFace = oz > 0 and FACINGS.south or FACINGS.north
+                    willFace = oz < 0 and FACINGS.south or FACINGS.north
                 elseif cx ~= 0 then
-                    willFace = ox > 0 and FACINGS.east or FACINGS.west
+                    willFace = ox < 0 and FACINGS.east or FACINGS.west
                 end
 
-                local facingI = (FACING_INDEX[willFace] + SIDE_INDEX[side]) % 4
+                local facingI = (FACING_INDEX[willFace] - SIDE_INDEX[side]) % 4
                 facing = FACING_INDEX[facingI]
             elseif side == SIDES.top then
-                oy = oy + 1
+                oy = -1
             elseif side == SIDES.bottom then
-                oy = oy - 1
+                oy = 1
             end
 
             local cx, cy, cz = clamp(ox), clamp(oy), clamp(oz)
 
-            if cx ~= 0 then
-                x = x - cx
-            elseif cy ~= 0 then
-                y = y - cy
+            if cy ~= 0 then
+                y = y + cy
+            elseif cx ~= 0 then
+                x = x + cx
             elseif cz ~= 0 then
-                z = z - cz
+                z = z + cz
             end
         end
 
