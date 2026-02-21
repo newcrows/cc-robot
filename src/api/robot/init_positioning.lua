@@ -300,14 +300,14 @@ return function(robot, meta, constants)
             end
 
             local function constructor(detail)
-                local e = meta.createEvent(PATH_WARNING, detail)
+                local event = meta.createEvent(PATH_WARNING, detail)
 
-                e.targetX = x
-                e.targetY = y
-                e.targetZ = z
-                e.targetFacing = facing
+                event.targetX = x
+                event.targetY = y
+                event.targetZ = z
+                event.targetFacing = facing
 
-                return e
+                return event
             end
 
             meta.require(check, get, constructor)
