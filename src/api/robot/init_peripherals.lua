@@ -344,9 +344,15 @@ return function(robot, meta, constants)
     end
 
     robot.onPeripheralWarning(function(e)
-        if not e.alreadyWarned then
+        local alreadyWarned = e.alreadyWarned
+        local name = e.detail.name
+        local x = e.detail.x
+        local y = e.detail.y
+        local z = e.detail.z
+
+        if not alreadyWarned then
             print("---- " .. PERIPHERAL_WARNING .. " ----")
-            print("missing " .. e.name .. " at (" .. e.x .. ", " .. e.y .. ", " .. e.z .. ")")
+            print("missing " .. name .. " at (" .. x .. ", " .. y .. ", " .. z .. ")")
         end
     end)
     robot.onPeripheralWarningCleared(function()
