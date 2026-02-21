@@ -126,13 +126,18 @@ return function(_, meta)
 
         local dispatched
         local name
+        local stopped
+
+        local function checkRequire()
+            return stopped or check()
+        end
 
         local function blocking()
             local e = constructor(get())
 
             e.alreadyWarned = dispatched
             e.stopRequire = function()
-                -- stop evaluating and return from current meta.require call
+               stopped = true
             end
 
             meta.dispatchEvent(e)
@@ -144,7 +149,7 @@ return function(_, meta)
         local function tick()
         end
 
-        meta.try(check, tick, blocking)
+        meta.try(checkRequire, tick, blocking)
 
         if dispatched then
             local e = meta.createEvent(name .. "_cleared")
