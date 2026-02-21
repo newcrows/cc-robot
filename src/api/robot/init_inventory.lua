@@ -65,14 +65,11 @@ return function(robot, meta, constants)
         return reservedEmptySlots
     end
 
-    -- TODO [JM] make sure this works!
     function meta.requireItemCount(name, count)
-        -- this is the loop condition (and pre checked once to avoid waiting 1 second immediately)
         local function check()
             return robot.hasItemCount(name, count)
         end
 
-        -- this is called every tick so you can update e.detail (or other event fields)
         local function get()
             return {
                 name = name,
@@ -80,12 +77,6 @@ return function(robot, meta, constants)
             }
         end
 
-        -- this constructs events based von get() == detail result
-        -- called once per tick, must always create a new event instance
-        -- meta.createEvent creates an event that has the props: {name, detail, meta, stopPropagation}
-        -- and you should always use it to construct bare events
-        -- you can then enrich it with custom props
-        -- meta.require adds the following additional props to e: {alreadyWarned, stopRequire}
         local function constructor(detail)
             return meta.createEvent(ITEM_COUNT_WARNING, detail)
         end
@@ -93,30 +84,44 @@ return function(robot, meta, constants)
         meta.require(check, get, constructor)
     end
 
-    -- TODO [JM] refactor to new event system
     function meta.requireItemSpace(name, space)
         local function check()
             return robot.hasItemSpace(name, space)
         end
 
         local function get()
-            return check, name, space, getStackSize(name)
+            return {
+                name = name,
+                missingSpace = space - robot.getItemSpace(name),
+                stackSize = getStackSize(name)
+            }
         end
 
-        meta.require(check, get, ITEM_SPACE_WARNING)
+        local function constructor(detail)
+            return meta.createEvent(ITEM_SPACE_WARNING, detail)
+        end
+
+        meta.require(check, get, constructor)
     end
 
-    -- TODO [JM] refactor to new event system
     function meta.requireItemSpaceForUnknown(stackSize, space)
         local function check()
             return robot.hasItemSpaceForUnknown(stackSize, space)
         end
 
         local function get()
-            return check, "unknown", space, stackSize
+            return {
+                name = "unknown",
+                missingSpace = space - robot.getItemSpaceForUnknown(stackSize),
+                stackSize = stackSize
+            }
         end
 
-        meta.require(check, get, "space_warning")
+        local function constructor(detail)
+            return meta.createEvent(ITEM_SPACE_WARNING, detail)
+        end
+
+        meta.require(check, get, constructor)
     end
 
     function meta.listSlots(name, limit, includeReservedItems)
