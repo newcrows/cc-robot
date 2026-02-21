@@ -7,6 +7,8 @@
 -- -> inventory (i.E. chest) needs to use robot.drop / robot.suck
 -- -> drop/suck only work on front, top and bottom of the robot
 -- -> so we generally constrict sides to {front, top, bottom} of robot
+-- -> this makes it work correctly with peripheral#softWrap() and robot.moveTo(peripheral)
+-- TODO [JM] peripheral#softWrap() must throw error when robot side not in sides
 return function(robot, meta, constants)
     local SIDES = constants.sides
 
