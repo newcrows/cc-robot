@@ -515,33 +515,28 @@ return function(robot, meta, constants)
         meta.on(ITEM_SPACE_WARNING .. "_cleared", callback)
     end
 
-    -- TODO [JM] implicitly pass e.detail.missingCount (or something like that)
-    -- instead of remembering lastSeenCount here (which doesnt work anyway, btw)
-    local lastSeenCount
-    robot.onItemCountWarning(function(alreadyWarned, _, name, count)
-        if not alreadyWarned or lastSeenCount ~= count then
-            print("---- " .. ITEM_COUNT_WARNING .. " ----")
-            print("need " .. count .. " of " .. name)
+    robot.onItemCountWarning(function(e)
+        local alreadyWarned = e.alreadyWarned
+        local name = e.detail.name
+        local missingCount = e.detail.missingCount
 
-            lastSeenCount = count
+        if not alreadyWarned then
+            print("---- " .. ITEM_COUNT_WARNING .. " ----")
+            print("missing " .. missingCount .. " of " .. name)
         end
     end)
     robot.onItemCountWarningCleared(function()
         print("---- " .. ITEM_COUNT_WARNING .. "_cleared ----")
     end)
 
-    local lastSeenSpace
-    robot.onItemSpaceWarning(function(alreadyWarned, _, name, space)
-        if not alreadyWarned or lastSeenSpace ~= space then
+    robot.onItemSpaceWarning(function(e)
+        local alreadyWarned = e.alreadyWarned
+        local name = e.detail.name
+        local missingSpace = e.detail.missingSpace
+
+        if not alreadyWarned then
             print("---- " .. ITEM_SPACE_WARNING .. " ----")
-
-            if name == "unknown" then
-                print("need space for " .. space .. " unknown items")
-            else
-                print("need space for " .. space .. " " .. name)
-            end
-
-            lastSeenSpace = space
+            print("missing " .. missingSpace .. " space for " .. name)
         end
     end)
     robot.onItemSpaceWarningCleared(function()
