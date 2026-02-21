@@ -123,6 +123,16 @@ return function(_, meta)
     end
 
     function meta.require(check, get, constructor)
+        -- meta.require(..) essentially calls check() until it returns true
+        --
+        -- for every iteration of an endless loop:
+        -- get() is called to get the current state
+        -- each iteration's current state is dispatched as a new event constructed by constructor
+        -- if e.stopRequire() is called, we return immediately
+        -- if check() returns true, we return immediately
+        -- otherwise, sleep one second
+        -- continue the loop
+
         if type(check) ~= "function" then
             error("check must be a function", 0)
         end
