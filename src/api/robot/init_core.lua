@@ -129,6 +129,21 @@ return function(_, meta)
     -- -> args == {x, y, z, facing} in case of path_warning
     --  (the original moveTo args, NOT the obstructing block args, these are already in e)
     -- -> move to the required position by yourself, using any method you deem good enough
+    -- maybe we can inline for brevity and have e.cancelRequire return the args already:
+    -- local args = e.cancelRequire()
+    -- // handle the original task
+    -- this is only possible however IF THE TASK IS CANCELLABLE
+    -- -> maybe returns a boolean?
+    -- i.E.
+    -- local cancelled = e.cancelRequire()
+    --
+    -- if cancelled then
+    --   local args = e.getRequireArgs()
+    --   // fix it!
+    -- end
+    --
+    -- // let the loop pass and meta.require continues to handle the problem
+    -- NOTE: e must still carry e.alreadyWarned, we need that prop!
     function meta.require(check, get, warning)
         if type(check) ~= "function" then
             error("check must be a function", 0)
