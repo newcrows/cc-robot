@@ -221,8 +221,8 @@ return function(robot, meta, constants)
     end
 
     -- TODO [JM] rework this to just stupidly move toward peripheral{x,y,z}
-    -- -> if path_warning and target is peripheral and obstruction{x,y,z} == peripheral{x,y,z}
-    --      call e.stopRequire()
+    -- if path_warning and target is peripheral and obstruction{x,y,z} == peripheral{x,y,z}
+    -- -> stop moving, we are done
     -- -> much cleaner code this way
     -- -> customerPeripheral.sides must still be respected, as does the optional "side" argument
     --      used by moveTo(peripheral, side) to move the robot so that robot.side faces the peripheral
@@ -317,6 +317,9 @@ return function(robot, meta, constants)
 
                 return event
             end
+
+            -- TODO [JM] check whether the obstruction is the target peripheral (if any) here
+            -- -> we end the moveTo here (simply not call require() below) in this case
 
             meta.require(check, get, constructor)
         end
