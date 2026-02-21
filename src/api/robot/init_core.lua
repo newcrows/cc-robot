@@ -144,7 +144,7 @@ return function(_, meta)
     --
     -- // let the loop pass and meta.require continues to handle the problem
     -- NOTE: e must still carry e.alreadyWarned, we need that prop!
-    -- NOTE: e.cancelRequire, e.getRequireArgs only exist if the event is a meta.require event
+    -- NOTE: e.alreadyWarned, e.cancelRequire, e.getRequireArgs only exist if the event is a meta.require event
     --  any other event does not have those (duh)
     function meta.require(check, get, warning)
         if type(check) ~= "function" then
