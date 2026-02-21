@@ -368,24 +368,32 @@ return function(robot, meta, constants)
         meta.on(PATH_WARNING .. "_cleared", callback)
     end
 
-    local lastSeenLevel
-    robot.onFuelLevelWarning(function(alreadyWarned, level, requiredLevel)
-        if not alreadyWarned or lastSeenLevel ~= level then
+    local lastMissingFuelLevel
+    robot.onFuelLevelWarning(function(e)
+        local alreadyWarned = e.alreadyWarned
+        local missingFuelLevel = e.detail.missingFuelLevel
+        --local acceptedFuels = e.detail.acceptedFuels
+
+        if not alreadyWarned or lastMissingFuelLevel ~= missingFuelLevel then
             local acceptedNames = getKeys(acceptedFuels)
 
             print("---- " .. FUEL_LEVEL_WARNING .. " ----")
-            print("level = " .. level)
-            print("requiredLevel = " .. requiredLevel)
+            print("missing " .. missingFuelLevel .. " fuelLevel")
             print("acceptedFuels = [" .. table.concat(acceptedNames, ", ") .. "]")
 
-            lastSeenLevel = level
+            lastMissingFuelLevel = missingFuelLevel
         end
     end)
     robot.onFuelLevelWarningCleared(function()
         print("---- " .. FUEL_LEVEL_WARNING .. "_cleared ----")
     end)
 
-    robot.onPathWarning(function(alreadyWarned, x, y, z)
+    robot.onPathWarning(function(e)
+        local alreadyWarned = e.alreadyWarned
+        local x = e.detail.x
+        local y = e.detail.y
+        local z = e.detail.z
+
         if not alreadyWarned then
             print("---- " .. PATH_WARNING .. " ----")
             print("path is obstructed at (" .. x .. ", " .. y .. ", " .. z .. ")")
