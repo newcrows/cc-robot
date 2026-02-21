@@ -163,8 +163,8 @@ robot.drop("@nbt:<nbt>") -- drop any reserved item with nbt == <nbt>
 
 -- selection ambiguity (is this a thing)?
 robot.select("*") -- this is the default when starting program
-robot.select("minecraft:book@nbt:<nbt>") -- r.getSelectedName() now returns "minecraft:book@nbt=<nbt>"
-robot.drop("@reserved") -- drop reserved book with nbt == <nbt>
+robot.select("minecraft:book@nbt:<nbt>") -- r.getSelectedName() now returns "minecraft:book*@nbt=<nbt>"
+robot.drop("@reserved") -- drop reserved book with nbt == <nbt> because "*@reserved" is a valid query part
 robot.drop() -- drop any book with nbt == <nbt>
 -- -> I see no problem with the selection, no ambiguity possible
 
@@ -182,6 +182,8 @@ local detail = {
 }
 -- -> no problem, works
 -- but we must escape "@", ":", "*" and "/"
+
+-- escaping ":"
 robot.select("minecraft:cobblestone@items@prop_a:prop_b:my/:value")
 local detail = {
     prop_a = {
@@ -189,6 +191,8 @@ local detail = {
     }
 }
 -- -> should work like this
+
+-- escaping "/"
 robot.select("minecraft:cobblestone@items@prop_a:prop_b:my//value")
 local detail = {
     prop_a = {
