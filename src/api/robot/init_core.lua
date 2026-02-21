@@ -36,10 +36,11 @@ return function(_, meta)
         end
     end
 
-    function meta.createEvent(name)
+    function meta.createEvent(name, detail)
         local e_meta = {}
         local e = {
             name = name,
+            detail = detail, -- optional
             stopPropagation = function()
                 e_meta.stopped = true
             end
@@ -128,7 +129,11 @@ return function(_, meta)
 
         local function blocking()
             local e = constructor(get())
+
             e.alreadyWarned = dispatched
+            e.stopRequire = function()
+                -- stop evaluating and return from current meta.require call
+            end
 
             meta.dispatchEvent(e)
 

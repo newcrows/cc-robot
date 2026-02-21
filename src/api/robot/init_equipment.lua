@@ -21,9 +21,11 @@ return function(robot, meta, constants)
     local proxies = {}
     local nextSide = SIDES.right
 
-    local function eventConstructor(detail)
-        local e = meta.createEvent(EQUIPMENT_WARNING)
-        e.detail = detail
+    local function warningConstructor(detail)
+        local e = meta.createEvent(EQUIPMENT_WARNING, detail)
+
+        -- custom e.props here as needed
+        -- i.E. for manual resolution in case e.stopRequire() was called
 
         return e
     end
@@ -93,7 +95,7 @@ return function(robot, meta, constants)
             return { state = STATE.missing, name = name }
         end
 
-        meta.require(check, get, eventConstructor)
+        meta.require(check, get, warningConstructor)
     end
 
     local function equipAndSoftWrap(side, proxy)
@@ -123,7 +125,7 @@ return function(robot, meta, constants)
             return { state = STATE.no_space, name = name }
         end
 
-        meta.require(check, get, eventConstructor)
+        meta.require(check, get, warningConstructor)
     end
 
     local function createProxy(name, pinned)
@@ -250,7 +252,7 @@ return function(robot, meta, constants)
             return { state = STATE.missing, name = name }
         end
 
-        meta.require(check, get, eventConstructor)
+        meta.require(check, get, warningConstructor)
     end
 
     function robot.equip(name, pinned)
@@ -307,7 +309,11 @@ return function(robot, meta, constants)
         meta.on(EQUIPMENT_WARNING .. "_cleared", callback)
     end
 
-    robot.onEquipmentWarning(function(alreadyWarned, state, name)
+    robot.onEquipmentWarning(function(e)
+        local alreadyWarned = e.alreadyWarned
+        local state = e.detail.state
+        local name = e.detail.name
+
         if not alreadyWarned then
             print("---- " .. EQUIPMENT_WARNING .. " ----")
 
