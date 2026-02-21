@@ -209,7 +209,7 @@ return function(robot, meta, constants)
     -- robot.moveTo(1, 2, 3, FACINGS.east) // robot moves and then turns north
     -- robot.moveTo(chest) // moves to the chest and connects (picks the closest position next to chest)
     -- robot.moveTo(chest, FACINGS.east) // robot faces east to connect
-    -- robot.moveTo(chest, SIDES.front) // connects on robot front side
+    -- robot.moveTo(chest, SIDES.front) // connects on robot front side (picks the closest position next to chest)
     function robot.moveTo(x, y, z)
         if type(x) == "table" then
             local name = x.name
