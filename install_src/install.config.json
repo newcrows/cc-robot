@@ -2,6 +2,7 @@
   "pre_install": "pre_install.lua",
   "post_install": "post_install.lua",
   "files": [
+    "api/init.lua",
     "api/robot/init.lua",
     "api/robot/init_constants.lua",
     "api/robot/init_core.lua",
