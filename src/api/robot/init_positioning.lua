@@ -194,6 +194,15 @@ return function(robot, meta, constants)
         return turnHelper(nativeTurtle.turnLeft, -1, count)
     end
 
+    -- TODO [JM] if the first argument is table {x, y, z, name} then
+    -- -> the second argument can be side/facing (optional)
+    -- -> if side then the ROBOT's side should be the side connecting to the position
+    --      i.E: {0, 0, 0}, "top" -> robot should be BELOW the target (facing "up" to connect)
+    --      NOTE: "up" is a valid facing for robot.face() which does.. nothing.. because robot can't turn up/down
+    -- -> if facing then the ROBOT's facing should be the facing connecting to the position
+    --      i.E. {0, 0, 0}, "east" -> robot should be WEST OF the target (facing "east" to connect)
+    -- NOTE: basically, you can either move TO specific coordinates
+    --  or NEXT TO specific coordinates (which are always peripheral coordinates)
     function robot.moveTo(x, y, z)
         if type(x) == "table" then
             local name = x.name
