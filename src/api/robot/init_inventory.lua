@@ -6,17 +6,21 @@ return function(robot, meta, constants)
     local order = { "reserved", "items" }
     local inventories = {
         reserved = { name = "reserved", limits = {}, slots = {} },
-        items    = { name = "items", limits = {}, slots = {} },
-        ["*"]      = { name = "*", limits = {}, slots = {} } -- limits is never used in "*"
+        items = { name = "items", limits = {}, slots = {} },
+        ["*"] = { name = "*", limits = {}, slots = {} } -- limits is never used in "*"
     }
 
     local function parseQuery(str)
-        if not str or str == "" or str == "*" then return "*", "*" end
+        if not str or str == "" or str == "*" then
+            return "*", "*"
+        end
         -- Pattern: trenne alles vor @ von allem nach @
         local item, inv = str:match("^(.-)@(.+)$")
         if not item then
             -- Falls nur @ vorhanden (@reserved)
-            if str:sub(1,1) == "@" then return "*", str:sub(2) end
+            if str:sub(1, 1) == "@" then
+                return "*", str:sub(2)
+            end
             -- Falls nur Item vorhanden (dirt)
             return str, "*"
         end
@@ -36,7 +40,7 @@ return function(robot, meta, constants)
 
         -- 3. Fehler: Wenn sN voll ist, darf q keine Änderungen (Item oder Inv) mehr fordern
         if sIsFull and qIsAttemptingChange then
-            error("Forbidden: Cannot override parts of a fully qualified selectedName ("..selectedName..") with query ("..query..")", 2)
+            error("Forbidden: Cannot override parts of a fully qualified selectedName (" .. selectedName .. ") with query (" .. query .. ")", 2)
         end
 
         -- 4. Merge-Logik (Query überschreibt sN, solange sN nicht voll war)
@@ -47,7 +51,10 @@ return function(robot, meta, constants)
     end
 
     function meta.syncInventories()
-        for _, inv in pairs(inventories) do inv.slots = {} end
+        -- 1. Reset
+        for _, inv in pairs(inventories) do
+            inv.slots = {}
+        end
         local globalConsumed = {}
 
         for slotId = 1, 16 do
@@ -58,17 +65,18 @@ return function(robot, meta, constants)
             local remainingInSlot = count
             local physicalSpaceInSlot = maxStack - count
 
-            -- Wir müssen wissen, welche Items wir hier theoretisch erwarten (Limits)
-            -- Für dieses Beispiel: Wir prüfen, ob Dirt ein Limit hat
+            -- Potential Items (Limits + Physisch vorhanden)
             local potentialItems = {}
             for _, invName in ipairs(order) do
-                for itemName, _ in pairs(inventories[invName].limits) do
+                for itemName in pairs(inventories[invName].limits) do
                     potentialItems[itemName] = true
                 end
             end
-            if name ~= "air" then potentialItems[name] = true end
+            if name ~= "air" then
+                potentialItems[name] = true
+            end
 
-            -- Kaskadierung
+            -- 2. Kaskadierung durch "order"
             for _, invName in ipairs(order) do
                 local inv = inventories[invName]
                 for itemName in pairs(potentialItems) do
@@ -76,29 +84,39 @@ return function(robot, meta, constants)
                     globalConsumed[itemName][invName] = globalConsumed[itemName][invName] or 0
 
                     local limit = inv.limits[itemName] or (invName == order[#order] and maxStack or 0)
-                    local vAvailable = math.max(0, limit - globalConsumed[itemName][invName])
 
-                    -- Wie viel physisches Item ist da?
+                    -- Verfügbarkeit (Kann negativ sein -> "Schulden")
+                    local vAvailable = limit - globalConsumed[itemName][invName]
                     local vCount = (name == itemName) and math.min(remainingInSlot, vAvailable) or 0
 
-                    -- Wie viel virtueller Platz wird reserviert?
-                    local vSpace = math.min(physicalSpaceInSlot, math.max(0, limit - (globalConsumed[itemName][invName] + vCount)))
+                    -- Virtueller Space (Limit - was bereits verbraucht ist - was wir jetzt zählen)
+                    local vSpace = limit - (globalConsumed[itemName][invName] + vCount)
 
-                    if vCount > 0 or vSpace > 0 then
-                        table.insert(inv.slots, {
-                            id = slotId, name = itemName, count = vCount, space = vSpace
-                        })
-                        -- Wenn dieser Slot durch ein Limit "belegt" wurde,
-                        -- verringert sich der verfügbare physische Platz für andere
-                        physicalSpaceInSlot = physicalSpaceInSlot - vSpace
+                    -- KRITISCHER PUNKT: Physische Begrenzung nur bei positivem Space
+                    -- Wenn vSpace negativ ist, wird er ungefiltert übernommen.
+                    if vSpace > 0 then
+                        vSpace = math.min(physicalSpaceInSlot, vSpace)
                     end
 
+                    -- Eintrag hinzufügen (auch wenn 0 oder negativ)
+                    table.insert(inv.slots, {
+                        id = slotId, name = itemName, count = vCount, space = vSpace
+                    })
+
+                    -- KONSISTENZ: vSpace (egal ob positiv oder negativ)
+                    -- wird vom physischen Pool abgezogen.
+                    -- Minus abziehen = Plus hinzufügen!
+                    physicalSpaceInSlot = physicalSpaceInSlot - vSpace
+
+                    -- Update der globalen Stats für das nächste Item/Slot
                     globalConsumed[itemName][invName] = globalConsumed[itemName][invName] + vCount
-                    if name == itemName then remainingInSlot = remainingInSlot - vCount end
+                    if name == itemName then
+                        remainingInSlot = remainingInSlot - vCount
+                    end
                 end
             end
 
-            -- Das "*" Inventar bleibt die physische Realität
+            -- 3. Physischer Snapshot (immer die Realität)
             table.insert(inventories["*"].slots, {
                 id = slotId, name = name, count = count, space = maxStack - count
             })
@@ -109,7 +127,9 @@ return function(robot, meta, constants)
         local finalItem, finalInv = meta.resolveQuery(query)
 
         local vInventory = inventories[finalInv]
-        if not vInventory then return {} end
+        if not vInventory then
+            return {}
+        end
 
         local results = {}
         for _, slot in ipairs(vInventory.slots) do
