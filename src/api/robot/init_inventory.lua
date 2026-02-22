@@ -52,7 +52,9 @@ return function(robot, meta, constants)
 
     function meta.syncInventories()
         -- 1. Reset
-        for _, inv in pairs(inventories) do inv.slots = {} end
+        for _, inv in pairs(inventories) do
+            inv.slots = {}
+        end
         local globalConsumed = {}
 
         for slotId = 1, 16 do
@@ -77,7 +79,7 @@ return function(robot, meta, constants)
 
                 -- vCount und vSpace Berechnung (inkl. Negativwerten)
                 local vAvailable = limit - globalConsumed[name][invName]
-                local vCount = (name == itemName or name == "air") and math.min(remainingInSlot, vAvailable) or 0
+                local vCount = (name == "air") and math.min(remainingInSlot, vAvailable) or 0
                 local vSpace = limit - (globalConsumed[name][invName] + vCount)
 
                 -- Physische Begrenzung nur, wenn vSpace positiv ist
@@ -97,7 +99,7 @@ return function(robot, meta, constants)
                 starSpace = starSpace + vSpace
 
                 globalConsumed[name][invName] = globalConsumed[name][invName] + vCount
-                if name == itemName then remainingInSlot = remainingInSlot - vCount end
+                remainingInSlot = remainingInSlot - vCount
             end
 
             -- 3. Das "*" Inventar als strikte Summe
