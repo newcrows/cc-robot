@@ -52,9 +52,7 @@ return function(robot, meta, constants)
 
     function meta.syncInventories()
         -- 1. Reset
-        for _, inv in pairs(inventories) do
-            inv.slots = {}
-        end
+        for _, inv in pairs(inventories) do inv.slots = {} end
         local globalConsumed = {}
 
         for slotId = 1, 16 do
@@ -65,60 +63,50 @@ return function(robot, meta, constants)
             local remainingInSlot = count
             local physicalSpaceInSlot = maxStack - count
 
-            -- Potential Items (Limits + Physisch vorhanden)
-            local potentialItems = {}
-            for _, invName in ipairs(order) do
-                for itemName in pairs(inventories[invName].limits) do
-                    potentialItems[itemName] = true
-                end
-            end
-            if name ~= "air" then
-                potentialItems[name] = true
-            end
+            -- Aggregatoren für das "*" Inventar pro Slot
+            local starCount = 0
+            local starSpace = 0
 
             -- 2. Kaskadierung durch "order"
             for _, invName in ipairs(order) do
                 local inv = inventories[invName]
-                for itemName in pairs(potentialItems) do
-                    globalConsumed[itemName] = globalConsumed[itemName] or {}
-                    globalConsumed[itemName][invName] = globalConsumed[itemName][invName] or 0
+                globalConsumed[name] = globalConsumed[name] or {}
+                globalConsumed[name][invName] = globalConsumed[name][invName] or 0
 
-                    local limit = inv.limits[itemName] or (invName == order[#order] and maxStack or 0)
+                local limit = inv.limits[name] or (invName == order[#order] and maxStack or 0)
 
-                    -- Verfügbarkeit (Kann negativ sein -> "Schulden")
-                    local vAvailable = limit - globalConsumed[itemName][invName]
-                    local vCount = (name == itemName) and math.min(remainingInSlot, vAvailable) or 0
+                -- vCount und vSpace Berechnung (inkl. Negativwerten)
+                local vAvailable = limit - globalConsumed[name][invName]
+                local vCount = (name == itemName or name == "air") and math.min(remainingInSlot, vAvailable) or 0
+                local vSpace = limit - (globalConsumed[name][invName] + vCount)
 
-                    -- Virtueller Space (Limit - was bereits verbraucht ist - was wir jetzt zählen)
-                    local vSpace = limit - (globalConsumed[itemName][invName] + vCount)
-
-                    -- KRITISCHER PUNKT: Physische Begrenzung nur bei positivem Space
-                    -- Wenn vSpace negativ ist, wird er ungefiltert übernommen.
-                    if vSpace > 0 then
-                        vSpace = math.min(physicalSpaceInSlot, vSpace)
-                    end
-
-                    -- Eintrag hinzufügen (auch wenn 0 oder negativ)
-                    table.insert(inv.slots, {
-                        id = slotId, name = itemName, count = vCount, space = vSpace
-                    })
-
-                    -- KONSISTENZ: vSpace (egal ob positiv oder negativ)
-                    -- wird vom physischen Pool abgezogen.
-                    -- Minus abziehen = Plus hinzufügen!
-                    physicalSpaceInSlot = physicalSpaceInSlot - vSpace
-
-                    -- Update der globalen Stats für das nächste Item/Slot
-                    globalConsumed[itemName][invName] = globalConsumed[itemName][invName] + vCount
-                    if name == itemName then
-                        remainingInSlot = remainingInSlot - vCount
-                    end
+                -- Physische Begrenzung nur, wenn vSpace positiv ist
+                if vSpace > 0 then
+                    vSpace = math.min(physicalSpaceInSlot, vSpace)
                 end
+
+                table.insert(inv.slots, {
+                    id = slotId, name = name, count = vCount, space = vSpace
+                })
+
+                -- Kaskaden-Logik: vSpace (pos/neg) vom physischen Rest abziehen
+                physicalSpaceInSlot = physicalSpaceInSlot - vSpace
+
+                -- Summierung für das "*" Inventar
+                starCount = starCount + vCount
+                starSpace = starSpace + vSpace
+
+                globalConsumed[name][invName] = globalConsumed[name][invName] + vCount
+                if name == itemName then remainingInSlot = remainingInSlot - vCount end
             end
 
-            -- 3. Physischer Snapshot (immer die Realität)
+            -- 3. Das "*" Inventar als strikte Summe
+            -- Wenn @reserved + @items negativ sind, wird auch starSpace negativ.
             table.insert(inventories["*"].slots, {
-                id = slotId, name = name, count = count, space = maxStack - count
+                id = slotId,
+                name = name,
+                count = starCount,
+                space = starSpace
             })
         end
     end
