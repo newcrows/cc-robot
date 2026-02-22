@@ -3,7 +3,149 @@ return function(robot, meta, constants)
     local ITEM_SPACE_WARNING = "item_space_warning"
 
     local selectedName
-    local reservedSpaces = {}
+    local order = { "reserved", "items" }
+    local inventories = {
+        reserved = { name = "reserved", limits = {}, slots = {} },
+        items    = { name = "items", limits = {}, slots = {} },
+        ["*"]      = { name = "*", limits = {}, slots = {} } -- limits is never used in "*"
+    }
+
+    local function parseQuery(str)
+        if not str or str == "" or str == "*" then return "*", "*" end
+        -- Pattern: trenne alles vor @ von allem nach @
+        local item, inv = str:match("^(.-)@(.+)$")
+        if not item then
+            -- Falls nur @ vorhanden (@reserved)
+            if str:sub(1,1) == "@" then return "*", str:sub(2) end
+            -- Falls nur Item vorhanden (dirt)
+            return str, "*"
+        end
+        -- Leere Teile ("@reserved") werden zu "*"
+        return (item == "" and "*" or item), (inv == "" and "*" or inv)
+    end
+
+    function meta.resolveQuery(query)
+        local sItem, sInv = parseQuery(selectedName)
+        local qItem, qInv = parseQuery(query)
+
+        -- 1. Prüfe, ob selectedName bereits VOLL qualifiziert ist (beides ungleich "*")
+        local sIsFull = (sItem ~= "*" and sInv ~= "*")
+
+        -- 2. Prüfe, ob die Query versucht, etwas zu ändern (q ist ungleich "*@*")
+        local qIsAttemptingChange = (qItem ~= "*" or qInv ~= "*")
+
+        -- 3. Fehler: Wenn sN voll ist, darf q keine Änderungen (Item oder Inv) mehr fordern
+        if sIsFull and qIsAttemptingChange then
+            error("Forbidden: Cannot override parts of a fully qualified selectedName ("..selectedName..") with query ("..query..")", 2)
+        end
+
+        -- 4. Merge-Logik (Query überschreibt sN, solange sN nicht voll war)
+        local finalItem = (qItem ~= "*") and qItem or sItem
+        local finalInv = (qInv ~= "*") and qInv or sInv
+
+        return finalItem, finalInv
+    end
+
+    function meta.syncInventories()
+        for _, inv in pairs(inventories) do inv.slots = {} end
+        local globalConsumed = {}
+
+        for slotId = 1, 16 do
+            local count = turtle.getItemCount(slotId)
+            local name = count > 0 and turtle.getItemDetail(slotId).name or "air"
+            local maxStack = count > 0 and (count + turtle.getItemSpace(slotId)) or 64
+
+            local remainingInSlot = count
+            local physicalSpaceInSlot = maxStack - count
+
+            -- Wir müssen wissen, welche Items wir hier theoretisch erwarten (Limits)
+            -- Für dieses Beispiel: Wir prüfen, ob Dirt ein Limit hat
+            local potentialItems = {}
+            for _, invName in ipairs(order) do
+                for itemName, _ in pairs(inventories[invName].limits) do
+                    potentialItems[itemName] = true
+                end
+            end
+            if name ~= "air" then potentialItems[name] = true end
+
+            -- Kaskadierung
+            for _, invName in ipairs(order) do
+                local inv = inventories[invName]
+                for itemName in pairs(potentialItems) do
+                    globalConsumed[itemName] = globalConsumed[itemName] or {}
+                    globalConsumed[itemName][invName] = globalConsumed[itemName][invName] or 0
+
+                    local limit = inv.limits[itemName] or (invName == order[#order] and maxStack or 0)
+                    local vAvailable = math.max(0, limit - globalConsumed[itemName][invName])
+
+                    -- Wie viel physisches Item ist da?
+                    local vCount = (name == itemName) and math.min(remainingInSlot, vAvailable) or 0
+
+                    -- Wie viel virtueller Platz wird reserviert?
+                    local vSpace = math.min(physicalSpaceInSlot, math.max(0, limit - (globalConsumed[itemName][invName] + vCount)))
+
+                    if vCount > 0 or vSpace > 0 then
+                        table.insert(inv.slots, {
+                            id = slotId, name = itemName, count = vCount, space = vSpace
+                        })
+                        -- Wenn dieser Slot durch ein Limit "belegt" wurde,
+                        -- verringert sich der verfügbare physische Platz für andere
+                        physicalSpaceInSlot = physicalSpaceInSlot - vSpace
+                    end
+
+                    globalConsumed[itemName][invName] = globalConsumed[itemName][invName] + vCount
+                    if name == itemName then remainingInSlot = remainingInSlot - vCount end
+                end
+            end
+
+            -- Das "*" Inventar bleibt die physische Realität
+            table.insert(inventories["*"].slots, {
+                id = slotId, name = name, count = count, space = maxStack - count
+            })
+        end
+    end
+
+    function meta.listSlots(query)
+        local finalItem, finalInv = meta.resolveQuery(query)
+
+        local vInventory = inventories[finalInv]
+        if not vInventory then return {} end
+
+        local results = {}
+        for _, slot in ipairs(vInventory.slots) do
+            -- "*" ist Wildcard für Items, "air" für leere Slots
+            local isItemMatch = (finalItem == "*" or slot.name == finalItem)
+            local isAirMatch = (finalItem == "air" and slot.name == "air")
+
+            if isItemMatch or isAirMatch then
+                -- Ein Slot ist relevant, wenn er Inhalt hat ODER Platz bietet
+                if slot.count > 0 or slot.space > 0 then
+                    table.insert(results, slot)
+                end
+            end
+        end
+
+        return results
+    end
+
+    function robot.reserve(name, space)
+        assert(name, "Item-Name fehlt")
+        local limits = inventories.reserved.limits
+
+        -- Erhöhe das Limit (Initialisierung auf 0, falls das Item neu ist)
+        limits[name] = (limits[name] or 0) + (space or 0)
+
+        -- Wichtig: Nach der Änderung der Limits muss der State neu berechnet werden
+        meta.syncInventories()
+    end
+
+    function robot.free(name, count)
+        assert(name, "Item-Name fehlt")
+        local limits = inventories.reserved.limits
+        -- Einfache Subtraktion, negative Werte erlaubt
+        limits[name] = (limits[name] or 0) - (count or 0)
+        meta._syncInventories()
+    end
 
     local function compact()
         for targetSlot = 1, 15 do
@@ -36,33 +178,6 @@ return function(robot, meta, constants)
     local function getStackSize(name)
         local slot = meta.getFirstSlot(name, true)
         return slot and slot.count + slot.space or constants.default_stack_size
-    end
-
-    local function countReservedEmptySlots()
-        local reservedEmptySlots = 0
-
-        for name, reservedTotal in pairs(reservedSpaces) do
-            local currentCount = meta.countItems(name, true)
-            local missing = reservedTotal - currentCount
-
-            if missing > 0 then
-                local existingSpace = 0
-                local slots = meta.listSlots(name, nil, true)
-
-                for _, slot in ipairs(slots) do
-                    existingSpace = existingSpace + slot.space
-                end
-
-                local overflow = missing - existingSpace
-
-                if overflow > 0 then
-                    local stackSize = getStackSize(name)
-                    reservedEmptySlots = reservedEmptySlots + math.ceil(overflow / stackSize)
-                end
-            end
-        end
-
-        return reservedEmptySlots
     end
 
     function meta.requireItemCount(name, count)
@@ -124,7 +239,7 @@ return function(robot, meta, constants)
         meta.require(check, get, constructor)
     end
 
-    function meta.listSlots(name, limit, includeReservedItems)
+    function meta._listSlots(name, limit, includeReservedItems)
         limit = limit or 16
         local slots = {}
 
@@ -426,12 +541,12 @@ return function(robot, meta, constants)
         return arr
     end
 
-    function robot.reserve(name, space)
+    function robot._reserve(name, space)
         name = name or selectedName
         reservedSpaces[name] = (reservedSpaces[name] or 0) + (space or getStackSize(name))
     end
 
-    function robot.free(name, space)
+    function robot._free(name, space)
         name = name or selectedName
 
         if not name then
