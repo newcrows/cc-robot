@@ -54,6 +54,10 @@ return function(robot, meta, constants)
                 if dropFunc(amountToDrop) then
                     local after = physicalCountAll()
 
+                    -- TODO [JM] could use meta.snapshot/diff here
+                    -- -> to make sure correct items were dropped
+                    -- -> this would be the correct way
+                    -- -> plus it would work exactly the same for suckHelper_0 (just -amount instead of +)
                     if after ~= before then
                         remaining = remaining + (after - before)
                         meta.updateItemCount(query, (after - before))
