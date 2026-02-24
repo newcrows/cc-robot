@@ -156,7 +156,9 @@ return function(robot, meta, constants)
         local qState
         local sqState
 
-        if string.sub(query, 1, 1) ~= "@" and string.find(query, "@") then
+        if query == nil then
+            qState = "missing"
+        elseif string.sub(query, 1, 1) ~= "@" and string.find(query, "@") then
             qState = "full"
         elseif string.sub(query, 1, 1) == "@" then
             qState = "invName"
@@ -180,6 +182,8 @@ return function(robot, meta, constants)
             result = split(query .. selectedQuery, "@")
         elseif qState == "invName" and sqState == "itemName" then
             result = split(selectedQuery .. query, "@")
+        elseif qState == "missing" and sqState == "full" then
+            result = split(selectedQuery, "@")
         else
             error("query is not compatible with selectQuery")
         end
@@ -303,6 +307,7 @@ return function(robot, meta, constants)
 
     function robot.reserve(query, space)
         local itemName, invName = meta.parseQuery(query)
+        space = space or getStackSize(itemName)
 
         if invName == "*" then
             error("can not reserve items from 'all_inventories'")
@@ -314,6 +319,7 @@ return function(robot, meta, constants)
 
     function robot.free(query, space)
         local itemName, invName = meta.parseQuery(query)
+        space = space or getStackSize(itemName)
 
         if invName == "*" then
             error("can not free items from 'all_inventories'")
