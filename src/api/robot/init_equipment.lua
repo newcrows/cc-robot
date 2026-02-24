@@ -102,6 +102,8 @@ return function(robot, meta, constants)
         local equipFunc = side == SIDES.right and nativeTurtle.equipRight or nativeTurtle.equipLeft
         equipFunc()
 
+        meta.updateItemCount(proxy.name .. "@reserved", -1)
+
         local equippedProxy = getEquippedProxy(side)
 
         if equippedProxy then

@@ -265,11 +265,28 @@ return function(robot, meta, constants)
         return false
     end
 
-    function meta.transferItem(itemName, fromInvName, toInvName, count)
-        local transmittableCount = robot.getItemCount(itemName .. "@" .. fromInvName)
-        local receivableCount = robot.getItemSpace(itemName .. "@" .. toInvName)
-        local movableCount = math.min(math.min(transmittableCount, receivableCount), count)
+    function meta.updateItemCount(query, delta)
+        local itemName, invName = meta.parseQuery(query)
+        local inv = invName == FALLBACK_INVENTORY_NAME and fallbackInventory or inventoryMap[invName]
 
+        inv[itemName] = inv[itemName] or {limit = 0, count = 0}
+        inv[itemName].count = inv[itemName].count + delta
+    end
+
+    function meta.updateItemLimit(query, delta)
+        local itemName, invName = meta.parseQuery(query)
+
+        if invName == FALLBACK_INVENTORY_NAME then
+            error("can not change limits of the fallback_inventory")
+        end
+
+        local inv = inventoryMap[invName]
+
+        inv[itemName] = inv[itemName] or {limit = 0, count = 0}
+        inv[itemName].limit = inv[itemName].limit + delta
+    end
+
+    function meta.transferItem(itemName, fromInvName, toInvName, count)
         if fromInvName == "*" then
             error("can't transfer items from 'all_inventories'")
         end
@@ -278,55 +295,41 @@ return function(robot, meta, constants)
             error("can't transfer items to 'all_inventories'")
         end
 
-        if fromInvName == FALLBACK_INVENTORY_NAME then
-            local inv = fallbackInventory
+        local fromQuery = itemName .. "@" .. fromInvName
+        local toQuery = itemName .. "@" .. toInvName
 
-            inv[itemName] = inv[itemName] or { count = 0 }
-            inv[itemName].count = inv[itemName].count - movableCount
-        else
-            local inv = inventoryMap[fromInvName]
+        local transmittableCount = robot.getItemCount(fromQuery)
+        local receivableCount = robot.getItemSpace(toQuery)
+        local movableCount = math.min(math.min(transmittableCount, receivableCount), count)
 
-            inv[itemName] = inv[itemName] or { limit = 0, count = 0 }
-            inv[itemName].count = inv[itemName].count - movableCount
-        end
-
-        if toInvName == FALLBACK_INVENTORY_NAME then
-            local inv = fallbackInventory
-
-            inv[itemName] = inv[itemName] or { count = 0 }
-            inv[itemName].count = inv[itemName].count + movableCount
-        else
-            local inv = inventoryMap[toInvName]
-
-            inv[itemName] = inv[itemName] or { limit = 0, count = 0 }
-            inv[itemName].count = inv[itemName].count + movableCount
-        end
+        meta.updateItemCount(fromQuery, -movableCount)
+        meta.updateItemCount(toQuery, movableCount)
 
         return movableCount
     end
 
-    function robot.reserve(query, space)
+    function robot.reserve(query, delta)
         local itemName, invName = meta.parseQuery(query)
-        space = space or getStackSize(itemName)
+        delta = delta or getStackSize(itemName)
 
         if invName == "*" then
             error("can not reserve items from 'all_inventories'")
         end
 
-        reserve(itemName, RESERVED_INVENTORY_NAME, space)
-        meta.transferItem(itemName, invName, RESERVED_INVENTORY_NAME, space)
+        reserve(itemName, RESERVED_INVENTORY_NAME, delta)
+        meta.transferItem(itemName, invName, RESERVED_INVENTORY_NAME, delta)
     end
 
-    function robot.free(query, space)
+    function robot.free(query, delta)
         local itemName, invName = meta.parseQuery(query)
-        space = space or getStackSize(itemName)
+        delta = delta or getStackSize(itemName)
 
         if invName == "*" then
             error("can not free items from 'all_inventories'")
         end
 
-        meta.transferItem(itemName, RESERVED_INVENTORY_NAME, invName, space)
-        free(itemName, RESERVED_INVENTORY_NAME, space)
+        meta.transferItem(itemName, RESERVED_INVENTORY_NAME, invName, delta)
+        free(itemName, RESERVED_INVENTORY_NAME, delta)
     end
 
     function robot.select(query)
