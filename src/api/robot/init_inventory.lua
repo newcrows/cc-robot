@@ -179,7 +179,7 @@ return function(robot, meta, constants)
         local function get()
             return {
                 name = itemName,
-                missingCount = space - robot.getItemSpace(query)
+                missingSpace = space - robot.getItemSpace(query)
             }
         end
 
