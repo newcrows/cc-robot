@@ -290,7 +290,7 @@ return function(robot, meta, constants)
 
         if slot then
             nativeTurtle.select(slot.id)
-            return true
+            return true, slot.count
         end
 
         return false
@@ -301,7 +301,7 @@ return function(robot, meta, constants)
 
         if slot then
             nativeTurtle.select(slot.id)
-            return true
+            return true, slot.space
         end
 
         return false
