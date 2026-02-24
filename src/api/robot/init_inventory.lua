@@ -196,6 +196,47 @@ return function(robot, meta, constants)
         return item and (item.limit - item.count) or 0
     end
 
+    function robot.listItems(query)
+        local itemName, invName = parseQuery(query)
+        local details
+
+        if itemName ~= "*" then
+            print("warning: listItems() ignores itemName")
+        end
+
+        if invName == "*" then
+            for _, inventory in pairs(inventoryList) do
+                for name, detail in pairs(inventory) do
+                    details[name] = details[name] or {name = name, count = 0}
+                    details[name].count = details[name].count + detail.count
+                end
+            end
+
+            for name, detail in pairs(fallbackInventory) do
+                details[name] = details[name] or {name = name, count = 0}
+                details[name].count = details[name].count + detail.count
+            end
+        elseif invName == fallbackInventoryName then
+            for name, detail in pairs(fallbackInventory) do
+                details[name] = details[name] or {name = name, count = 0}
+                details[name].count = details[name].count + detail.count
+            end
+        else
+            for name, detail in pairs(inventoryMap[invName]) do
+                details[name] = details[name] or {name = name, count = 0}
+                details[name].count = details[name].count + detail.count
+            end
+        end
+
+        local arr = {}
+
+        for _, detail in pairs(details) do
+            table.insert(arr, detail)
+        end
+
+        return arr
+    end
+
     function robot.onItemCountWarning(callback)
         meta.on(ITEM_COUNT_WARNING, callback)
     end
