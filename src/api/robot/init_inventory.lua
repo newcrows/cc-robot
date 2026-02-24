@@ -251,6 +251,14 @@ return function(robot, meta, constants)
         local receivableCount = robot.getItemSpace(itemName .. "@" .. toInvName)
         local movableCount = math.min(math.min(transmittableCount, receivableCount), count)
 
+        if fromInvName == "*" then
+            error("can't transfer items from 'all_inventories'")
+        end
+
+        if toInvName == "*" then
+            error("can't transfer items to 'all_inventories'")
+        end
+
         if fromInvName == FALLBACK_INVENTORY_NAME then
             local inv = fallbackInventory
 

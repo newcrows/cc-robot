@@ -265,7 +265,7 @@ return function(robot, meta, constants)
         end
 
         if invName ~= RESERVED_INVENTORY_NAME then
-            -- TODO [JM] virtually move the item from invName to reserved inv
+            meta.transferItem(itemName, invName, RESERVED_INVENTORY_NAME, 1)
             robot.reserve(itemName, 1)
         end
 
@@ -284,7 +284,7 @@ return function(robot, meta, constants)
             proxy.invalid = true
 
             if invName ~= RESERVED_INVENTORY_NAME then
-                -- TODO [JM] virtually move the item from reserved inv to invName
+                meta.transferItem(itemName, RESERVED_INVENTORY_NAME, invName, 1)
                 robot.free(itemName, 1)
             end
         end
