@@ -253,7 +253,7 @@ return function(robot, meta, constants)
     end
 
     function robot.equip(query, pinned)
-        local itemName, invName = meta.parseQuery(query)
+        local itemName = meta.parseQuery(query)
         local proxy = proxies[itemName]
 
         if proxy then
@@ -264,11 +264,7 @@ return function(robot, meta, constants)
             return proxy
         end
 
-        if invName ~= RESERVED_INVENTORY_NAME then
-            robot.reserve(itemName, 1)
-            meta.transferItem(itemName, invName, RESERVED_INVENTORY_NAME, 1)
-        end
-
+        robot.reserve(query, 1)
         return createProxy(itemName, pinned)
     end
 
@@ -283,10 +279,7 @@ return function(robot, meta, constants)
             proxies[itemName] = nil
             proxy.invalid = true
 
-            if invName ~= RESERVED_INVENTORY_NAME then
-                meta.transferItem(itemName, RESERVED_INVENTORY_NAME, invName, 1)
-                robot.free(itemName, 1)
-            end
+            robot.free(query, 1)
         end
     end
 
