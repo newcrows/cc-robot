@@ -125,6 +125,10 @@ return function(robot, meta, constants)
             error("can't transfer items to 'all_inventories'")
         end
 
+        if fromInvName == toInvName then
+            print("warning: from_inventory and to_inventory are the same inventory")
+        end
+
         local fromQuery = itemName .. "@" .. fromInvName
         local toQuery = itemName .. "@" .. toInvName
 
