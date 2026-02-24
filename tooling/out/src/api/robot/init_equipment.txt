@@ -21,6 +21,8 @@ meta.requireEquipment(itemName)
 ---- ROBOT FUNCTIONS ----
 robot.equip(query, pinned)
 robot.unequip(query)
+robot.getEquipmentDetail(query)
+robot.listEquipment()
 robot.onEquipmentWarning(callback)
 robot.onEquipmentWarningCleared(callback)
 

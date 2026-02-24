@@ -140,6 +140,8 @@ meta.requireFuelLevel(requiredLevel)
 # api/robot/init_equipment.lua
 robot.equip(query, pinned)
 robot.unequip(query)
+robot.getEquipmentDetail(query)
+robot.listEquipment()
 robot.onEquipmentWarning(callback)
 robot.onEquipmentWarningCleared(callback)
 
