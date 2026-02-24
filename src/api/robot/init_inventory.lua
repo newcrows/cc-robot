@@ -276,6 +276,7 @@ return function(robot, meta, constants)
     end
 
     -- TODO [JM] support wildcard item "*"
+    -- -> but do NOT count the space in empty unreserved slots multiple times!
     function meta.getFirstEmptySlot(query)
         local space = robot.getItemSpace(query)
         local itemName = meta.parseQuery(query)
