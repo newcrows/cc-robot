@@ -86,4 +86,5 @@ return function(_, _, constants)
     constants.reserved_inventory_name = "reserved"
     constants.fallback_inventory_name = "items"
     constants.unknown_item = "ccrobot:unknown_item"
+    constants.item_info[constants.unknown_item] = {stackSize = 1}
 end
