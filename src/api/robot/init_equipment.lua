@@ -253,16 +253,6 @@ return function(robot, meta, constants)
 
     function robot.equip(query, pinned)
         local itemName, invName = meta.parseQuery(query)
-
-        -- for now we no longer support re-binding equipment proxy
-        --if type(name) == "table" then
-        --    proxies[name] = name
-        --    name.invalid = nil
-        --
-        --    robot.reserve(name, 1)
-        --    name.use(true)
-        --end
-
         local proxy = proxies[itemName]
 
         if proxy then
@@ -274,7 +264,7 @@ return function(robot, meta, constants)
         end
 
         if invName ~= RESERVED_INVENTORY_NAME then
-            robot.reserve(name, 1)
+            robot.reserve(itemName, 1)
         end
 
         return createProxy(itemName, pinned)
