@@ -97,6 +97,7 @@ return function(robot, meta, constants)
 
     local function equipAndSoftWrap(side, proxy)
         requireItemToEquip(proxy.name)
+        meta.selectFirstSlot(proxy.name .. "@reserved")
 
         local equipFunc = side == SIDES.right and nativeTurtle.equipRight or nativeTurtle.equipLeft
         equipFunc()
@@ -114,8 +115,7 @@ return function(robot, meta, constants)
 
     local function requireSpaceToUnequip(itemName)
         local function check()
-            -- Versucht einen leeren Slot zu finden und auszuwählen
-            return meta.selectFirstSlot("minecraft:air@*")
+            return meta.getFirstSlot("minecraft:air@*") ~= nil
         end
 
         local function get()
@@ -181,6 +181,7 @@ return function(robot, meta, constants)
             end
 
             requireSpaceToUnequip(proxy.name)
+            meta.selectFirstSlot("minecraft:air@*")
 
             local equipFunc = proxy.side == SIDES.right and nativeTurtle.equipRight or nativeTurtle.equipLeft
             equipFunc()

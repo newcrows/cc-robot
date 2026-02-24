@@ -9,15 +9,7 @@ return function(robot, meta, constants)
     local inventoryMap = {}
     local inventoryList = {}
     local fallbackInventory = {}
-    local selectedQuery = "*@*"
-
-    local function split(str, sep)
-        local t = {}
-        for s in str:gmatch("([^" .. sep .. "]+)") do
-            table.insert(t, s)
-        end
-        return t
-    end
+    local selectedQuery = "@" .. FALLBACK_INVENTORY_NAME
 
     local function reduce(list, reduceFunc, initialValue)
         local aggregate = initialValue
@@ -144,32 +136,55 @@ return function(robot, meta, constants)
         inv[itemName].limit = inv[itemName].limit - space
     end
 
-    function meta.parseQuery(query)
-        local parts = split(query, "@")
-        local selParts = split(selectedQuery, "@")
+    local function split(str, sep)
+        local result = {}
+        -- Pattern: Suche alles bis zum Trenner oder Ende
+        local pattern = string.format("([^%s]*)%s?", sep, sep)
 
-        if #parts == 2 and #parts[1] > 0 then
-            -- fully formulated query
-            return parts[1], parts[2]
-        elseif #parts == 2 then
-            -- is a query like "@reserved" or "@items"
-            -- we check whether selectedQuery is an item (does not contain "@")
-
-            if #selParts == 2 then
-                error("query and selectedQuery are incompatible")
-            else
-                return selParts[1], parts[2]
-            end
-        else
-            -- is a query like "minecraft:dirt"
-            -- we check whether selectedQuery is NOT an item (does contain "@")
-
-            if #selParts == 2 and #selParts[1] == 0 then
-                return parts[1], selParts[2]
-            else
-                error("query and selectedQuery are incompatible")
-            end
+        for part in str:gmatch(pattern) do
+            table.insert(result, part)
         end
+
+        -- Das letzte leere Match von gmatch entfernen (Lua Eigenheit)
+        if result[#result] == "" then
+            table.remove(result)
+        end
+        return result
+    end
+
+    function meta.parseQuery(query)
+        local qState
+        local sqState
+
+        if string.sub(query, 1, 1) ~= "@" and string.find(query, "@") then
+            qState = "full"
+        elseif string.sub(query, 1, 1) == "@" then
+            qState = "invName"
+        else
+            qState = "itemName"
+        end
+
+        if string.sub(selectedQuery, 1, 1) ~= "@" and string.find(selectedQuery, "@") then
+            sqState = "full"
+        elseif string.sub(selectedQuery, 1, 1) == "@" then
+            sqState = "invName"
+        else
+            sqState = "itemName"
+        end
+
+        local result
+
+        if qState == "full" then
+            result = split(query, "@")
+        elseif qState == "itemName" and sqState == "invName" then
+            result = split(query .. selectedQuery, "@")
+        elseif qState == "invName" and sqState == "itemName" then
+            result = split(selectedQuery .. query, "@")
+        else
+            error("query is not compatible with selectQuery")
+        end
+
+        return result[1], result[2]
     end
 
     function meta.requireItemCount(query, count)
@@ -227,7 +242,7 @@ return function(robot, meta, constants)
                 return {
                     id = i,
                     name = itemName,
-                    count = detail.count
+                    count = detail and detail.count or 0
                 }
             end
         end
@@ -262,25 +277,25 @@ return function(robot, meta, constants)
         if fromInvName == FALLBACK_INVENTORY_NAME then
             local inv = fallbackInventory
 
-            inv[itemName] = inv[itemName] or {count = 0}
-            inv[itemName].count = inv[itemName] - movableCount
+            inv[itemName] = inv[itemName] or { count = 0 }
+            inv[itemName].count = inv[itemName].count - movableCount
         else
             local inv = inventoryMap[fromInvName]
 
-            inv[itemName] = inv[itemName] or {limit = 0, count = 0}
-            inv[itemName].count = inv[itemName] - movableCount
+            inv[itemName] = inv[itemName] or { limit = 0, count = 0 }
+            inv[itemName].count = inv[itemName].count - movableCount
         end
 
         if toInvName == FALLBACK_INVENTORY_NAME then
             local inv = fallbackInventory
 
-            inv[itemName] = inv[itemName] or {count = 0}
-            inv[itemName].count = inv[itemName] + movableCount
+            inv[itemName] = inv[itemName] or { count = 0 }
+            inv[itemName].count = inv[itemName].count + movableCount
         else
             local inv = inventoryMap[toInvName]
 
-            inv[itemName] = inv[itemName] or {limit = 0, count = 0}
-            inv[itemName].count = inv[itemName] + movableCount
+            inv[itemName] = inv[itemName] or { limit = 0, count = 0 }
+            inv[itemName].count = inv[itemName].count + movableCount
         end
 
         return movableCount
@@ -424,7 +439,6 @@ return function(robot, meta, constants)
         meta.on(ITEM_SPACE_WARNING .. "_cleared", callback)
     end
 
-    robot.select("@items")
     addInventory(RESERVED_INVENTORY_NAME)
     syncInventories()
 
