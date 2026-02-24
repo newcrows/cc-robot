@@ -383,7 +383,7 @@ return function(robot, meta, constants)
         inv[itemName].count = inv[itemName].count + delta
     end
 
-    function robot.reserve(query, delta)
+    function meta.reserve(query, delta)
         local itemName, invName = meta.parseQuery(query)
         delta = delta or getStackSize(itemName)
 
@@ -399,7 +399,7 @@ return function(robot, meta, constants)
         return transferAvailable(itemName, invName, RESERVED_INVENTORY_NAME, delta)
     end
 
-    function robot.free(query, delta)
+    function meta.free(query, delta)
         local itemName, invName = meta.parseQuery(query)
         delta = delta or getStackSize(itemName)
 
