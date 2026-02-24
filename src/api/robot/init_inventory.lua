@@ -148,12 +148,24 @@ return function(robot, meta, constants)
         inv[itemName].limit = inv[itemName].limit - space
     end
 
-    function meta.reserve(name, space)
-        reserve(name, RESERVED_INVENTORY_NAME, space)
+    function robot.reserve(query, space)
+        local itemName, invName = parseQuery(query)
+
+        if invName ~= "*" then
+            print("warning: reserve() ignores invName")
+        end
+
+        reserve(itemName, RESERVED_INVENTORY_NAME, space)
     end
 
-    function meta.free(name, space)
-        free(name, RESERVED_INVENTORY_NAME, space)
+    function robot.free(query, space)
+        local itemName, invName = parseQuery(query)
+
+        if invName ~= "*" then
+            print("warning: free() ignores invName")
+        end
+
+        free(itemName, RESERVED_INVENTORY_NAME, space)
     end
 
     function robot.getItemDetail(query)
