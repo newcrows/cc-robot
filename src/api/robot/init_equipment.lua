@@ -65,8 +65,8 @@ return function(robot, meta, constants)
     local function softWrap(side, proxy)
         local target = peripheral.wrap(side)
 
-        local constructorDetail = meta.getCustomPeripheralDetail(proxy.name)
-        local constructor = constructorDetail and constructorDetail.constructor or nil
+        local detail = meta.getCustomPeripheralDetail(proxy.name)
+        local constructor = detail and detail.constructor or nil
 
         if constructor then
             local opts = {
@@ -82,13 +82,14 @@ return function(robot, meta, constants)
         proxy.target = target
     end
 
-    local function requireItemToEquip(name)
+    local function requireItemToEquip(itemName)
         local function check()
-            return meta.selectFirstSlot(name, true)
+            local slot = meta.getFirstSlot(itemName .. "@reserved")
+            return slot and slot.count > 0
         end
 
         local function get()
-            return { state = STATE.missing, name = name }
+            return { state = STATE.missing, name = itemName }
         end
 
         meta.require(check, get, eventConstructor)
@@ -227,25 +228,25 @@ return function(robot, meta, constants)
         return proxy
     end
 
-    function meta.requireEquipment(name)
+    function meta.requireEquipment(itemName)
         local function check()
             local rightDetail = nativeTurtle.getEquippedRight()
 
-            if rightDetail and rightDetail.name == name then
+            if rightDetail and rightDetail.name == itemName then
                 return true
             end
 
             local leftDetail = nativeTurtle.getEquippedLeft()
 
-            if leftDetail and leftDetail.name == name then
+            if leftDetail and leftDetail.name == itemName then
                 return true
             end
 
-            return meta.getFirstSlot(name, true) ~= nil
+            return meta.getFirstSlot(itemName .. "@*") ~= nil
         end
 
         local function get()
-            return { state = STATE.missing, name = name }
+            return { state = STATE.missing, name = itemName }
         end
 
         meta.require(check, get, eventConstructor)
@@ -264,28 +265,28 @@ return function(robot, meta, constants)
         end
 
         if invName ~= RESERVED_INVENTORY_NAME then
+            -- TODO [JM] virtually move the item from invName to reserved inv
             robot.reserve(itemName, 1)
         end
 
         return createProxy(itemName, pinned)
     end
 
-    function robot.unequip(name)
-        if type(name) == "table" then
-            name = name.name
-        end
-
-        name = name or robot.getSelectedQuery()
-        local proxy = proxies[name]
+    function robot.unequip(query)
+        local itemName, invName = meta.parseQuery(query)
+        local proxy = proxies[itemName]
 
         if proxy then
             proxy.unpin()
             proxy.unuse()
 
-            proxies[name] = nil
+            proxies[itemName] = nil
             proxy.invalid = true
 
-            robot.free(name, 1)
+            if invName ~= RESERVED_INVENTORY_NAME then
+                -- TODO [JM] virtually move the item from reserved inv to invName
+                robot.free(itemName, 1)
+            end
         end
     end
 
