@@ -116,24 +116,26 @@ return function(robot, meta, constants)
         end
     end
 
-    local function reserve(itemName, invName, space)
-        local inv = inventoryMap[invName]
-        inv[itemName] = (inv[itemName] or {
-            limit = 0,
-            count = 0
-        })
+    local function transferItem(itemName, fromInvName, toInvName, count)
+        if fromInvName == "*" then
+            error("can't transfer items from 'all_inventories'")
+        end
 
-        inv[itemName].limit = inv[itemName].limit + space
-    end
+        if toInvName == "*" then
+            error("can't transfer items to 'all_inventories'")
+        end
 
-    local function free(itemName, invName, space)
-        local inv = inventoryMap[invName]
-        inv[itemName] = (inv[itemName] or {
-            limit = 0,
-            count = 0
-        })
+        local fromQuery = itemName .. "@" .. fromInvName
+        local toQuery = itemName .. "@" .. toInvName
 
-        inv[itemName].limit = inv[itemName].limit - space
+        local transmittableCount = robot.getItemCount(fromQuery)
+        local receivableCount = robot.getItemSpace(toQuery)
+        local movableCount = math.min(math.min(transmittableCount, receivableCount), count)
+
+        meta.updateItemCount(fromQuery, -movableCount)
+        meta.updateItemCount(toQuery, movableCount)
+
+        return movableCount
     end
 
     local function split(str, sep)
@@ -286,28 +288,6 @@ return function(robot, meta, constants)
         inv[itemName].limit = inv[itemName].limit + delta
     end
 
-    function meta.transferItem(itemName, fromInvName, toInvName, count)
-        if fromInvName == "*" then
-            error("can't transfer items from 'all_inventories'")
-        end
-
-        if toInvName == "*" then
-            error("can't transfer items to 'all_inventories'")
-        end
-
-        local fromQuery = itemName .. "@" .. fromInvName
-        local toQuery = itemName .. "@" .. toInvName
-
-        local transmittableCount = robot.getItemCount(fromQuery)
-        local receivableCount = robot.getItemSpace(toQuery)
-        local movableCount = math.min(math.min(transmittableCount, receivableCount), count)
-
-        meta.updateItemCount(fromQuery, -movableCount)
-        meta.updateItemCount(toQuery, movableCount)
-
-        return movableCount
-    end
-
     function robot.reserve(query, delta)
         local itemName, invName = meta.parseQuery(query)
         delta = delta or getStackSize(itemName)
@@ -316,8 +296,8 @@ return function(robot, meta, constants)
             error("can not reserve items from 'all_inventories'")
         end
 
-        reserve(itemName, RESERVED_INVENTORY_NAME, delta)
-        meta.transferItem(itemName, invName, RESERVED_INVENTORY_NAME, delta)
+        meta.updateItemLimit(itemName .. "@" .. RESERVED_INVENTORY_NAME, delta)
+        transferItem(itemName, invName, RESERVED_INVENTORY_NAME, delta)
     end
 
     function robot.free(query, delta)
@@ -328,8 +308,8 @@ return function(robot, meta, constants)
             error("can not free items from 'all_inventories'")
         end
 
-        meta.transferItem(itemName, RESERVED_INVENTORY_NAME, invName, delta)
-        free(itemName, RESERVED_INVENTORY_NAME, delta)
+        transferItem(itemName, RESERVED_INVENTORY_NAME, invName, delta)
+        meta.updateItemLimit(itemName .. "@" .. RESERVED_INVENTORY_NAME, -delta)
     end
 
     function robot.select(query)
