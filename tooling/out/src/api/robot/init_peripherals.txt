@@ -14,7 +14,7 @@ local function unwrapHelper(x, y, z)
 local function getValues(table)
 
 ---- META FUNCTIONS ----
-meta.getCustomPeripheralDetail(name)
+meta.getCustomPeripheralDetail(query)
 meta.listCustomPeripherals()
 meta.softUnwrap(side)
 meta.softUnwrapAll()
