@@ -79,7 +79,7 @@ return function(_, _, constants)
     constants.unknown_item = "ccrobot:unknown_item"
     constants.item_info = {
         ["minecraft:air"] = {stackSize = 1},
-        ["minecraft:stone"] = {drop = "minecraft_cobblestone", stackSize = 64},
+        ["minecraft:stone"] = {drop = "minecraft:cobblestone", stackSize = 64},
         ["minecraft:diamond_pickaxe"] = {stackSize = 1},
         ["minecraft:diamond_axe"] = {stackSize = 1},
         ["minecraft:diamond_shovel"] = {stackSize = 1},
