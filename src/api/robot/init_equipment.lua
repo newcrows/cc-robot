@@ -188,6 +188,8 @@ return function(robot, meta, constants)
             local equipFunc = proxy.side == SIDES.right and nativeTurtle.equipRight or nativeTurtle.equipLeft
             equipFunc()
 
+            meta.updateItemCount(proxy.name .. "@reserved", 1)
+
             proxy.side = nil
             proxy.target = nil
         end
