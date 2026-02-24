@@ -192,15 +192,23 @@ return function(robot, meta, constants)
         elseif qState == "missing" and sqState == "full" then
             result = split(selectedQuery, "@")
         elseif qState == "itemName" and forceInvWildcard then
-            result = {selectedQuery, forceInvWildcard}
+            result = {selectedQuery, nil}
         elseif qState == "invName" and forceItemWildcard then
-            result = {forceItemWildcard, selectedQuery}
+            result = {nil, selectedQuery}
         elseif qState == "missing" and sqState == "itemName" and forceInvWildcard then
-            result = {sqState, forceInvWildcard}
+            result = {sqState, nil}
         elseif qState == "missing" and sqState == "invName" and forceItemWildcard then
-            result = {forceItemWildcard, sqState}
+            result = {nil, sqState}
         else
             error("query is not compatible with selectQuery")
+        end
+
+        if forceItemWildcard then
+            result[1] = forceItemWildcard
+        end
+
+        if forceInvWildcard then
+            result[2] = forceInvWildcard
         end
 
         return result[1], result[2]
@@ -226,8 +234,7 @@ return function(robot, meta, constants)
         meta.require(check, get, constructor)
     end
 
-    -- TODO [JM] support wildcard item "*"
-    -- -> but do NOT count the space in empty unreserved slots multiple times!
+    -- TODO [JM] explicitly do NOT support wildcard item "*"
     function meta.requireItemSpace(query, space)
         local function check()
             return robot.getItemSpace(query) >= space
@@ -275,8 +282,7 @@ return function(robot, meta, constants)
         error("inconsistent state. need sync?")
     end
 
-    -- TODO [JM] support wildcard item "*"
-    -- -> but do NOT count the space in empty unreserved slots multiple times!
+    -- TODO [JM] explicitly do NOT support wildcard item "*"
     function meta.getFirstEmptySlot(query)
         local space = robot.getItemSpace(query)
         local itemName = meta.parseQuery(query)
@@ -330,7 +336,7 @@ return function(robot, meta, constants)
         return false
     end
 
-    -- TODO [JM] support wildcard item "*"
+    -- TODO [JM] explicitly do NOT support wildcard item "*"
     function meta.selectFirstEmptySlot(query)
         local slot = meta.getFirstEmptySlot(query)
 
@@ -520,8 +526,7 @@ return function(robot, meta, constants)
         return item and item.count or 0
     end
 
-    -- TODO [JM] support wildcard item "*"
-    -- -> but do NOT count the space in empty unreserved slots multiple times!
+    -- TODO [JM] explicitly do NOT support wildcard item "*"
     function robot.getItemSpace(query)
         local itemName, invName = meta.parseQuery(query)
 
