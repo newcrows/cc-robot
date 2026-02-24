@@ -268,6 +268,8 @@ return function(robot, meta, constants)
 
         if invName ~= RESERVED_INVENTORY_NAME then
             robot.reserve(query, 1)
+        else
+            error("equipping from reserved inventory is not possible at the moment")
         end
 
         return createProxy(itemName, pinned)
@@ -286,6 +288,8 @@ return function(robot, meta, constants)
 
             if invName ~= RESERVED_INVENTORY_NAME then
                 robot.free(query, 1)
+            else
+                error("un-equipping to reserved inventory is not possible at the moment")
             end
         end
     end
