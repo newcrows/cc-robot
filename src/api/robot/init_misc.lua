@@ -23,6 +23,10 @@ return function(robot, meta, constants)
         local function tick()
             if meta.selectFirstSlot(query) then
                 placed = placeFunc()
+
+                if placed then
+                    meta.updateItemCount(query, -1)
+                end
             end
         end
 
@@ -30,7 +34,7 @@ return function(robot, meta, constants)
         return placed
     end
 
-    local function dropHelper_0(dropFunc, name, remaining)
+    local function dropHelper_0(dropFunc, query, remaining)
         local continue = true
 
         local function check()
@@ -38,7 +42,7 @@ return function(robot, meta, constants)
         end
 
         local function tick()
-            local detail = meta.getFirstSlot(name)
+            local detail = meta.getFirstSlot(query)
             local didDropSomething = false
 
             if detail then
@@ -51,8 +55,10 @@ return function(robot, meta, constants)
                     local after = physicalCountAll()
 
                     if after ~= before then
-                        didDropSomething = true
                         remaining = remaining + (after - before)
+                        meta.updateItemCount(query, (after - before))
+
+                        didDropSomething = true
                     end
                 end
             end
@@ -65,18 +71,14 @@ return function(robot, meta, constants)
         return remaining
     end
 
-    local function dropHelper(dropFunc, name, count, blocking)
-        if type(name) == "number" or name == nil then
-            blocking, count, name = count, name, robot.getSelectedQuery()
-        elseif type(name) == "boolean" or type(name) == "function" then
-            blocking, count, name = name, nil, robot.getSelectedQuery()
+    local function dropHelper(dropFunc, query, count, blocking)
+        if type(query) == "number" or query == nil then
+            blocking, count, query = count, query, robot.getSelectedQuery()
+        elseif type(query) == "boolean" or type(query) == "function" then
+            blocking, count, query = query, nil, robot.getSelectedQuery()
         end
 
-        if not name then
-            error("name must not be nil", 0)
-        end
-
-        local totalAmount = count or robot.getItemCount(name)
+        local totalAmount = count or robot.getItemCount(query)
         local remaining = totalAmount
 
         local function check()
@@ -84,30 +86,27 @@ return function(robot, meta, constants)
         end
 
         local function tick()
-            remaining = dropHelper_0(dropFunc, name, remaining)
+            remaining = dropHelper_0(dropFunc, query, remaining)
         end
 
         meta.try(check, tick, blocking)
         return totalAmount - remaining
     end
 
-    local function compareHelper(inspectFunc, name)
-        name = name or robot.getSelectedQuery()
+    local function compareHelper(inspectFunc, query)
+        query = query or robot.getSelectedQuery()
 
-        if not name then
-            error("name must not be nil", 0)
-        end
-
+        local itemName = meta.parseQuery(query)
         local ok, detail = inspectFunc()
 
         if ok then
-            return detail.name == name
+            return detail.name == itemName
         else
-            return name == "air" or name == "minecraft:air"
+            return itemName == "minecraft:air"
         end
     end
 
-    local function suckHelper_0(suckFunc, remaining)
+    local function suckHelper_0(suckFunc, query, remaining)
         local continue = true
 
         local function check()
@@ -124,8 +123,15 @@ return function(robot, meta, constants)
                 local after = physicalCountAll()
 
                 if after ~= before then
-                    didSuckSomething = true
                     remaining = remaining + (before - after)
+                    -- TODO [JM] meta.updateItemCount(), but for ALL items in diff: before vs after
+                    -- -> fill query:inventory first and put the rest into fallback_inventory
+                    -- -> also fill ONLY query:item into query:inventory and the rest into fallback_inventory
+                    --      (assuming query:item is specified)
+                    -- -> we can actually use "before" and "after" snapshots (physical inventory) here, probably
+                    --      but we must do it in a way that throws error should before diff already have sync errors
+
+                    didSuckSomething = true
                 end
             end
 
@@ -137,9 +143,11 @@ return function(robot, meta, constants)
         return remaining
     end
 
-    local function suckHelper(suckFunc, count, blocking)
-        if type(count) == "boolean" or type(count) == "function" then
-            blocking, count = count, nil
+    local function suckHelper(suckFunc, query, count, blocking)
+        if type(query) == "number" or query == nil then
+            blocking, count, query = count, query, robot.getSelectedQuery()
+        elseif type(query) == "boolean" or type(query) == "function" then
+            blocking, count, query = query, nil, robot.getSelectedQuery()
         end
 
         local totalAmount = count or 9999
@@ -153,35 +161,35 @@ return function(robot, meta, constants)
         end
 
         local function tick()
-            remaining = suckHelper_0(suckFunc, remaining)
+            remaining = suckHelper_0(suckFunc, query, remaining)
         end
 
         meta.try(check, tick, blocking)
         return totalAmount - remaining
     end
 
-    function robot.place(name, blocking)
-        return placeHelper(nativeTurtle.place, name, blocking)
+    function robot.place(query, blocking)
+        return placeHelper(nativeTurtle.place, query, blocking)
     end
 
-    function robot.placeUp(name, blocking)
-        return placeHelper(nativeTurtle.placeUp, name, blocking)
+    function robot.placeUp(query, blocking)
+        return placeHelper(nativeTurtle.placeUp, query, blocking)
     end
 
-    function robot.placeDown(name, blocking)
-        return placeHelper(nativeTurtle.placeDown, name, blocking)
+    function robot.placeDown(query, blocking)
+        return placeHelper(nativeTurtle.placeDown, query, blocking)
     end
 
-    function robot.drop(name, count, blocking)
-        return dropHelper(nativeTurtle.drop, name, count, blocking)
+    function robot.drop(query, count, blocking)
+        return dropHelper(nativeTurtle.drop, query, count, blocking)
     end
 
-    function robot.dropUp(name, count, blocking)
-        return dropHelper(nativeTurtle.dropUp, name, count, blocking)
+    function robot.dropUp(query, count, blocking)
+        return dropHelper(nativeTurtle.dropUp, query, count, blocking)
     end
 
-    function robot.dropDown(name, count, blocking)
-        return dropHelper(nativeTurtle.dropDown, name, count, blocking)
+    function robot.dropDown(query, count, blocking)
+        return dropHelper(nativeTurtle.dropDown, query, count, blocking)
     end
 
     function robot.detect()
@@ -196,28 +204,28 @@ return function(robot, meta, constants)
         return nativeTurtle.detectDown()
     end
 
-    function robot.compare(name)
-        return compareHelper(nativeTurtle.inspect, name)
+    function robot.compare(query)
+        return compareHelper(nativeTurtle.inspect, query)
     end
 
-    function robot.compareUp(name)
-        return compareHelper(nativeTurtle.inspectUp, name)
+    function robot.compareUp(query)
+        return compareHelper(nativeTurtle.inspectUp, query)
     end
 
-    function robot.compareDown(name)
-        return compareHelper(nativeTurtle.inspectDown, name)
+    function robot.compareDown(query)
+        return compareHelper(nativeTurtle.inspectDown, query)
     end
 
-    function robot.suck(count, blocking)
-        return suckHelper(nativeTurtle.suck, count, blocking)
+    function robot.suck(query, count, blocking)
+        return suckHelper(nativeTurtle.suck, query, count, blocking)
     end
 
-    function robot.suckUp(count, blocking)
-        return suckHelper(nativeTurtle.suckUp, count, blocking)
+    function robot.suckUp(query, count, blocking)
+        return suckHelper(nativeTurtle.suckUp, query, count, blocking)
     end
 
-    function robot.suckDown(count, blocking)
-        return suckHelper(nativeTurtle.suckDown, count, blocking)
+    function robot.suckDown(query, count, blocking)
+        return suckHelper(nativeTurtle.suckDown, query, count, blocking)
     end
 
     function robot.inspect()
