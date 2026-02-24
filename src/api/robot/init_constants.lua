@@ -73,6 +73,10 @@ return function(_, _, constants)
         top = "bottom",
         bottom = "top"
     }
+    constants.default_stack_size = 64
+    constants.reserved_inventory_name = "reserved"
+    constants.fallback_inventory_name = "items"
+    constants.unknown_item = "ccrobot:unknown_item"
     constants.item_info = {
         ["minecraft:air"] = {stackSize = 1},
         ["minecraft:stone"] = {drop = "minecraft_cobblestone", stackSize = 64},
@@ -80,11 +84,7 @@ return function(_, _, constants)
         ["minecraft:diamond_axe"] = {stackSize = 1},
         ["minecraft:diamond_shovel"] = {stackSize = 1},
         ["minecraft:diamond_sword"] = {stackSize = 1},
+        [constants.unknown_item] = {stackSize = 1}
         -- NOTE [JM] add more block aliases for vanilla ores, etc. here!
     }
-    constants.default_stack_size = 64
-    constants.reserved_inventory_name = "reserved"
-    constants.fallback_inventory_name = "items"
-    constants.unknown_item = "ccrobot:unknown_item"
-    constants.item_info[constants.unknown_item] = {stackSize = 1}
 end
