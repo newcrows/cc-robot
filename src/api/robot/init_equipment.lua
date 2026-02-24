@@ -26,16 +26,16 @@ return function(robot, meta, constants)
         return meta.createEvent(EQUIPMENT_WARNING, detail)
     end
 
-    local function getEquippedSide(name)
+    local function getEquippedSide(itemName)
         local rightDetail = nativeTurtle.getEquippedRight()
 
-        if rightDetail and rightDetail.name == name then
+        if rightDetail and rightDetail.name == itemName then
             return SIDES.right
         end
 
         local leftDetail = nativeTurtle.getEquippedLeft()
 
-        if leftDetail and leftDetail.name == name then
+        if leftDetail and leftDetail.name == itemName then
             return SIDES.left
         end
 
@@ -111,22 +111,22 @@ return function(robot, meta, constants)
         nextSide = OPPOSITE_SIDES[nextSide]
     end
 
-    local function requireSpaceToUnequip(name)
+    local function requireSpaceToUnequip(itemName)
         local function check()
             -- Versucht einen leeren Slot zu finden und auszuwählen
-            return meta.selectFirstEmptySlot(true)
+            return meta.selectFirstSlot("minecraft:air@*")
         end
 
         local function get()
-            return { state = STATE.no_space, name = name }
+            return { state = STATE.no_space, name = itemName }
         end
 
         meta.require(check, get, eventConstructor)
     end
 
-    local function createProxy(name, pinned)
+    local function createProxy(itemName, pinned)
         local proxy = {
-            name = name
+            name = itemName
         }
 
         function proxy.use(wrapOnly)
@@ -138,7 +138,7 @@ return function(robot, meta, constants)
                 return
             end
 
-            local equippedSide = getEquippedSide(name)
+            local equippedSide = getEquippedSide(itemName)
 
             if equippedSide then
                 softWrap(equippedSide, proxy)
@@ -216,7 +216,7 @@ return function(robot, meta, constants)
         }
 
         setmetatable(proxy, metatable)
-        proxies[name] = proxy
+        proxies[itemName] = proxy
 
         if pinned then
             proxy.pin()

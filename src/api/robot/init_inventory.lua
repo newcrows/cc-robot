@@ -210,6 +210,42 @@ return function(robot, meta, constants)
         meta.require(check, get, constructor)
     end
 
+    function meta.getFirstSlot(query)
+        local count = robot.getItemCount(query)
+        local space = robot.getItemSpace(query)
+
+        if count == 0 and space == 0 then
+            return nil
+        end
+
+        local itemName = meta.parseQuery(query)
+
+        for i = 1, 16 do
+            local detail = nativeTurtle.getItemDetail(i)
+
+            if detail and detail.name == itemName or not detail and itemName == "minecraft:air" then
+                return {
+                    id = i,
+                    name = itemName,
+                    count = detail.count
+                }
+            end
+        end
+
+        return nil
+    end
+
+    function meta.selectFirstSlot(query)
+        local slot = meta.getFirstSlot(query)
+
+        if slot then
+            nativeTurtle.select(slot.id)
+            return true
+        end
+
+        return false
+    end
+
     function robot.reserve(query, space)
         local itemName, invName = meta.parseQuery(query)
 
