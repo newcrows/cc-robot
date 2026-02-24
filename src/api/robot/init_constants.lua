@@ -73,9 +73,9 @@ return function(_, _, constants)
         top = "bottom",
         bottom = "top"
     }
-    constants.default_stack_size = 64
-    constants.block_drop_map = {
-        ["minecraft:stone"] = "minecraft_cobblestone",
+    constants.block_map = {
+        ["minecraft:stone"] = {drop = "minecraft_cobblestone", stackSize = 64},
         -- NOTE [JM] add more block aliases for vanilla ores, etc. here!
     }
+    constants.default_stack_size = 64
 end

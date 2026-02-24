@@ -1,4 +1,6 @@
 return function(robot, meta, constants)
+    local BLOCK_MAP = constants.block_map
+    local DEFAULT_STACK_SIZE = constants.default_stack_size
     local ITEM_COUNT_WARNING = "item_count_warning"
     local ITEM_SPACE_WARNING = "item_space_warning"
     local RESERVED_INVENTORY_NAME = "reserved"
@@ -32,11 +34,21 @@ return function(robot, meta, constants)
     end
 
     local function getStackSize(itemName)
-        -- TODO [JM]
-        -- -> if it is in constants.block_map, return constants.block_map[name].stackSize
-        -- -> elseif item is in any slot, return (space + count) for that slot
-        -- -> else return constants.default_stack_size
-        return 64
+        local block = BLOCK_MAP[itemName]
+
+        if block then
+            return block.stackSize
+        end
+
+        for i = 1, 16 do
+            local detail = nativeTurtle.getItemDetail(i)
+
+            if detail and detail.name == itemName then
+                return detail.count + nativeTurtle.getItemSpace(i)
+            end
+        end
+
+        return DEFAULT_STACK_SIZE
     end
 
     local function getFallbackSpace(itemName)
