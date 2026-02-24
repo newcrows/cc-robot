@@ -1,6 +1,7 @@
 return function(robot, meta, constants)
     local SIDES = constants.sides
     local OPPOSITE_SIDES = constants.opposite_sides
+    local RESERVED_INVENTORY_NAME = constants.reserved_inventory_name
     local RAW_PROPERTIES = {
         side = true,
         name = true,
@@ -250,18 +251,19 @@ return function(robot, meta, constants)
         meta.require(check, get, eventConstructor)
     end
 
-    function robot.equip(name, pinned)
-        name = name or robot.getSelectedQuery()
+    function robot.equip(query, pinned)
+        local itemName, invName = meta.parseQuery(query)
 
-        if type(name) == "table" then
-            proxies[name] = name
-            name.invalid = nil
+        -- for now we no longer support re-binding equipment proxy
+        --if type(name) == "table" then
+        --    proxies[name] = name
+        --    name.invalid = nil
+        --
+        --    robot.reserve(name, 1)
+        --    name.use(true)
+        --end
 
-            robot.reserve(name, 1)
-            name.use(true)
-        end
-
-        local proxy = proxies[name]
+        local proxy = proxies[itemName]
 
         if proxy then
             if pinned then
@@ -271,8 +273,11 @@ return function(robot, meta, constants)
             return proxy
         end
 
-        robot.reserve(name, 1)
-        return createProxy(name, pinned)
+        if invName ~= RESERVED_INVENTORY_NAME then
+            robot.reserve(name, 1)
+        end
+
+        return createProxy(itemName, pinned)
     end
 
     function robot.unequip(name)

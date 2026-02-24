@@ -1,10 +1,10 @@
 return function(robot, meta, constants)
     local BLOCK_MAP = constants.block_map
     local DEFAULT_STACK_SIZE = constants.default_stack_size
+    local RESERVED_INVENTORY_NAME = constants.reserved_inventory_name
+    local FALLBACK_INVENTORY_NAME = constants.fallback_inventory_name
     local ITEM_COUNT_WARNING = "item_count_warning"
     local ITEM_SPACE_WARNING = "item_space_warning"
-    local RESERVED_INVENTORY_NAME = "reserved"
-    local FALLBACK_INVENTORY_NAME = "items"
 
     local inventoryMap = {}
     local inventoryList = {}

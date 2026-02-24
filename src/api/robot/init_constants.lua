@@ -79,4 +79,6 @@ return function(_, _, constants)
         -- NOTE [JM] add more block aliases for vanilla ores, etc. here!
     }
     constants.default_stack_size = 64
+    constants.reserved_inventory_name = "reserved"
+    constants.fallback_inventory_name = "items"
 end
