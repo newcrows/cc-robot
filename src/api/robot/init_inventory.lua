@@ -2,11 +2,10 @@ return function(robot, meta, constants)
     local ITEM_COUNT_WARNING = "item_count_warning"
     local ITEM_SPACE_WARNING = "item_space_warning"
     local RESERVED_INVENTORY_NAME = "reserved"
+    local FALLBACK_INVENTORY_NAME = "items"
 
     local inventoryMap = {}
     local inventoryList = {}
-
-    local fallbackInventoryName = "items"
     local fallbackInventory = {}
 
     local function split(str, sep)
@@ -167,7 +166,7 @@ return function(robot, meta, constants)
             return sum + (item and item.count or 0)
         end
 
-        if invName == fallbackInventoryName then
+        if invName == FALLBACK_INVENTORY_NAME then
             local item = fallbackInventory[itemName]
             return item and item.count or 0
         end
@@ -188,7 +187,7 @@ return function(robot, meta, constants)
             return sum + getFallbackSpace(itemName)
         end
 
-        if invName == fallbackInventoryName then
+        if invName == FALLBACK_INVENTORY_NAME then
             return getFallbackSpace(itemName)
         end
 
@@ -216,7 +215,7 @@ return function(robot, meta, constants)
                 details[name] = details[name] or {name = name, count = 0}
                 details[name].count = details[name].count + detail.count
             end
-        elseif invName == fallbackInventoryName then
+        elseif invName == FALLBACK_INVENTORY_NAME then
             for name, detail in pairs(fallbackInventory) do
                 details[name] = details[name] or {name = name, count = 0}
                 details[name].count = details[name].count + detail.count
