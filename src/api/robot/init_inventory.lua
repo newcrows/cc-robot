@@ -158,6 +158,23 @@ return function(robot, meta, constants)
         return result
     end
 
+    local function updateItemLimit(query, delta)
+        local itemName, invName = meta.parseQuery(query)
+
+        if invName == "*" then
+            error("can not change item limits of 'all_inventories'")
+        end
+
+        if invName == FALLBACK_INVENTORY_NAME then
+            error("can not change item limits of 'fallback_inventory'")
+        end
+
+        local inv = inventoryMap[invName]
+
+        inv[itemName] = inv[itemName] or { limit = 0, count = 0 }
+        inv[itemName].limit = inv[itemName].limit + delta
+    end
+
     function meta.parseQuery(query)
         local qState
         local sqState
@@ -383,23 +400,6 @@ return function(robot, meta, constants)
         inv[itemName].count = inv[itemName].count + delta
     end
 
-    function meta.updateItemLimit(query, delta)
-        local itemName, invName = meta.parseQuery(query)
-
-        if invName == "*" then
-            error("can not change item limits of 'all_inventories'")
-        end
-
-        if invName == FALLBACK_INVENTORY_NAME then
-            error("can not change item limits of 'fallback_inventory'")
-        end
-
-        local inv = inventoryMap[invName]
-
-        inv[itemName] = inv[itemName] or { limit = 0, count = 0 }
-        inv[itemName].limit = inv[itemName].limit + delta
-    end
-
     function robot.reserve(query, delta)
         local itemName, invName = meta.parseQuery(query)
         delta = delta or getStackSize(itemName)
@@ -412,7 +412,7 @@ return function(robot, meta, constants)
             error("can not reserve items from 'reserved_inventory'")
         end
 
-        meta.updateItemLimit(itemName .. "@" .. RESERVED_INVENTORY_NAME, delta)
+        updateItemLimit(itemName .. "@" .. RESERVED_INVENTORY_NAME, delta)
         return transferAvailable(itemName, invName, RESERVED_INVENTORY_NAME, delta)
     end
 
@@ -428,7 +428,7 @@ return function(robot, meta, constants)
             error("can not free items to 'reserved_inventory'")
         end
 
-        meta.updateItemLimit(itemName .. "@" .. RESERVED_INVENTORY_NAME, -delta)
+        updateItemLimit(itemName .. "@" .. RESERVED_INVENTORY_NAME, -delta)
         return transferAvailable(itemName, RESERVED_INVENTORY_NAME, invName, delta)
     end
 
