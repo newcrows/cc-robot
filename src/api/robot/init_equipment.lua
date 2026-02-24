@@ -2,6 +2,7 @@ return function(robot, meta, constants)
     local SIDES = constants.sides
     local OPPOSITE_SIDES = constants.opposite_sides
     local RESERVED_INVENTORY_NAME = constants.reserved_inventory_name
+    local UNKNOWN_ITEM = constants.unknown_item
     local RAW_PROPERTIES = {
         side = true,
         name = true,
@@ -115,7 +116,7 @@ return function(robot, meta, constants)
 
     local function requireSpaceToUnequip(itemName)
         local function check()
-            return meta.selectFirstEmptySlot(itemName .. "@" .. RESERVED_INVENTORY_NAME)
+            return meta.selectFirstEmptySlot(UNKNOWN_ITEM .. "@*")
         end
 
         local function get()
