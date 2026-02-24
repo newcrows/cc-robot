@@ -235,7 +235,7 @@ return function(robot, meta, constants)
         local count = robot.getItemCount(query)
         local itemName = meta.parseQuery(query)
 
-        if count == 0 then
+        if count <= 0 then
             return nil
         end
 
@@ -262,7 +262,7 @@ return function(robot, meta, constants)
         local space = robot.getItemSpace(query)
         local itemName = meta.parseQuery(query)
 
-        if space == 0 then
+        if space <= 0 then
             return nil
         end
 
@@ -286,11 +286,13 @@ return function(robot, meta, constants)
             if nativeTurtle.getItemCount(i) == 0 then
                 local available = math.min(getStackSize(itemName), space)
 
-                return {
-                    id = i,
-                    name = itemName,
-                    space = available
-                }
+                if available > 0 then
+                    return {
+                        id = i,
+                        name = itemName,
+                        space = available
+                    }
+                end
             end
         end
 
