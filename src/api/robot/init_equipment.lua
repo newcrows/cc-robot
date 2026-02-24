@@ -84,8 +84,7 @@ return function(robot, meta, constants)
 
     local function requireItemToEquip(itemName)
         local function check()
-            local slot = meta.getFirstSlot(itemName .. "@reserved")
-            return slot and slot.count > 0
+            return meta.selectFirstSlot(itemName .. "@" .. RESERVED_INVENTORY_NAME)
         end
 
         local function get()
@@ -97,12 +96,11 @@ return function(robot, meta, constants)
 
     local function equipAndSoftWrap(side, proxy)
         requireItemToEquip(proxy.name)
-        meta.selectFirstSlot(proxy.name .. "@reserved")
 
         local equipFunc = side == SIDES.right and nativeTurtle.equipRight or nativeTurtle.equipLeft
         equipFunc()
 
-        meta.updateItemCount(proxy.name .. "@reserved", -1)
+        meta.updateItemCount(proxy.name .. "@" .. RESERVED_INVENTORY_NAME, -1)
 
         local equippedProxy = getEquippedProxy(side)
 
@@ -117,7 +115,7 @@ return function(robot, meta, constants)
 
     local function requireSpaceToUnequip(itemName)
         local function check()
-            return meta.getFirstSlot("minecraft:air@*") ~= nil
+            return meta.selectFirstEmptySlot(itemName .. "@" .. RESERVED_INVENTORY_NAME)
         end
 
         local function get()
@@ -183,12 +181,11 @@ return function(robot, meta, constants)
             end
 
             requireSpaceToUnequip(proxy.name)
-            meta.selectFirstSlot("minecraft:air@*")
 
             local equipFunc = proxy.side == SIDES.right and nativeTurtle.equipRight or nativeTurtle.equipLeft
             equipFunc()
 
-            meta.updateItemCount(proxy.name .. "@reserved", 1)
+            meta.updateItemCount(proxy.name .. "@" .. RESERVED_INVENTORY_NAME, 1)
 
             proxy.side = nil
             proxy.target = nil
