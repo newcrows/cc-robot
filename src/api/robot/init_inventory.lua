@@ -117,18 +117,6 @@ return function(robot, meta, constants)
     end
 
     local function transferAvailable(itemName, fromInvName, toInvName, count)
-        if fromInvName == "*" then
-            error("can't transfer items from 'all_inventories'")
-        end
-
-        if toInvName == "*" then
-            error("can't transfer items to 'all_inventories'")
-        end
-
-        if fromInvName == toInvName then
-            print("warning: from_inventory and to_inventory are the same inventory")
-        end
-
         local fromQuery = itemName .. "@" .. fromInvName
         local toQuery = itemName .. "@" .. toInvName
 
@@ -164,15 +152,6 @@ return function(robot, meta, constants)
 
     local function updateItemLimit(query, delta)
         local itemName, invName = meta.parseQuery(query)
-
-        if invName == "*" then
-            error("can not change item limits of 'all_inventories'")
-        end
-
-        if invName == FALLBACK_INVENTORY_NAME then
-            error("can not change item limits of 'fallback_inventory'")
-        end
-
         local inv = inventoryMap[invName]
 
         inv[itemName] = inv[itemName] or { limit = 0, count = 0 }
