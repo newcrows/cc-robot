@@ -19,7 +19,7 @@ return function(robot, meta, constants)
         return t
     end
 
-    local function parseQuery(query)
+    function meta.parseQuery(query)
         local parts = split(query, "@")
         local selParts = split(selectedQuery, "@")
 
@@ -211,7 +211,7 @@ return function(robot, meta, constants)
     end
 
     function robot.reserve(query, space)
-        local itemName, invName = parseQuery(query)
+        local itemName, invName = meta.parseQuery(query)
 
         if invName ~= "*" then
             print("warning: reserve() ignores invName")
@@ -221,7 +221,7 @@ return function(robot, meta, constants)
     end
 
     function robot.free(query, space)
-        local itemName, invName = parseQuery(query)
+        local itemName, invName = meta.parseQuery(query)
 
         if invName ~= "*" then
             print("warning: free() ignores invName")
@@ -239,7 +239,7 @@ return function(robot, meta, constants)
     end
 
     function robot.getItemDetail(query)
-        local itemName = parseQuery(query)
+        local itemName = meta.parseQuery(query)
 
         return {
             name = itemName,
@@ -248,7 +248,7 @@ return function(robot, meta, constants)
     end
 
     function robot.getItemCount(query)
-        local itemName, invName = parseQuery(query)
+        local itemName, invName = meta.parseQuery(query)
 
         if invName == "*" then
             local sum = reduce(inventoryList, function(sum, inventory)
@@ -270,7 +270,7 @@ return function(robot, meta, constants)
     end
 
     function robot.getItemSpace(query)
-        local itemName, invName = parseQuery(query)
+        local itemName, invName = meta.parseQuery(query)
 
         if invName == "*" then
             local sum = reduce(inventoryList, function(sum, inventory)
@@ -290,7 +290,7 @@ return function(robot, meta, constants)
     end
 
     function robot.listItems(query)
-        local itemName, invName = parseQuery(query)
+        local itemName, invName = meta.parseQuery(query)
         local details
 
         if itemName ~= "*" then
