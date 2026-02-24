@@ -74,6 +74,7 @@ return function(_, _, constants)
         bottom = "top"
     }
     constants.block_map = {
+        ["minecraft_air"] = {drop = "minecraft:air", stackSize = 1},
         ["minecraft:stone"] = {drop = "minecraft_cobblestone", stackSize = 64},
         -- NOTE [JM] add more block aliases for vanilla ores, etc. here!
     }
