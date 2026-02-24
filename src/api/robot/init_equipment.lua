@@ -265,8 +265,8 @@ return function(robot, meta, constants)
         end
 
         if invName ~= RESERVED_INVENTORY_NAME then
-            meta.transferItem(itemName, invName, RESERVED_INVENTORY_NAME, 1)
             robot.reserve(itemName, 1)
+            meta.transferItem(itemName, invName, RESERVED_INVENTORY_NAME, 1)
         end
 
         return createProxy(itemName, pinned)

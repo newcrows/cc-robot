@@ -289,20 +289,22 @@ return function(robot, meta, constants)
     function robot.reserve(query, space)
         local itemName, invName = meta.parseQuery(query)
 
-        if invName ~= "*" then
-            print("warning: reserve() ignores invName")
+        if invName == "*" then
+            error("can not reserve items from 'all_inventories'")
         end
 
         reserve(itemName, RESERVED_INVENTORY_NAME, space)
+        meta.transferItem(itemName, invName, RESERVED_INVENTORY_NAME, space)
     end
 
     function robot.free(query, space)
         local itemName, invName = meta.parseQuery(query)
 
-        if invName ~= "*" then
-            print("warning: free() ignores invName")
+        if invName == "*" then
+            error("can not free items from 'all_inventories'")
         end
 
+        meta.transferItem(itemName, RESERVED_INVENTORY_NAME, invName, space)
         free(itemName, RESERVED_INVENTORY_NAME, space)
     end
 
