@@ -325,21 +325,73 @@ return function(robot, meta, constants)
         return false
     end
 
-    -- TODO [JM] must support distributing when called with invName == "*"
     function meta.updateItemCount(query, delta)
         local itemName, invName = meta.parseQuery(query)
+
+        if invName == "*" then
+            if delta > 0 then
+                for i = 1, #inventoryList do
+                    local inv = inventoryList[i]
+                    local item = inv[itemName]
+
+                    if item then
+                        local receivableCount = math.min(item.limit - item.count, delta)
+
+                        item.count = item.count + receivableCount
+                        delta = delta - receivableCount
+                    end
+                end
+
+                local inv = fallbackInventory
+                local item = inv[itemName]
+
+                if item then
+                    item.count = item.count + delta
+                end
+
+                return
+            else
+                local inv = fallbackInventory
+                local item = inv[itemName]
+
+                if item then
+                    local transmittableCount = math.min(item.count, -delta)
+
+                    item.count = item.count - transmittableCount
+                    delta = delta + transmittableCount
+                end
+
+                for i = #inventoryList, 1, -1 do
+                    inv = inventoryList[i]
+                    item = inv[item]
+
+                    if item then
+                        local transmittableCount = math.min(item.count, -delta)
+
+                        item.count = item.count - transmittableCount
+                        delta = delta + transmittableCount
+                    end
+                end
+
+                return
+            end
+        end
+
         local inv = invName == FALLBACK_INVENTORY_NAME and fallbackInventory or inventoryMap[invName]
 
         inv[itemName] = inv[itemName] or { limit = 0, count = 0 }
         inv[itemName].count = inv[itemName].count + delta
     end
 
-    -- TODO [JM] must support distributing when called with invName == "*"
     function meta.updateItemLimit(query, delta)
         local itemName, invName = meta.parseQuery(query)
 
+        if invName == "*" then
+            error("can not change item limits of 'all_inventories'")
+        end
+
         if invName == FALLBACK_INVENTORY_NAME then
-            error("can not change limits of the fallback_inventory")
+            error("can not change item limits of 'fallback_inventory'")
         end
 
         local inv = inventoryMap[invName]
