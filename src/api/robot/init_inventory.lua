@@ -413,7 +413,9 @@ return function(robot, meta, constants)
             local beforeCount = before[key] or 0
             local afterCount = after[key] or 0
 
-            diff[key] = afterCount - beforeCount
+            if beforeCount ~= afterCount then
+                diff[key] = afterCount - beforeCount
+            end
         end
 
         return diff
