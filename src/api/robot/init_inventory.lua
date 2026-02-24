@@ -1,5 +1,5 @@
 return function(robot, meta, constants)
-    local BLOCK_MAP = constants.block_map
+    local ITEM_INFO = constants.item_info
     local DEFAULT_STACK_SIZE = constants.default_stack_size
     local RESERVED_INVENTORY_NAME = constants.reserved_inventory_name
     local FALLBACK_INVENTORY_NAME = constants.fallback_inventory_name
@@ -22,7 +22,7 @@ return function(robot, meta, constants)
     end
 
     local function getStackSize(itemName)
-        local block = BLOCK_MAP[itemName]
+        local block = ITEM_INFO[itemName]
 
         if block then
             return block.stackSize
