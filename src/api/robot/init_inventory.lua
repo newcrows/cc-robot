@@ -246,6 +246,38 @@ return function(robot, meta, constants)
         return false
     end
 
+    function meta.transferItem(itemName, fromInvName, toInvName, count)
+        local transmittableCount = robot.getItemCount(itemName .. "@" .. fromInvName)
+        local receivableCount = robot.getItemSpace(itemName .. "@" .. toInvName)
+        local movableCount = math.min(math.min(transmittableCount, receivableCount), count)
+
+        if fromInvName == FALLBACK_INVENTORY_NAME then
+            local inv = fallbackInventory
+
+            inv[itemName] = inv[itemName] or {count = 0}
+            inv[itemName].count = inv[itemName] - movableCount
+        else
+            local inv = inventoryMap[fromInvName]
+
+            inv[itemName] = inv[itemName] or {limit = 0, count = 0}
+            inv[itemName].count = inv[itemName] - movableCount
+        end
+
+        if toInvName == FALLBACK_INVENTORY_NAME then
+            local inv = fallbackInventory
+
+            inv[itemName] = inv[itemName] or {count = 0}
+            inv[itemName].count = inv[itemName] + movableCount
+        else
+            local inv = inventoryMap[toInvName]
+
+            inv[itemName] = inv[itemName] or {limit = 0, count = 0}
+            inv[itemName].count = inv[itemName] + movableCount
+        end
+
+        return movableCount
+    end
+
     function robot.reserve(query, space)
         local itemName, invName = meta.parseQuery(query)
 
