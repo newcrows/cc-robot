@@ -19,34 +19,6 @@ return function(robot, meta, constants)
         return t
     end
 
-    function meta.parseQuery(query)
-        local parts = split(query, "@")
-        local selParts = split(selectedQuery, "@")
-
-        if #parts == 2 and #parts[1] > 0 then
-            -- fully formulated query
-            return parts[1], parts[2]
-        elseif #parts == 2 then
-            -- is a query like "@reserved" or "@items"
-            -- we check whether selectedQuery is an item (does not contain "@")
-
-            if #selParts == 2 then
-                error("query and selectedQuery are incompatible")
-            else
-                return selParts[1], parts[2]
-            end
-        else
-            -- is a query like "minecraft:dirt"
-            -- we check whether selectedQuery is NOT an item (does contain "@")
-
-            if #selParts == 2 and #selParts[1] == 0 then
-                return parts[1], selParts[2]
-            else
-                error("query and selectedQuery are incompatible")
-            end
-        end
-    end
-
     local function reduce(list, reduceFunc, initialValue)
         local aggregate = initialValue
 
@@ -170,6 +142,34 @@ return function(robot, meta, constants)
         })
 
         inv[itemName].limit = inv[itemName].limit - space
+    end
+
+    function meta.parseQuery(query)
+        local parts = split(query, "@")
+        local selParts = split(selectedQuery, "@")
+
+        if #parts == 2 and #parts[1] > 0 then
+            -- fully formulated query
+            return parts[1], parts[2]
+        elseif #parts == 2 then
+            -- is a query like "@reserved" or "@items"
+            -- we check whether selectedQuery is an item (does not contain "@")
+
+            if #selParts == 2 then
+                error("query and selectedQuery are incompatible")
+            else
+                return selParts[1], parts[2]
+            end
+        else
+            -- is a query like "minecraft:dirt"
+            -- we check whether selectedQuery is NOT an item (does contain "@")
+
+            if #selParts == 2 and #selParts[1] == 0 then
+                return parts[1], selParts[2]
+            else
+                error("query and selectedQuery are incompatible")
+            end
+        end
     end
 
     function meta.requireItemCount(query, count)
