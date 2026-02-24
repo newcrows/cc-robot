@@ -269,7 +269,7 @@ return function(robot, meta, constants)
     end
 
     function robot.unequip(query)
-        local itemName, invName = meta.parseQuery(query)
+        local itemName = meta.parseQuery(query)
         local proxy = proxies[itemName]
 
         if proxy then
