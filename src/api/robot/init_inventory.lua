@@ -21,7 +21,30 @@ return function(robot, meta, constants)
 
     local function parseQuery(query)
         local parts = split(query, "@")
-        return parts[1], parts[2]
+        local selParts = split(selectedQuery, "@")
+
+        if #parts == 2 and #parts[1] > 0 then
+            -- fully formulated query
+            return parts[1], parts[2]
+        elseif #parts == 2 then
+            -- is a query like "@reserved" or "@items"
+            -- we check whether selectedQuery is an item (does not contain "@")
+
+            if #selParts == 2 then
+                error("query and selectedQuery are incompatible")
+            else
+                return selParts[1], parts[2]
+            end
+        else
+            -- is a query like "minecraft:dirt"
+            -- we check whether selectedQuery is NOT an item (does contain "@")
+
+            if #selParts == 2 and #selParts[1] == 0 then
+                return parts[1], selParts[2]
+            else
+                error("query and selectedQuery are incompatible")
+            end
+        end
     end
 
     local function reduce(list, reduceFunc, initialValue)
@@ -277,23 +300,23 @@ return function(robot, meta, constants)
         if invName == "*" then
             for _, inventory in pairs(inventoryList) do
                 for name, detail in pairs(inventory) do
-                    details[name] = details[name] or {name = name, count = 0}
+                    details[name] = details[name] or { name = name, count = 0 }
                     details[name].count = details[name].count + detail.count
                 end
             end
 
             for name, detail in pairs(fallbackInventory) do
-                details[name] = details[name] or {name = name, count = 0}
+                details[name] = details[name] or { name = name, count = 0 }
                 details[name].count = details[name].count + detail.count
             end
         elseif invName == FALLBACK_INVENTORY_NAME then
             for name, detail in pairs(fallbackInventory) do
-                details[name] = details[name] or {name = name, count = 0}
+                details[name] = details[name] or { name = name, count = 0 }
                 details[name].count = details[name].count + detail.count
             end
         else
             for name, detail in pairs(inventoryMap[invName]) do
-                details[name] = details[name] or {name = name, count = 0}
+                details[name] = details[name] or { name = name, count = 0 }
                 details[name].count = details[name].count + detail.count
             end
         end
