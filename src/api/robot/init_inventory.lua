@@ -149,15 +149,13 @@ return function(robot, meta, constants)
     end
 
     function meta.requireItemCount(query, count)
-        local itemName = parseQuery(query)
-
         local function check()
             return robot.getItemCount(query) >= count
         end
 
         local function get()
             return {
-                name = itemName,
+                query = query,
                 missingCount = count - robot.getItemCount(query)
             }
         end
@@ -170,15 +168,13 @@ return function(robot, meta, constants)
     end
 
     function meta.requireItemSpace(query, space)
-        local itemName = parseQuery(query)
-
         local function check()
             return robot.getItemSpace(query) >= space
         end
 
         local function get()
             return {
-                name = itemName,
+                query = query,
                 missingSpace = space - robot.getItemSpace(query)
             }
         end
@@ -324,12 +320,12 @@ return function(robot, meta, constants)
     local lastMissingCount
     robot.onItemCountWarning(function(e)
         local alreadyWarned = e.alreadyWarned
-        local name = e.detail.name
+        local query = e.detail.query
         local missingCount = e.detail.missingCount
 
         if not alreadyWarned or lastMissingCount ~= missingCount then
             print("---- " .. ITEM_COUNT_WARNING .. " ----")
-            print("missing " .. missingCount .. " of " .. name)
+            print("missing " .. missingCount .. " of " .. query)
 
             lastMissingCount = missingCount
         end
@@ -341,12 +337,12 @@ return function(robot, meta, constants)
     local lastMissingSpace
     robot.onItemSpaceWarning(function(e)
         local alreadyWarned = e.alreadyWarned
-        local name = e.detail.name
+        local query = e.detail.query
         local missingSpace = e.detail.missingSpace
 
         if not alreadyWarned or lastMissingSpace ~= missingSpace then
             print("---- " .. ITEM_SPACE_WARNING .. " ----")
-            print("missing " .. missingSpace .. " space for " .. name)
+            print("missing " .. missingSpace .. " space for " .. query)
 
             lastMissingSpace = missingSpace
         end
