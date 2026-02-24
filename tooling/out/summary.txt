@@ -140,7 +140,7 @@ robot.onEquipmentWarningCleared(callback)
 
 # api/robot/init_inventory.lua
 robot.select(name)
-robot.getSelectedName()
+robot.getSelectedQuery()
 robot.getItemDetail(name)
 robot.getItemCount(name)
 robot.hasItemCount(name, count)

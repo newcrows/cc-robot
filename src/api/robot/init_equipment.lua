@@ -251,7 +251,7 @@ return function(robot, meta, constants)
     end
 
     function robot.equip(name, pinned)
-        name = name or robot.getSelectedName()
+        name = name or robot.getSelectedQuery()
 
         if type(name) == "table" then
             proxies[name] = name
@@ -280,7 +280,7 @@ return function(robot, meta, constants)
             name = name.name
         end
 
-        name = name or robot.getSelectedName()
+        name = name or robot.getSelectedQuery()
         local proxy = proxies[name]
 
         if proxy then

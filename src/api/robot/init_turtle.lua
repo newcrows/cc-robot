@@ -10,7 +10,7 @@ return function(robot, meta, constants)
         equipLeft = "robot.equip",
         getEquippedRight = "robot.listEquipment",
         getEquippedLeft = "robot.listEquipment",
-        getSelectedSlot = "robot.getSelectedName",
+        getSelectedSlot = "robot.getSelectedQuery",
         refuel = "robot.setFuel",
     }
 

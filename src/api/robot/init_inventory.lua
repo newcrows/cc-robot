@@ -9,6 +9,7 @@ return function(robot, meta, constants)
     local inventoryMap = {}
     local inventoryList = {}
     local fallbackInventory = {}
+    local selectedQuery = "*@*"
 
     local function split(str, sep)
         local t = {}
@@ -204,6 +205,14 @@ return function(robot, meta, constants)
         end
 
         free(itemName, RESERVED_INVENTORY_NAME, space)
+    end
+
+    function robot.select(query)
+        selectedQuery = query
+    end
+
+    function robot.getSelectedQuery()
+        return selectedQuery
     end
 
     function robot.getItemDetail(query)

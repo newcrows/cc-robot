@@ -15,7 +15,7 @@ return function(robot, meta, constants)
             local inventory = {}
 
             local function listSlots(name, limit)
-                name = name or robot.getSelectedName()
+                name = name or robot.getSelectedQuery()
                 limit = limit or target.size()
                 local slots = {}
 
@@ -71,7 +71,7 @@ return function(robot, meta, constants)
             end
 
             function inventory.getItemDetail(name)
-                name = name or robot.getSelectedName()
+                name = name or robot.getSelectedQuery()
                 local count = countItems(name)
 
                 if count > 0 then

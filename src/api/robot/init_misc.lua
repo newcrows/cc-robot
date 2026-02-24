@@ -67,9 +67,9 @@ return function(robot, meta, constants)
 
     local function dropHelper(dropFunc, name, count, blocking)
         if type(name) == "number" or name == nil then
-            blocking, count, name = count, name, robot.getSelectedName()
+            blocking, count, name = count, name, robot.getSelectedQuery()
         elseif type(name) == "boolean" or type(name) == "function" then
-            blocking, count, name = name, nil, robot.getSelectedName()
+            blocking, count, name = name, nil, robot.getSelectedQuery()
         end
 
         if not name then
@@ -92,7 +92,7 @@ return function(robot, meta, constants)
     end
 
     local function compareHelper(inspectFunc, name)
-        name = name or robot.getSelectedName()
+        name = name or robot.getSelectedQuery()
 
         if not name then
             error("name must not be nil", 0)

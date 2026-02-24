@@ -274,7 +274,7 @@ return function(robot, meta, constants)
     end
 
     function meta.getCustomPeripheralDetail(name)
-        name = name or robot.getSelectedName()
+        name = name or robot.getSelectedQuery()
 
         return customPeripherals[name]
     end

@@ -250,7 +250,7 @@ robot.turnLeft()
 
 tries to place block with `name` from inventory to the respective direction.
 
-if no `name` is given, uses `robot.getSelectedName()`.
+if no `name` is given, uses `robot.getSelectedQuery()`.
 
 omits `equipment`.
 
@@ -272,7 +272,7 @@ robot.place("minecraft:cobblestone")
 tries to drop `count` blocks with `name` from inventory to the respective direction.
 returns the `amount` of items dropped.
 
-if no `name` is given, uses `robot.getSelectedName()`.
+if no `name` is given, uses `robot.getSelectedQuery()`.
 
 if no `count` is given, attempts to drop ALL items with `name`.
 
@@ -319,7 +319,7 @@ robot.select("minecraft:dirt")
 
 returns the `count` of `name` in inventory.
 
-if no `name` is given, uses `robot.getSelectedName()`.
+if no `name` is given, uses `robot.getSelectedQuery()`.
 
 omits `equipment`.
 
@@ -353,7 +353,7 @@ print(robot.getItemCount("minecraft:diamond_pickaxe"))
 
 returns the `space` for `name` in inventory.
 
-if no `name` is given, uses `robot.getSelectedName()`.
+if no `name` is given, uses `robot.getSelectedQuery()`.
 
 if no items with `name` exist in inventory, assumes a `stackSize` of `64`.
 
@@ -507,7 +507,7 @@ declares `name` as equipment and returns a `handle` for the equipment.
 
 you can declare an arbitrary amount of equipment. it "just works".
 
-if no `name` is present, `robot.getSelectedName()` is used.
+if no `name` is present, `robot.getSelectedQuery()` is used.
 
 if `pinned` is `true`, the equipment will actually be equipped
 and STAY equipped until `handle.unpin()` is called.
