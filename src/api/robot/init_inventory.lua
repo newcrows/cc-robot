@@ -359,7 +359,7 @@ return function(robot, meta, constants)
         end
 
         meta.updateItemLimit(itemName .. "@" .. RESERVED_INVENTORY_NAME, delta)
-        transferAvailable(itemName, invName, RESERVED_INVENTORY_NAME, delta)
+        return transferAvailable(itemName, invName, RESERVED_INVENTORY_NAME, delta)
     end
 
     function robot.free(query, delta)
@@ -374,8 +374,8 @@ return function(robot, meta, constants)
             error("can not free items to 'reserved_inventory'")
         end
 
-        transferAvailable(itemName, RESERVED_INVENTORY_NAME, invName, delta)
         meta.updateItemLimit(itemName .. "@" .. RESERVED_INVENTORY_NAME, -delta)
+        return transferAvailable(itemName, RESERVED_INVENTORY_NAME, invName, delta)
     end
 
     function robot.select(query)
