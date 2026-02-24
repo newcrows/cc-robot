@@ -1,26 +1,26 @@
 ---- LOCAL FUNCTIONS ----
-local function warningConstructor(detail)
-local function getEquippedSide(name)
+local function eventConstructor(detail)
+local function getEquippedSide(itemName)
 local function getEmptySide()
 local function getEquippedProxy(side)
 local function softWrap(side, proxy)
-local function requireItemToEquip(name)
+local function requireItemToEquip(itemName)
 local function check()
 local function get()
 local function equipAndSoftWrap(side, proxy)
-local function requireSpaceToUnequip(name)
+local function requireSpaceToUnequip(itemName)
 local function check()
 local function get()
-local function createProxy(name, pinned)
+local function createProxy(itemName, pinned)
 local function check()
 local function get()
 
 ---- META FUNCTIONS ----
-meta.requireEquipment(name)
+meta.requireEquipment(itemName)
 
 ---- ROBOT FUNCTIONS ----
-robot.equip(name, pinned)
-robot.unequip(name)
+robot.equip(query, pinned)
+robot.unequip(query)
 robot.onEquipmentWarning(callback)
 robot.onEquipmentWarningCleared(callback)
 

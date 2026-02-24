@@ -1,7 +1,7 @@
 ---- LOCAL FUNCTIONS ----
 local function physicalCountAll()
 local function countEmptySlots()
-local function placeHelper(placeFunc, name, blocking)
+local function placeHelper(placeFunc, query, blocking)
 local function check()
 local function tick()
 local function dropHelper_0(dropFunc, name, remaining)

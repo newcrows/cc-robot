@@ -14,8 +14,10 @@ local function moveInOrder(order, blocking)
 local function getKeys(table)
 local function check()
 local function get()
+local function constructor(detail)
 local function check()
 local function get()
+local function constructor(detail)
 
 ---- META FUNCTIONS ----
 meta.requireFuelLevel(requiredLevel)
