@@ -197,6 +197,7 @@ return function(robot, meta, constants)
         return result[1], result[2]
     end
 
+    -- TODO [JM] support wildcard item "*"
     function meta.requireItemCount(query, count)
         local function check()
             return robot.getItemCount(query) >= count
@@ -216,6 +217,7 @@ return function(robot, meta, constants)
         meta.require(check, get, constructor)
     end
 
+    -- TODO [JM] support wildcard item "*"
     function meta.requireItemSpace(query, space)
         local function check()
             return robot.getItemSpace(query) >= space
@@ -235,6 +237,7 @@ return function(robot, meta, constants)
         meta.require(check, get, constructor)
     end
 
+    -- TODO [JM] support wildcard item "*"
     function meta.getFirstSlot(query)
         local count = robot.getItemCount(query)
         local itemName = meta.parseQuery(query)
@@ -262,6 +265,7 @@ return function(robot, meta, constants)
         error("inconsistent state. need sync?")
     end
 
+    -- TODO [JM] support wildcard item "*"
     function meta.getFirstEmptySlot(query)
         local space = robot.getItemSpace(query)
         local itemName = meta.parseQuery(query)
@@ -303,6 +307,7 @@ return function(robot, meta, constants)
         error("inconsistent state. need sync?")
     end
 
+    -- TODO [JM] support wildcard item "*"
     function meta.selectFirstSlot(query)
         local slot = meta.getFirstSlot(query)
 
@@ -314,6 +319,7 @@ return function(robot, meta, constants)
         return false
     end
 
+    -- TODO [JM] support wildcard item "*"
     function meta.selectFirstEmptySlot(query)
         local slot = meta.getFirstEmptySlot(query)
 
