@@ -13,7 +13,7 @@ return function(robot, meta, constants)
         return #meta.listEmptySlots()
     end
 
-    local function placeHelper(placeFunc, name, blocking)
+    local function placeHelper(placeFunc, query, blocking)
         local placed = false
 
         local function check()
@@ -21,7 +21,7 @@ return function(robot, meta, constants)
         end
 
         local function tick()
-            if meta.selectFirstSlot(name) then
+            if meta.selectFirstSlot(query) then
                 placed = placeFunc()
             end
         end

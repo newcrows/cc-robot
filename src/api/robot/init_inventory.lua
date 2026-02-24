@@ -233,23 +233,52 @@ return function(robot, meta, constants)
 
     function meta.getFirstSlot(query)
         local count = robot.getItemCount(query)
-        local space = robot.getItemSpace(query)
+        local itemName = meta.parseQuery(query)
 
-        if count == 0 and space == 0 then
+        if count == 0 then
             return nil
         end
-
-        local itemName = meta.parseQuery(query)
 
         for i = 1, 16 do
             local detail = nativeTurtle.getItemDetail(i)
 
-            if detail and detail.name == itemName or not detail and itemName == "minecraft:air" then
-                return {
-                    id = i,
-                    name = itemName,
-                    count = detail and detail.count or 0
-                }
+            if detail and detail.name == itemName then
+                local available = math.min(detail.count, count)
+
+                if available > 0 then
+                    return {
+                        id = i,
+                        name = itemName,
+                        count = available
+                    }
+                end
+            end
+        end
+
+        return nil
+    end
+
+    function meta.getFirstEmptySlot(query)
+        local space = robot.getItemSpace(query)
+        local itemName = meta.parseQuery(query)
+
+        if space == 0 then
+            return nil
+        end
+
+        for i = 1, 16 do
+            local detail = nativeTurtle.getItemDetail(i)
+
+            if detail and detail.name == itemName then
+                local available = math.min(nativeTurtle.getItemSpace(i), space)
+
+                if available > 0 then
+                    return {
+                        id = i,
+                        name = itemName,
+                        space = available
+                    }
+                end
             end
         end
 
@@ -267,11 +296,22 @@ return function(robot, meta, constants)
         return false
     end
 
+    function meta.selectFirstEmptySlot(query)
+        local slot = meta.getFirstEmptySlot(query)
+
+        if slot then
+            nativeTurtle.select(slot.id)
+            return true
+        end
+
+        return false
+    end
+
     function meta.updateItemCount(query, delta)
         local itemName, invName = meta.parseQuery(query)
         local inv = invName == FALLBACK_INVENTORY_NAME and fallbackInventory or inventoryMap[invName]
 
-        inv[itemName] = inv[itemName] or {limit = 0, count = 0}
+        inv[itemName] = inv[itemName] or { limit = 0, count = 0 }
         inv[itemName].count = inv[itemName].count + delta
     end
 
@@ -284,7 +324,7 @@ return function(robot, meta, constants)
 
         local inv = inventoryMap[invName]
 
-        inv[itemName] = inv[itemName] or {limit = 0, count = 0}
+        inv[itemName] = inv[itemName] or { limit = 0, count = 0 }
         inv[itemName].limit = inv[itemName].limit + delta
     end
 
