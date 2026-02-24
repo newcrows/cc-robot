@@ -325,6 +325,7 @@ return function(robot, meta, constants)
         return false
     end
 
+    -- TODO [JM] must support distributing when called with invName == "*"
     function meta.updateItemCount(query, delta)
         local itemName, invName = meta.parseQuery(query)
         local inv = invName == FALLBACK_INVENTORY_NAME and fallbackInventory or inventoryMap[invName]
@@ -333,6 +334,7 @@ return function(robot, meta, constants)
         inv[itemName].count = inv[itemName].count + delta
     end
 
+    -- TODO [JM] must support distributing when called with invName == "*"
     function meta.updateItemLimit(query, delta)
         local itemName, invName = meta.parseQuery(query)
 
