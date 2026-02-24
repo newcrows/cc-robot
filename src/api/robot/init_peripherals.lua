@@ -212,7 +212,8 @@ return function(robot, meta, constants)
                 return x
             end
 
-            x, y, z, name = x.x, x.y, x.z, wrapAs
+            local itemName = meta.parseQuery(wrapAs)
+            x, y, z, name = x.x, x.y, x.z, itemName
         elseif type(x) == "number" and type(y) == "number" and type(z) == "number" then
             x, y, z, name = x, y, z, wrapAs
         elseif type(x) == "string" then
@@ -223,7 +224,13 @@ return function(robot, meta, constants)
                 x = SIDES.front
             end
 
-            name = wrapAs or getNameFor(x)
+            if wrapAs then
+                local itemName = meta.parseQuery(wrapAs)
+                name = itemName
+            else
+                name = getNameFor(x)
+            end
+
             x, y, z = getPositionFor(x)
         end
 
@@ -273,10 +280,9 @@ return function(robot, meta, constants)
         return values
     end
 
-    function meta.getCustomPeripheralDetail(name)
-        name = name or robot.getSelectedQuery()
-
-        return customPeripherals[name]
+    function meta.getCustomPeripheralDetail(query)
+        local itemName = meta.parseQuery(query);
+        return customPeripherals[itemName]
     end
 
     function meta.listCustomPeripherals()
