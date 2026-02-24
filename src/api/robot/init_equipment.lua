@@ -297,6 +297,21 @@ return function(robot, meta, constants)
         end
     end
 
+    function robot.getEquipmentDetail(query)
+        local itemName = meta.parseQuery(query)
+        return proxies[itemName]
+    end
+
+    function robot.listEquipment()
+        local arr = {}
+
+        for _, detail in pairs(proxies) do
+            table.insert(arr, detail)
+        end
+
+        return arr
+    end
+
     function robot.onEquipmentWarning(callback)
         meta.on(EQUIPMENT_WARNING, callback)
     end
