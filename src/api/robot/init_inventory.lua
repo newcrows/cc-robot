@@ -158,7 +158,8 @@ return function(robot, meta, constants)
         inv[itemName].limit = inv[itemName].limit + delta
     end
 
-    function meta.parseQuery(query)
+    -- TODO [JM] implement forcing wildcards (i.E. for robot.listItems())
+    function meta.parseQuery(query, forceItemWildcard, forceInvWildcard)
         local qState
         local sqState
 
@@ -431,6 +432,10 @@ return function(robot, meta, constants)
         local itemName, invName = meta.parseQuery(query)
         delta = delta or getStackSize(itemName)
 
+        if itemName == "*" then
+            error("can not reserve '*'")
+        end
+
         if invName == "*" then
             error("can not reserve items from 'all_inventories'")
         end
@@ -446,6 +451,10 @@ return function(robot, meta, constants)
     function meta.free(query, delta)
         local itemName, invName = meta.parseQuery(query)
         delta = delta or getStackSize(itemName)
+
+        if itemName == "*" then
+            error("can not free '*'")
+        end
 
         if invName == "*" then
             error("can not free items from 'all_inventories'")
@@ -467,6 +476,7 @@ return function(robot, meta, constants)
         return selectedQuery
     end
 
+    -- TODO [JM] support wildcard item "*"
     function robot.getItemDetail(query)
         local itemName = meta.parseQuery(query)
 
@@ -476,6 +486,7 @@ return function(robot, meta, constants)
         }
     end
 
+    -- TODO [JM] support wildcard item "*"
     function robot.getItemCount(query)
         local itemName, invName = meta.parseQuery(query)
 
@@ -498,6 +509,7 @@ return function(robot, meta, constants)
         return item and item.count or 0
     end
 
+    -- TODO [JM] support wildcard item "*"
     function robot.getItemSpace(query)
         local itemName, invName = meta.parseQuery(query)
 
