@@ -296,6 +296,10 @@ return function(robot, meta, constants)
             error("can not reserve items from 'all_inventories'")
         end
 
+        if invName == RESERVED_INVENTORY_NAME then
+            error("can not reserve items from 'reserved_inventory'")
+        end
+
         meta.updateItemLimit(itemName .. "@" .. RESERVED_INVENTORY_NAME, delta)
         transferItem(itemName, invName, RESERVED_INVENTORY_NAME, delta)
     end
@@ -306,6 +310,10 @@ return function(robot, meta, constants)
 
         if invName == "*" then
             error("can not free items from 'all_inventories'")
+        end
+
+        if invName == RESERVED_INVENTORY_NAME then
+            error("can not free items to 'reserved_inventory'")
         end
 
         transferItem(itemName, RESERVED_INVENTORY_NAME, invName, delta)
