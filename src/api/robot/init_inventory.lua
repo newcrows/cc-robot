@@ -1,6 +1,7 @@
 return function(robot, meta, constants)
     local ITEM_COUNT_WARNING = "item_count_warning"
     local ITEM_SPACE_WARNING = "item_space_warning"
+    local RESERVED_INVENTORY_NAME = "reserved"
 
     local inventoryMap = {}
     local inventoryList = {}
@@ -82,17 +83,17 @@ return function(robot, meta, constants)
         return freeSlotCount * getStackSize(itemName)
     end
 
-    local function addInventory(vName)
+    local function addInventory(invName)
         local inv = {}
 
-        inventoryMap[vName] = inv
+        inventoryMap[invName] = inv
         table.insert(inventoryList, inv)
     end
 
-    local function removeInventory(vName)
-        inventoryMap[vName] = nil
+    local function removeInventory(invName)
+        inventoryMap[invName] = nil
         remove(inventoryList, function(value)
-            return value.name == vName
+            return value.name == invName
         end)
     end
 
@@ -131,24 +132,32 @@ return function(robot, meta, constants)
         end
     end
 
-    function meta.reserve(vName, name, limit)
-        local inv = inventoryMap[vName]
-        inv[name] = (inv[name] or {
+    local function reserve(itemName, invName, space)
+        local inv = inventoryMap[invName]
+        inv[itemName] = (inv[itemName] or {
             limit = 0,
             count = 0
         })
 
-        inv[name].limit = inv[name].limit + limit
+        inv[itemName].limit = inv[itemName].limit + space
     end
 
-    function meta.free(vName, name, limit)
-        local inv = inventoryMap[vName]
-        inv[name] = (inv[name] or {
+    local function free(itemName, invName, space)
+        local inv = inventoryMap[invName]
+        inv[itemName] = (inv[itemName] or {
             limit = 0,
             count = 0
         })
 
-        inv[name].limit = inv[name].limit - limit
+        inv[itemName].limit = inv[itemName].limit - space
+    end
+
+    function meta.reserve(name, space)
+        reserve(name, RESERVED_INVENTORY_NAME, space)
+    end
+
+    function meta.free(name, space)
+        free(name, RESERVED_INVENTORY_NAME, space)
     end
 
     function robot.getItemCount(query)
