@@ -17,14 +17,6 @@ return function(robot, meta, constants)
         return t
     end
 
-    local function remove(t, comp)
-        for i = #t, 1, -1 do
-            if comp(t[i]) then
-                return table.remove(t, i)
-            end
-        end
-    end
-
     local function parseQuery(query)
         local parts = split(query, "@")
         return parts[1], parts[2]
@@ -90,13 +82,6 @@ return function(robot, meta, constants)
         table.insert(inventoryList, inv)
     end
 
-    local function removeInventory(invName)
-        inventoryMap[invName] = nil
-        remove(inventoryList, function(value)
-            return value.name == invName
-        end)
-    end
-
     local function syncInventories()
         local physicalItems = {}
 
@@ -160,6 +145,15 @@ return function(robot, meta, constants)
         free(name, RESERVED_INVENTORY_NAME, space)
     end
 
+    function robot.getItemDetail(query)
+        local itemName = parseQuery(query)
+
+        return {
+            name = itemName,
+            count = robot.getItemCount(query)
+        }
+    end
+
     function robot.getItemCount(query)
         local itemName, invName = parseQuery(query)
 
@@ -217,6 +211,9 @@ return function(robot, meta, constants)
     function robot.onItemSpaceWarningCleared(callback)
         meta.on(ITEM_SPACE_WARNING .. "_cleared", callback)
     end
+
+    addInventory(RESERVED_INVENTORY_NAME)
+    syncInventories()
 
     local lastMissingCount
     robot.onItemCountWarning(function(e)
