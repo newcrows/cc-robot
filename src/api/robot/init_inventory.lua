@@ -191,6 +191,14 @@ return function(robot, meta, constants)
             result = split(selectedQuery .. query, "@")
         elseif qState == "missing" and sqState == "full" then
             result = split(selectedQuery, "@")
+        elseif qState == "itemName" and forceInvWildcard then
+            result = {selectedQuery, forceInvWildcard}
+        elseif qState == "invName" and forceItemWildcard then
+            result = {forceItemWildcard, selectedQuery}
+        elseif qState == "missing" and sqState == "itemName" and forceInvWildcard then
+            result = {sqState, forceInvWildcard}
+        elseif qState == "missing" and sqState == "invName" and forceItemWildcard then
+            result = {forceItemWildcard, sqState}
         else
             error("query is not compatible with selectQuery")
         end
@@ -531,12 +539,8 @@ return function(robot, meta, constants)
     end
 
     function robot.listItems(query)
-        local itemName, invName = meta.parseQuery(query)
+        local _, invName = meta.parseQuery(query, "*")
         local details
-
-        if itemName ~= "*" then
-            print("warning: listItems() ignores itemName")
-        end
 
         if invName == "*" then
             for _, inventory in pairs(inventoryList) do
