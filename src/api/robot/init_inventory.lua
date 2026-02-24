@@ -148,6 +148,48 @@ return function(robot, meta, constants)
         inv[itemName].limit = inv[itemName].limit - space
     end
 
+    function meta.requireItemCount(query, count)
+        local itemName = parseQuery(query)
+
+        local function check()
+            return robot.getItemCount(query) >= count
+        end
+
+        local function get()
+            return {
+                name = itemName,
+                missingCount = count - robot.getItemCount(query)
+            }
+        end
+
+        local function constructor(detail)
+            return meta.createEvent(ITEM_COUNT_WARNING, detail)
+        end
+
+        meta.require(check, get, constructor)
+    end
+
+    function meta.requireItemSpace(query, space)
+        local itemName = parseQuery(query)
+
+        local function check()
+            return robot.getItemSpace(query) >= space
+        end
+
+        local function get()
+            return {
+                name = itemName,
+                missingCount = space - robot.getItemSpace(query)
+            }
+        end
+
+        local function constructor(detail)
+            return meta.createEvent(ITEM_SPACE_WARNING, detail)
+        end
+
+        meta.require(check, get, constructor)
+    end
+
     function robot.reserve(query, space)
         local itemName, invName = parseQuery(query)
 
