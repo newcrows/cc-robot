@@ -383,6 +383,42 @@ return function(robot, meta, constants)
         inv[itemName].count = inv[itemName].count + delta
     end
 
+    function meta.snapshot()
+        local snapshot = {}
+
+        for i = 1, 16 do
+            local detail = nativeTurtle.getItemDetail(i)
+
+            if detail then
+                snapshot[detail.name] = snapshot[detail.name] + detail.count
+            end
+        end
+
+        return snapshot
+    end
+
+    function meta.diff(before, after)
+        local keys = {}
+        local diff = {}
+
+        for key, _ in pairs(before) do
+            keys[key] = true
+        end
+
+        for key, _ in pairs(after) do
+            keys[key] = true
+        end
+
+        for key, _ in pairs(keys) do
+            local beforeCount = before[key] or 0
+            local afterCount = after[key] or 0
+
+            diff[key] = afterCount - beforeCount
+        end
+
+        return diff
+    end
+
     function meta.reserve(query, delta)
         local itemName, invName = meta.parseQuery(query)
         delta = delta or getStackSize(itemName)
