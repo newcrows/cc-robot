@@ -5,6 +5,9 @@ return function(robot, meta, constants)
     local SIDES = constants.sides
     local SIDE_INDEX = constants.side_index
     local OPPOSITE_FACINGS = constants.opposite_facings
+    local ITEM_INFO = constants.item_info
+    local DEFAULT_STACK_SIZE = constants.default_stack_size
+    local RESERVED_INVENTORY_NAME = constants.reserved_inventory_name
     local FUEL_LEVEL_WARNING = "fuel_level_warning"
     local PATH_WARNING = "path_warning"
     local FUEL_SAFETY_MARGIN = math.min(nativeTurtle.getFuelLimit() / 10 * 2, 1000)
@@ -68,25 +71,26 @@ return function(robot, meta, constants)
         return count
     end
 
-    local function refuel(name, count)
-        local slot = meta.selectFirstSlot(name, true)
+    local function refuel(query, availableCount)
+        -- TODO [JM] loop like dropHelper_0 until item from query is not immediately available
+        local ok, count = meta.selectFirstSlot(query)
 
-        if slot then
-            local cappedCount = math.min(nativeTurtle.getItemCount(), count)
+        if ok then
+            local cappedCount = math.min(count, availableCount)
             nativeTurtle.refuel(cappedCount)
         end
     end
 
-    -- TODO [JM] in the same style as dropHelper / suckHelper
-    -- -> immediately try to process all slots containing acceptedFuels until none found or requiredLevel met
     local function refuelTo(requiredLevel)
         if nativeTurtle.getFuelLevel() >= requiredLevel then
             return true
         end
 
         for name, reserveCount in pairs(acceptedFuels) do
-            local availableCount = math.min(robot.getReservedItemCount(name), reserveCount)
-            refuel(name, availableCount)
+            local query = name .. "@" .. RESERVED_INVENTORY_NAME
+            local availableCount = math.min(robot.getItemCount(query), reserveCount)
+
+            refuel(query, availableCount)
 
             if nativeTurtle.getFuelLevel() >= requiredLevel then
                 return true
@@ -164,6 +168,24 @@ return function(robot, meta, constants)
         end
 
         return keys
+    end
+
+    local function getStackSize(itemName)
+        local block = ITEM_INFO[itemName]
+
+        if block then
+            return block.stackSize
+        end
+
+        for i = 1, 16 do
+            local detail = nativeTurtle.getItemDetail(i)
+
+            if detail and detail.name == itemName then
+                return detail.count + nativeTurtle.getItemSpace(i)
+            end
+        end
+
+        return DEFAULT_STACK_SIZE
     end
 
     function meta.requireFuelLevel(requiredLevel)
@@ -333,9 +355,9 @@ return function(robot, meta, constants)
         return robot.x, robot.y, robot.z, robot.facing
     end
 
-    function robot.setFuel(name, reserveCount)
+    function robot.setFuel(which, reserveCount)
         for _name, _reserveCount in pairs(acceptedFuels) do
-            robot.free(_name, _reserveCount)
+            meta.free(_name, _reserveCount)
         end
 
         acceptedFuels = ({
@@ -343,15 +365,23 @@ return function(robot, meta, constants)
                 return {}
             end,
             ["string"] = function()
-                return { [name] = reserveCount or constants.default_stack_size }
+                local itemName = meta.parseQuery(which)
+                return { [itemName] = reserveCount or getStackSize(itemName) }
             end,
             ["table"] = function()
-                return name
+                local mapped = {}
+
+                for _which, _reserveCount in pairs(which) do
+                    local itemName = meta.parseQuery(_which)
+                    mapped[itemName] = _reserveCount
+                end
+
+                return mapped
             end
-        })[type(name)]()
+        })[type(which)]()
 
         for _name, _reserveCount in pairs(acceptedFuels) do
-            robot.reserve(_name, _reserveCount)
+            meta.reserve(_name, _reserveCount)
         end
     end
 
