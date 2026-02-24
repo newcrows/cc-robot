@@ -259,7 +259,7 @@ return function(robot, meta, constants)
             end
         end
 
-        return nil
+        error("inconsistent state. need sync?")
     end
 
     function meta.getFirstEmptySlot(query)
@@ -300,7 +300,7 @@ return function(robot, meta, constants)
             end
         end
 
-        return nil
+        error("inconsistent state. need sync?")
     end
 
     function meta.selectFirstSlot(query)
