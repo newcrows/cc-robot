@@ -270,7 +270,7 @@ return function(robot, meta, constants)
             local detail = nativeTurtle.getItemDetail(i)
 
             if detail and detail.name == itemName then
-                local available = math.min(nativeTurtle.getItemSpace(i), space)
+                local available = math.min(getStackSize(itemName) - detail.count, space)
 
                 if available > 0 then
                     return {
@@ -279,6 +279,18 @@ return function(robot, meta, constants)
                         space = available
                     }
                 end
+            end
+        end
+
+        for i = 1, 16 do
+            if nativeTurtle.getItemCount(i) == 0 then
+                local available = math.min(getStackSize(itemName), space)
+
+                return {
+                    id = i,
+                    name = itemName,
+                    space = available
+                }
             end
         end
 
