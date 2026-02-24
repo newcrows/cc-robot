@@ -422,6 +422,7 @@ return function(robot, meta, constants)
         meta.on(ITEM_SPACE_WARNING .. "_cleared", callback)
     end
 
+    robot.select("@items")
     addInventory(RESERVED_INVENTORY_NAME)
     syncInventories()
 
