@@ -227,6 +227,7 @@ return function(robot, meta, constants)
     end
 
     -- TODO [JM] support wildcard item "*"
+    -- -> but do NOT count the space in empty unreserved slots multiple times!
     function meta.requireItemSpace(query, space)
         local function check()
             return robot.getItemSpace(query) >= space
@@ -485,6 +486,7 @@ return function(robot, meta, constants)
     end
 
     -- TODO [JM] support wildcard item "*"
+    -- -> returns {name = "*", count = ...}
     function robot.getItemDetail(query)
         local itemName = meta.parseQuery(query)
 
@@ -518,6 +520,7 @@ return function(robot, meta, constants)
     end
 
     -- TODO [JM] support wildcard item "*"
+    -- -> but do NOT count the space in empty unreserved slots multiple times!
     function robot.getItemSpace(query)
         local itemName, invName = meta.parseQuery(query)
 
