@@ -192,13 +192,13 @@ return function(robot, meta, constants)
         elseif qState == "missing" and sqState == "full" then
             result = split(selectedQuery, "@")
         elseif qState == "itemName" and forceInvWildcard then
-            result = {selectedQuery, nil}
+            result = { selectedQuery, nil }
         elseif qState == "invName" and forceItemWildcard then
-            result = {nil, selectedQuery}
+            result = { nil, selectedQuery }
         elseif qState == "missing" and sqState == "itemName" and forceInvWildcard then
-            result = {sqState, nil}
+            result = { sqState, nil }
         elseif qState == "missing" and sqState == "invName" and forceItemWildcard then
-            result = {nil, sqState}
+            result = { nil, sqState }
         else
             error("query is not compatible with selectQuery")
         end
@@ -348,6 +348,7 @@ return function(robot, meta, constants)
         return false
     end
 
+    -- NOTE [JM] supports wildcard item "*"
     function meta.updateItemCount(query, delta)
         local itemName, invName = meta.parseQuery(query)
 
@@ -366,11 +367,9 @@ return function(robot, meta, constants)
                 end
 
                 local inv = fallbackInventory
-                local item = inv[itemName]
 
-                if item then
-                    item.count = item.count + delta
-                end
+                inv[itemName] = inv[itemName] or { count = 0 }
+                inv[itemName].count = inv[itemName].count + delta
 
                 return
             else
@@ -396,6 +395,15 @@ return function(robot, meta, constants)
                     end
                 end
 
+                -- if we update *-inv item count below recorded count,
+                -- it simply goes negative in fallback_inventory
+                if delta < 0 then
+                    inv = fallbackInventory
+
+                    inv[itemName] = invName[itemName] or {count = 0}
+                    inv[itemName].count = inv[itemName].count + delta
+                end
+
                 return
             end
         end
@@ -413,6 +421,7 @@ return function(robot, meta, constants)
             local detail = nativeTurtle.getItemDetail(i)
 
             if detail then
+                snapshot[detail.name] = snapshot[detail.name] or 0
                 snapshot[detail.name] = snapshot[detail.name] + detail.count
             end
         end

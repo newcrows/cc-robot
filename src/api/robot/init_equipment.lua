@@ -267,13 +267,7 @@ return function(robot, meta, constants)
             return proxy
         end
 
-        if invName ~= RESERVED_INVENTORY_NAME then
-            robot.reserve(query, 1)
-        else
-            print("equipping from reserved inventory is not possible at the moment")
-            error("equip() automatically reserves the tool")
-        end
-
+        meta.reserve(query, 1)
         return createProxy(itemName, pinned)
     end
 
@@ -288,17 +282,12 @@ return function(robot, meta, constants)
             proxies[itemName] = nil
             proxy.invalid = true
 
-            if invName ~= RESERVED_INVENTORY_NAME then
-                robot.free(query, 1)
-            else
-                print("un-equipping to reserved inventory is not possible at the moment")
-                error("unequip() automatically frees the tool")
-            end
+            meta.free(query, 1)
         end
     end
 
     function robot.getEquipmentDetail(query)
-        local itemName = meta.parseQuery(query)
+        local itemName = meta.parseQuery(query, nil, "*")
         return proxies[itemName]
     end
 
