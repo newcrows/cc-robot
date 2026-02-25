@@ -18,6 +18,12 @@
     "startup/init.lua",
     "tasks/simple.lua",
     "tasks/worker.lua",
+    "test/init.lua",
+    "test/test_constants.lua",
+    "test/test_core.lua",
+    "test/test_equipment.lua",
+    "test/test_inventory.lua",
+    "test/test_misc.lua",
     "task.lua"
   ]
 }
