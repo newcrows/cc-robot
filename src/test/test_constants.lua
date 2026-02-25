@@ -1,0 +1,16 @@
+return function(robot, meta, constants, utility)
+    assert(constants.deltas)
+    assert(constants.facing_index)
+    assert(constants.facings)
+    assert(constants.opposite_facings)
+    assert(constants.side_index)
+    assert(constants.sides)
+    assert(constants.opposite_sides)
+    assert(constants.default_stack_size)
+    assert(constants.reserved_inventory_name)
+    assert(constants.fallback_inventory_name)
+    assert(constants.unknown_item)
+    assert(constants.item_info)
+
+    print("test_constants passed")
+end
