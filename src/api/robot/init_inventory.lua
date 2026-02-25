@@ -548,7 +548,7 @@ return function(robot, meta, constants)
 
     function robot.listItems(query)
         local _, invName = meta.parseQuery(query, "*")
-        local details
+        local details = {}
 
         if invName == "*" then
             for _, inventory in pairs(inventoryList) do
