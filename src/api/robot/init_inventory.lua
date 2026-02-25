@@ -348,7 +348,7 @@ return function(robot, meta, constants)
         return false
     end
 
-    -- NOTE [JM] supports wildcard item "*"
+    -- TODO [JM] explicitly do NOT support wildcard item "*"
     function meta.updateItemCount(query, delta)
         local itemName, invName = meta.parseQuery(query)
 
@@ -408,7 +408,16 @@ return function(robot, meta, constants)
             end
         end
 
-        local inv = invName == FALLBACK_INVENTORY_NAME and fallbackInventory or inventoryMap[invName]
+        if invName == FALLBACK_INVENTORY_NAME then
+            local inv = fallbackInventory
+
+            inv[itemName] = inv[itemName] or { count = 0 }
+            inv[itemName].count = inv[itemName].count + delta
+
+            return
+        end
+
+        local inv = inventoryMap[invName]
 
         inv[itemName] = inv[itemName] or { limit = 0, count = 0 }
         inv[itemName].count = inv[itemName].count + delta
@@ -624,6 +633,9 @@ return function(robot, meta, constants)
 
             lastMissingCount = missingCount
         end
+
+        -- can use custom snapshot logic here, default is simple sync
+        syncInventories()
     end)
     robot.onItemCountWarningCleared(function()
         print("---- " .. ITEM_COUNT_WARNING .. "_cleared ----")
