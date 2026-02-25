@@ -33,6 +33,8 @@ return function(robot, meta, constants)
     end
 
     local function dropHelper_0(dropFunc, query, remaining)
+        -- TODO [JM] passing no query DOES NOT YET WORK
+        query = query or "*"
         local continue = true
 
         local function check()
@@ -75,9 +77,9 @@ return function(robot, meta, constants)
 
     local function dropHelper(dropFunc, query, count, blocking)
         if type(query) == "number" or query == nil then
-            blocking, count, query = count, query, robot.getSelectedQuery()
+            blocking, count, query = count, query, nil
         elseif type(query) == "boolean" or type(query) == "function" then
-            blocking, count, query = query, nil, robot.getSelectedQuery()
+            blocking, count, query = query, nil, nil
         end
 
         local totalAmount = count or robot.getItemCount(query)
@@ -109,7 +111,12 @@ return function(robot, meta, constants)
     end
 
     local function suckHelper_0(suckFunc, query, remaining)
+        if not query then
+            query = "*"
+        end
+
         local continue = true
+        local targetItemName = meta.parseQuery(query)
 
         local function check()
             return not continue or remaining == 0
@@ -125,18 +132,14 @@ return function(robot, meta, constants)
                 local after = meta.snapshot()
                 local diff = meta.diff(before, after)
 
-                -- TODO [JM] meta.updateItemCount(), but for ALL items in diff: before vs after
-                -- -> fill query:inventory first and put the rest into fallback_inventory
-                -- -> also fill ONLY query:item into query:inventory and the rest into fallback_inventory
-                --      (assuming query:item is specified)
-                -- -> we can actually use "before" and "after" snapshots (physical inventory) here, probably
-                --      but we must do it in a way that throws error should before diff already have sync errors
-
                 for name, delta in pairs(diff) do
                     local itemName, invName = meta.parseQuery(query, name)
                     meta.updateItemCount(itemName .. "@" .. invName, delta)
 
-                    remaining = remaining - delta
+                    if targetItemName == itemName or targetItemName == "*" then
+                        remaining = remaining - delta
+                    end
+
                     didSuckSomething = true
                 end
             end
