@@ -1,6 +1,7 @@
 return function(robot, meta, constants)
     local UNKNOWN_ITEM = constants.unknown_item
 
+    -- TODO [JM] obsolete when dropHelper_0 is implemented correctly
     local function physicalCountAll()
         local total = 0
 
