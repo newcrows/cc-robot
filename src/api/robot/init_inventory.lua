@@ -82,37 +82,18 @@ return function(robot, meta, constants)
     end
 
     local function syncInventories()
-        local physicalItems = {}
+        local snapshot = meta.snapshot()
 
-        for i = 1, 16 do
-            local detail = nativeTurtle.getItemDetail(i)
-
-            if detail then
-                local name = detail.name
-                local count = detail.count
-
-                physicalItems[name] = (physicalItems[name] or 0) + count
+        for _, inventory in pairs(inventoryList) do
+            for _, detail in pairs(inventory) do
+                detail.count = 0
             end
         end
 
-        for i = 1, #inventoryList do
-            local inventory = inventoryList[i]
+        fallbackInventory = {}
 
-            for name, count in pairs(physicalItems) do
-                local item = inventory[name]
-
-                if item then
-                    local amount = math.min(item.limit, count)
-
-                    item.count = amount
-                    physicalItems[name] = count - amount
-                end
-            end
-        end
-
-        for name, count in pairs(physicalItems) do
-            fallbackInventory[name] = (fallbackInventory[name] or { count = 0 })
-            fallbackInventory[name].count = count
+        for name, count in pairs(snapshot) do
+            meta.updateItemCount(name .. "@*", count)
         end
     end
 
@@ -653,6 +634,9 @@ return function(robot, meta, constants)
 
             lastMissingSpace = missingSpace
         end
+
+        -- can use custom snapshot logic here, default is simple sync
+        syncInventories()
     end)
     robot.onItemSpaceWarningCleared(function()
         print("---- " .. ITEM_SPACE_WARNING .. "_cleared ----")
