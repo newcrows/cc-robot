@@ -1,4 +1,6 @@
 return function(robot, meta, constants)
+    local UNKNOWN_ITEM = constants.unknown_item
+
     local function physicalCountAll()
         local total = 0
 
@@ -7,10 +9,6 @@ return function(robot, meta, constants)
         end
 
         return total
-    end
-
-    local function countEmptySlots()
-        return #meta.listEmptySlots()
     end
 
     local function placeHelper(placeFunc, query, blocking)
@@ -121,20 +119,24 @@ return function(robot, meta, constants)
             local didSuckSomething = false
 
             local amountToSuck = math.min(constants.default_stack_size, remaining)
-            local before = physicalCountAll()
+            local before = meta.snapshot()
 
             if suckFunc(amountToSuck) then
-                local after = physicalCountAll()
+                local after = meta.snapshot()
+                local diff = meta.diff(before, after)
 
-                if after ~= before then
-                    remaining = remaining + (before - after)
-                    -- TODO [JM] meta.updateItemCount(), but for ALL items in diff: before vs after
-                    -- -> fill query:inventory first and put the rest into fallback_inventory
-                    -- -> also fill ONLY query:item into query:inventory and the rest into fallback_inventory
-                    --      (assuming query:item is specified)
-                    -- -> we can actually use "before" and "after" snapshots (physical inventory) here, probably
-                    --      but we must do it in a way that throws error should before diff already have sync errors
+                -- TODO [JM] meta.updateItemCount(), but for ALL items in diff: before vs after
+                -- -> fill query:inventory first and put the rest into fallback_inventory
+                -- -> also fill ONLY query:item into query:inventory and the rest into fallback_inventory
+                --      (assuming query:item is specified)
+                -- -> we can actually use "before" and "after" snapshots (physical inventory) here, probably
+                --      but we must do it in a way that throws error should before diff already have sync errors
 
+                for name, delta in pairs(diff) do
+                    local itemName, invName = meta.parseQuery(query, name)
+                    meta.updateItemCount(itemName .. "@" .. invName, delta)
+
+                    remaining = remaining - delta
                     didSuckSomething = true
                 end
             end
@@ -149,9 +151,9 @@ return function(robot, meta, constants)
 
     local function suckHelper(suckFunc, query, count, blocking)
         if type(query) == "number" or query == nil then
-            blocking, count, query = count, query, robot.getSelectedQuery()
+            blocking, count, query = count, query, nil
         elseif type(query) == "boolean" or type(query) == "function" then
-            blocking, count, query = query, nil, robot.getSelectedQuery()
+            blocking, count, query = query, nil, nil
         end
 
         local totalAmount = count or 9999
@@ -159,7 +161,7 @@ return function(robot, meta, constants)
 
         local function check()
             local conditionA = count and remaining == 0
-            local conditionB = count == 9999 and countEmptySlots() == 0
+            local conditionB = count == 9999 and not robot.getItemSpace(UNKNOWN_ITEM .. "@*")
 
             return conditionA or conditionB
         end

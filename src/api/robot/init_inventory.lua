@@ -177,9 +177,9 @@ return function(robot, meta, constants)
         elseif qState == "invName" and forceItemWildcard then
             result = { nil, selectedQuery }
         elseif qState == "missing" and sqState == "itemName" and forceInvWildcard then
-            result = { sqState, nil }
+            result = { selectedQuery, nil }
         elseif qState == "missing" and sqState == "invName" and forceItemWildcard then
-            result = { nil, sqState }
+            result = { nil, string.sub(selectedQuery, 2) }
         else
             error("query is not compatible with selectQuery")
         end
