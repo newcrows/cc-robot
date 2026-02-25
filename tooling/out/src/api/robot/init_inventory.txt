@@ -15,7 +15,7 @@ local function get()
 local function constructor(detail)
 
 ---- META FUNCTIONS ----
-meta.parseQuery(query)
+meta.parseQuery(query, forceItemWildcard, forceInvWildcard)
 meta.requireItemCount(query, count)
 meta.requireItemSpace(query, space)
 meta.getFirstSlot(query)
@@ -23,6 +23,8 @@ meta.getFirstEmptySlot(query)
 meta.selectFirstSlot(query)
 meta.selectFirstEmptySlot(query)
 meta.updateItemCount(query, delta)
+meta.snapshot()
+meta.diff(before, after)
 meta.reserve(query, delta)
 meta.free(query, delta)
 

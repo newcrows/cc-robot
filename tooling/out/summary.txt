@@ -40,7 +40,6 @@ local function constructor(detail)
 
 # api/robot/init_misc.lua
 local function physicalCountAll()
-local function countEmptySlots()
 local function placeHelper(placeFunc, query, blocking)
 local function check()
 local function tick()
@@ -116,7 +115,7 @@ meta.require(check, get, constructor)
 meta.requireEquipment(itemName)
 
 # api/robot/init_inventory.lua
-meta.parseQuery(query)
+meta.parseQuery(query, forceItemWildcard, forceInvWildcard)
 meta.requireItemCount(query, count)
 meta.requireItemSpace(query, space)
 meta.getFirstSlot(query)
@@ -124,6 +123,8 @@ meta.getFirstEmptySlot(query)
 meta.selectFirstSlot(query)
 meta.selectFirstEmptySlot(query)
 meta.updateItemCount(query, delta)
+meta.snapshot()
+meta.diff(before, after)
 meta.reserve(query, delta)
 meta.free(query, delta)
 

@@ -1,6 +1,5 @@
 ---- LOCAL FUNCTIONS ----
 local function physicalCountAll()
-local function countEmptySlots()
 local function placeHelper(placeFunc, query, blocking)
 local function check()
 local function tick()
