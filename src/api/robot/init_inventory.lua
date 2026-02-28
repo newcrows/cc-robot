@@ -81,22 +81,6 @@ return function(robot, meta, constants)
         table.insert(inventoryList, inv)
     end
 
-    local function syncInventories()
-        local snapshot = meta.snapshot()
-
-        for _, inventory in pairs(inventoryList) do
-            for _, detail in pairs(inventory) do
-                detail.count = 0
-            end
-        end
-
-        fallbackInventory = {}
-
-        for name, count in pairs(snapshot) do
-            meta.updateItemCount(name .. "@*", count)
-        end
-    end
-
     local function transferAvailable(itemName, fromInvName, toInvName, count)
         local fromQuery = itemName .. "@" .. fromInvName
         local toQuery = itemName .. "@" .. toInvName
@@ -137,6 +121,22 @@ return function(robot, meta, constants)
 
         inv[itemName] = inv[itemName] or { limit = 0, count = 0 }
         inv[itemName].limit = inv[itemName].limit + delta
+    end
+
+    function meta.sync()
+        local snapshot = meta.snapshot()
+
+        for _, inventory in pairs(inventoryList) do
+            for _, detail in pairs(inventory) do
+                detail.count = 0
+            end
+        end
+
+        fallbackInventory = {}
+
+        for name, count in pairs(snapshot) do
+            meta.updateItemCount(name .. "@*", count)
+        end
     end
 
     -- TODO [JM] implement forcing wildcards (i.E. for robot.listItems())
@@ -600,7 +600,7 @@ return function(robot, meta, constants)
     end
 
     addInventory(RESERVED_INVENTORY_NAME)
-    syncInventories()
+    meta.sync()
 
     local lastMissingCount
     robot.onItemCountWarning(function(e)
@@ -616,7 +616,7 @@ return function(robot, meta, constants)
         end
 
         -- can use custom snapshot logic here, default is simple sync
-        syncInventories()
+        meta.sync()
     end)
     robot.onItemCountWarningCleared(function()
         print("---- " .. ITEM_COUNT_WARNING .. "_cleared ----")
@@ -636,7 +636,7 @@ return function(robot, meta, constants)
         end
 
         -- can use custom snapshot logic here, default is simple sync
-        syncInventories()
+        meta.sync()
     end)
     robot.onItemSpaceWarningCleared(function()
         print("---- " .. ITEM_SPACE_WARNING .. "_cleared ----")

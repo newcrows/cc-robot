@@ -88,18 +88,25 @@ return function(_, meta)
         tick()
 
         local ok = check()
+
         if ok or not blocking then
             return
+        end
+
+        local stopped = false
+
+        local function stop()
+            stopped = true
         end
 
         blocking = type(blocking) == "function" and blocking or function()
         end
 
         while true do
-            local didBlocking = blocking()
-            local didTick = tick()
+            local didBlocking = blocking(stop)
+            local didTick = tick(stop)
 
-            if check() then
+            if stopped or check() then
                 return
             end
 

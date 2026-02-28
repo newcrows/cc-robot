@@ -3,7 +3,7 @@ return function(robot, meta, constants)
     local FACING_INDEX = constants.facing_index
     local FACINGS = constants.facings
     local SIDES = constants.sides
-    local SIDE_INDEX = constants.side_index
+    local OPPOSITE_SIDES = constants.opposite_sides
     local OPPOSITE_FACINGS = constants.opposite_facings
     local ITEM_INFO = constants.item_info
     local DEFAULT_STACK_SIZE = constants.default_stack_size
@@ -33,6 +33,7 @@ return function(robot, meta, constants)
     end
 
     local function moveHelper(moveFunc, delta, count, blocking)
+        count = count or 1
         local moved = 0
 
         local function check()
@@ -113,8 +114,8 @@ return function(robot, meta, constants)
             end
 
             face(facing)
-            robot.forward(math.abs(dx), function()
-                callback(robot.x + clamp(dx), robot.y, robot.z, facing)
+            robot.forward(math.abs(dx), function(stop)
+                callback(stop, robot.x + clamp(dx), robot.y, robot.z, facing)
             end)
         end
 
@@ -129,8 +130,8 @@ return function(robot, meta, constants)
             end
 
             local moveFunc = dy > 0 and robot.up or robot.down
-            moveFunc(math.abs(dy), function()
-                callback(robot.x, robot.y + clamp(dy), robot.z, facing)
+            moveFunc(math.abs(dy), function(stop)
+                callback(stop, robot.x, robot.y + clamp(dy), robot.z, facing)
             end)
         end
 
@@ -146,8 +147,8 @@ return function(robot, meta, constants)
             end
 
             face(facing)
-            robot.forward(math.abs(dz), function()
-                callback(robot.x, robot.y, robot.z + clamp(dz), facing)
+            robot.forward(math.abs(dz), function(stop)
+                callback(stop, robot.x, robot.y, robot.z + clamp(dz), facing)
             end)
         end
 
@@ -242,62 +243,138 @@ return function(robot, meta, constants)
         return turnHelper(nativeTurtle.turnLeft, -1, count)
     end
 
-    -- TODO [JM] rework this to just stupidly move toward peripheral{x,y,z}
-    -- if path_warning and target is peripheral and obstruction{x,y,z} == peripheral{x,y,z}
-    -- -> stop moving, we are done
-    -- -> much cleaner code this way
-    -- -> customerPeripheral.sides must still be respected, as does the optional "side" argument
-    --      used by moveTo(peripheral, side) to move the robot so that robot.side faces the peripheral
+    local function contains(t, value)
+        for _, v in ipairs(t) do
+            if v == value then
+                return true
+            end
+        end
+
+        return false
+    end
+
+    local function getValidSides(peripheral)
+        local customPeripheral = meta.getCustomPeripheralDetail(peripheral.name)
+        local sides
+
+        if customPeripheral then
+            sides = customPeripheral.sides
+        end
+
+        if not sides then
+            sides = {
+                SIDES.front,
+                SIDES.right,
+                SIDES.back,
+                SIDES.left,
+                SIDES.top,
+                SIDES.bottom,
+            }
+        end
+
+        return sides
+    end
+
+    local function requireStep(moveFunc)
+        local tfs = {
+            [robot.forward] = robot.facing,
+            [robot.back] = OPPOSITE_FACINGS[robot.facing],
+            [robot.up] = FACINGS.up,
+            [robot.down] = FACINGS.down
+        }
+
+        local tf = tfs[moveFunc]
+
+        local function check()
+            return moveFunc() > 0
+        end
+
+        local function get()
+            local delta = DELTAS[tf]
+
+            return {
+                obstacle = {
+                    x = robot.x + delta.x,
+                    y = robot.y + delta.y,
+                    z = robot.z + delta.z
+                },
+                facing = tf
+            }
+        end
+
+        local function constructor(detail)
+            return meta.createEvent(PATH_WARNING, detail)
+        end
+
+        meta.require(check, get, constructor)
+    end
+
+    local function align(peripheral, side)
+        if peripheral.x == robot.x and peripheral.y == robot.y and peripheral.z == robot.z then
+            requireStep(robot.back)
+            meta.requirePeripheral(peripheral.x, peripheral.y, peripheral.z)
+        end
+
+        local xzAligned = peripheral.x == robot.x and peripheral.z == robot.z
+
+        if side ~= SIDES.bottom and peripheral.y < robot.y and xzAligned then
+            -- move in front (normalize)
+            requireStep(robot.back)
+            requireStep(robot.down)
+        elseif side ~= SIDES.top and peripheral.y > robot.y and xzAligned then
+            -- move in front (normalize)
+            requireStep(robot.back)
+            requireStep(robot.up)
+        end
+
+        local yAligned = peripheral.y == robot.y
+
+        if side == SIDES.top and yAligned then
+            -- move below
+            requireStep(robot.down)
+            requireStep(robot.forward)
+        elseif side == SIDES.bottom and yAligned then
+            -- move above
+            requireStep(robot.up)
+            requireStep(robot.forward)
+        elseif side == SIDES.right then
+            robot.turnRight()
+        elseif side == SIDES.back then
+            robot.turnRight(2)
+        elseif side == SIDES.left then
+            robot.turnLeft()
+        end
+    end
+
     function robot.moveTo(x, y, z, facing)
+        local peripheral
+        local side
+
         if type(x) == "table" then
-            local side = y
-            x, y, z = x.x, x.y, x.z
+            peripheral = x
+            side = y
 
-            if not side then
-                local customPeripheral = meta.getCustomPeripheralDetail(x.name)
+            x, y, z = peripheral.x, peripheral.y, peripheral.z
+            facing = nil
 
-                if customPeripheral then
-                    local sides = customPeripheral.sides
-
-                    if sides then
-                        side = sides[1]
-                    end
-                end
-            end
-
-            local ox, oy, oz = robot.x - x, robot.y - y, robot.z - z
-
-            if side and side ~= SIDES.top and side ~= SIDES.bottom then
-                local willFace
-
-                if ox == 0 and oz ~= 0 then
-                    willFace = oz < 0 and FACINGS.south or FACINGS.north
-                elseif cx ~= 0 then
-                    willFace = ox < 0 and FACINGS.east or FACINGS.west
-                end
-
-                local facingI = (FACING_INDEX[willFace] - SIDE_INDEX[side]) % 4
-                facing = FACING_INDEX[facingI]
-            elseif side == SIDES.top then
-                oy = -1
-            elseif side == SIDES.bottom then
-                oy = 1
-            end
-
-            local cx, cy, cz = clamp(ox), clamp(oy), clamp(oz)
-
-            if cy ~= 0 then
-                y = y + cy
-            elseif cx ~= 0 then
-                x = x + cx
-            elseif cz ~= 0 then
-                z = z + cz
+            if side then
+                side = OPPOSITE_SIDES[side]
             end
         end
 
         local dx = (x or robot.x) - robot.x
         local dy = (y or robot.y) - robot.y
         local dz = (z or robot.z) - robot.z
+
+        if peripheral then
+            local sides = getValidSides(peripheral)
+
+            if not side then
+                side = contains(sides, SIDES.front) and SIDES.front or sides[1]
+            elseif not contains(sides, side) then
+                error(side .. " is not valid for peripheral")
+            end
+        end
 
         meta.requireFuelLevel(math.abs(dx) + math.abs(dy) + math.abs(dz))
 
@@ -309,8 +386,11 @@ return function(robot, meta, constants)
             { moveX, FACINGS.west, dx },
             { moveY, FACINGS.down, dy }
         }
-        local blocking = function(tx, ty, tz, tf)
+        local blocking = function(stop, tx, ty, tz, tf)
             local function check()
+                -- TODO [JM] detect() is not enough here, entities could be in the way
+                -- this doesn't lead to errors, but no PATH_WARNING is dispatched when entity is blocking the way
+
                 local detectFuncs = {
                     [FACINGS.up] = nativeTurtle.detectUp,
                     [FACINGS.down] = nativeTurtle.detectDown,
@@ -322,9 +402,11 @@ return function(robot, meta, constants)
 
             local function get()
                 return {
-                    x = tx,
-                    y = ty,
-                    z = tz,
+                    obstacle = {
+                        x = tx,
+                        y = ty,
+                        z = tz
+                    },
                     facing = tf
                 }
             end
@@ -340,15 +422,18 @@ return function(robot, meta, constants)
                 return event
             end
 
-            -- TODO [JM] check whether the obstruction is the target peripheral (if any) here
-            -- -> we end the moveTo here (simply not call require() below) in this case
-
-            meta.require(check, get, constructor)
+            if peripheral and tx == peripheral.x and ty == peripheral.y and tz == peripheral.z then
+                stop()
+            else
+                meta.require(check, get, constructor)
+            end
         end
 
         moveInOrder(order, blocking)
 
-        if facing then
+        if peripheral then
+            align(peripheral, side)
+        elseif facing then
             face(facing)
         end
 
@@ -424,6 +509,8 @@ return function(robot, meta, constants)
 
             lastMissingFuelLevel = missingFuelLevel
         end
+
+        meta.sync()
     end)
     robot.onFuelLevelWarningCleared(function()
         print("---- " .. FUEL_LEVEL_WARNING .. "_cleared ----")
@@ -431,13 +518,16 @@ return function(robot, meta, constants)
 
     robot.onPathWarning(function(e)
         local alreadyWarned = e.alreadyWarned
-        local x = e.detail.x
-        local y = e.detail.y
-        local z = e.detail.z
+        local obstacle = e.detail.obstacle
+        local facing = e.detail.facing
+
+        local x = obstacle.x
+        local y = obstacle.y
+        local z = obstacle.z
 
         if not alreadyWarned then
             print("---- " .. PATH_WARNING .. " ----")
-            print("path is obstructed at (" .. x .. ", " .. y .. ", " .. z .. ")")
+            print("obstacle at (" .. x .. ", " .. y .. ", " .. z .. ") while moving " .. facing)
         end
     end)
     robot.onPathWarningCleared(function()

@@ -280,6 +280,17 @@ return function(robot, meta, constants)
         return values
     end
 
+    function meta.requirePeripheral(x, y, z)
+        local key = getKeyFor(x, y, z)
+        local proxy = proxies[key]
+
+        if not proxy then
+            error("no proxy wrapped at " .. key .. ", only wrapped proxies can be required")
+        end
+
+        softWrap(key, proxy)
+    end
+
     function meta.getCustomPeripheralDetail(query)
         local itemName = meta.parseQuery(query);
         return customPeripherals[itemName]
