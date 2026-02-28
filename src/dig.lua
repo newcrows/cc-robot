@@ -76,8 +76,8 @@ local length = tonumber(args[3])
 robot.setFuel("minecraft:coal")
 
 -- handle events
-robot.on("item_space_warning", offloadItems)
-robot.on("path_warning", clearPath)
+robot.onItemSpaceWarning(offloadItems)
+robot.onPathWarning(clearPath)
 
 -- dig cuboid
 digCuboid(width, height, length)
