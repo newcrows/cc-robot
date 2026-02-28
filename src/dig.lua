@@ -5,6 +5,7 @@ local robot = require("%INSTALL_DIR%/api/robot");
 local pickaxe = robot.equip("minecraft:diamond_pickaxe")
 local chest = robot.wrap("back", "minecraft:chest")
 
+-- helper to dump items into the chest
 local function offloadItems()
     local cx, cy, cz = robot.x, robot.y, robot.z
     local cFacing = robot.facing
@@ -19,13 +20,14 @@ local function offloadItems()
     robot.moveTo(cx, cy, cz, cFacing)
 end
 
+-- helper to clear the path on the way back to the chest
 local function clearPath(e)
     local digFuncs = {
         front = pickaxe.native.dig,
         back = function()
-            robot.turnRight()
+            robot.turnRight(2)
             pickaxe.native.dig()
-            robot.turnLeft()
+            robot.turnLeft(2)
         end,
         top = pickaxe.native.digUp,
         bottom = pickaxe.native.digDown
