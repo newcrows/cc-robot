@@ -142,4 +142,8 @@ function task.resume()
     end
 end
 
+-- TODO [JM] i need to support add-ins like: task <name> <...args> --gps
+-- which just means it should set the position of robot depending on GPS
+-- (and optional compass) before starting/resuming the task
+-- other flags might make sense, but I don't need any others yet
 return task
