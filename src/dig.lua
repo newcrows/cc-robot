@@ -81,5 +81,6 @@ robot.setFuel("minecraft:coal")
 robot.onItemSpaceWarning(offloadItems)
 robot.onPathWarning(clearPath)
 
--- dig cuboid
+-- empty inventory and dig cuboid
+offloadItems()
 digCuboid(width, height, length)
