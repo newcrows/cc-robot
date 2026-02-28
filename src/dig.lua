@@ -38,6 +38,7 @@ local function clearPath(e)
     return digFuncs[side]()
 end
 
+-- dig impl
 local function digLine(length)
     for l = 1, length - 1 do
         pickaxe.digUp()
@@ -49,6 +50,7 @@ local function digLine(length)
     pickaxe.digDown()
 end
 
+-- dig impl
 local function digRectangle(width, length)
     local turnFuncs = {robot.turnLeft, robot.turnRight}
 
@@ -64,6 +66,7 @@ local function digRectangle(width, length)
     digLine(length)
 end
 
+-- dig impl
 local function digCuboid(width, height, length)
     -- TODO [JM] implement
 end
