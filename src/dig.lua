@@ -92,4 +92,4 @@ digCuboid(width, height, length)
 robot.moveTo(0, 0, 0, "north")
 
 -- NOTE this script can auto-resume when started as a task (requires GPS and optionally a compass)
--- run this command in shell: task dig <width> <height> <length> --gps
+-- run this command: task dig <width> <height> <length> --gps
