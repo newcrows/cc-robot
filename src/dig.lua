@@ -1,5 +1,5 @@
 -- use robot api
-local robot = require("api/robot");
+local robot = require("%INSTALL_DIR%/api/robot");
 
 -- prepare pickaxe and chest
 local pickaxe = robot.equip("minecraft:diamond_pickaxe")
