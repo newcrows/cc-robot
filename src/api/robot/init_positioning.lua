@@ -2,6 +2,7 @@ return function(robot, meta, constants)
     local DELTAS = constants.deltas
     local FACING_INDEX = constants.facing_index
     local FACINGS = constants.facings
+    local SIDE_INDEX = constants.side_index
     local SIDES = constants.sides
     local OPPOSITE_SIDES = constants.opposite_sides
     local OPPOSITE_FACINGS = constants.opposite_facings
@@ -33,6 +34,11 @@ return function(robot, meta, constants)
     end
 
     local function moveHelper(moveFunc, delta, count, blocking)
+        if type(count) == "boolean" or type(count) == "function" then
+            blocking = count
+            count = 1
+        end
+
         count = count or 1
         local moved = 0
 
@@ -276,6 +282,12 @@ return function(robot, meta, constants)
     end
 
     local function requireStep(moveFunc)
+        local tss = {
+            [robot.forward] = SIDES.front,
+            [robot.back] = SIDES.back,
+            [robot.up] = SIDES.top,
+            [robot.down] = SIDES.bottom
+        }
         local tfs = {
             [robot.forward] = robot.facing,
             [robot.back] = OPPOSITE_FACINGS[robot.facing],
@@ -283,6 +295,7 @@ return function(robot, meta, constants)
             [robot.down] = FACINGS.down
         }
 
+        local ts = tss[moveFunc]
         local tf = tfs[moveFunc]
 
         local function check()
@@ -298,6 +311,7 @@ return function(robot, meta, constants)
                     y = robot.y + delta.y,
                     z = robot.z + delta.z
                 },
+                side = ts,
                 facing = tf
             }
         end
@@ -401,25 +415,29 @@ return function(robot, meta, constants)
             end
 
             local function get()
+                local ts
+
+                if tf == FACINGS.up then
+                    ts = SIDES.top
+                elseif tf == FACINGS.down then
+                    ts = SIDES.bottom
+                else
+                    ts = SIDES.front
+                end
+
                 return {
                     obstacle = {
                         x = tx,
                         y = ty,
                         z = tz
                     },
+                    side = ts,
                     facing = tf
                 }
             end
 
             local function constructor(detail)
-                local event = meta.createEvent(PATH_WARNING, detail)
-
-                event.targetX = x
-                event.targetY = y
-                event.targetZ = z
-                event.targetFacing = facing
-
-                return event
+                return meta.createEvent(PATH_WARNING, detail)
             end
 
             if peripheral and tx == peripheral.x and ty == peripheral.y and tz == peripheral.z then
@@ -466,7 +484,7 @@ return function(robot, meta, constants)
         })[type(which)]()
 
         for _name, _reserveCount in pairs(acceptedFuels) do
-            meta.reserve(_name, _reserveCount)
+            meta.reserve(_name .. "@items", _reserveCount)
         end
     end
 

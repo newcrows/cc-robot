@@ -1,4 +1,4 @@
-return function(robot, meta)
+return function(robot, meta, constants)
     return {
         names = {
             "minecraft:diamond_pickaxe",
@@ -7,9 +7,13 @@ return function(robot, meta)
         },
         constructor = function()
             local function digHelper(digFunc, inspectFunc, query, blocking)
-                -- TODO [JM] only invName matters in the query
-                --  -> if itemName is set, we add the block only to queryInv if match
-                --      if no match, we put it in fallback_inventory (this is coherent with robot.suck())
+                if type(query) == "boolean" or type(query) == "function" then
+                    blocking = query
+                    query = nil
+                end
+
+                -- NOTE [JM] only invName matters in the query
+                query = query or "*"
                 local ok
 
                 local function check()
@@ -20,16 +24,17 @@ return function(robot, meta)
                     local blockExists, blockDetail = inspectFunc()
 
                     if blockExists then
-                        -- TODO [JM] advanced checks with inspect() and peripheral.getType():full-inventory-sync
-                        -- -> if simple block, meta.updateItemCount(itemName@queryInventory, 1)
-                        --      (or fallback_inventory, if no itemName specified or block doesnt match itemName)
-                        -- -> if type == "inventory" -> do full inventory before after diff after breaking the block
+                        local itemInfo = constants.item_info[blockDetail.name]
+                        local dropName = itemInfo.dropName or blockDetail.name
 
+                        local itemName, invName = meta.parseQuery(query, dropName)
+                        local adjustedQuery = itemName .. "@" .. invName
+
+                        meta.requireItemSpace(adjustedQuery, 1)
                         ok = digFunc()
 
                         if ok then
-                            local itemName, invName = meta.parseQuery(query, blockDetail.name)
-                            meta.updateItemCount(itemName .. "@" .. invName, 1)
+                            meta.updateItemCount(adjustedQuery, 1)
                         end
                     end
                 end
@@ -39,6 +44,12 @@ return function(robot, meta)
             end
 
             return {
+                -- NOTE [JM] use native.dig* within item_space_warning to prevent infinite recursion
+                native = {
+                    dig = nativeTurtle.dig,
+                    digUp = nativeTurtle.digUp,
+                    digDown = nativeTurtle.digDown
+                },
                 dig = function(query, blocking)
                     return digHelper(nativeTurtle.dig, nativeTurtle.inspect, query, blocking)
                 end,

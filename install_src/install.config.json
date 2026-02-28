@@ -24,6 +24,7 @@
     "test/test_equipment.lua",
     "test/test_inventory.lua",
     "test/test_misc.lua",
+    "dig.lua",
     "task.lua"
   ]
 }

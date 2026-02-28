@@ -9,7 +9,7 @@ return function(robot, meta, constants)
     local inventoryMap = {}
     local inventoryList = {}
     local fallbackInventory = {}
-    local selectedQuery = "@" .. FALLBACK_INVENTORY_NAME
+    local selectedQuery = "@*"
 
     local function reduce(list, reduceFunc, initialValue)
         local aggregate = initialValue

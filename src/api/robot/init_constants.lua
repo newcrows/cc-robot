@@ -79,7 +79,7 @@ return function(_, _, constants)
     constants.unknown_item = "ccrobot:unknown_item"
     constants.item_info = {
         ["minecraft:air"] = {stackSize = 1},
-        ["minecraft:stone"] = {drop = "minecraft:cobblestone", stackSize = 64},
+        ["minecraft:stone"] = {dropName = "minecraft:cobblestone", stackSize = 64},
         ["minecraft:diamond_pickaxe"] = {stackSize = 1},
         ["minecraft:diamond_axe"] = {stackSize = 1},
         ["minecraft:diamond_shovel"] = {stackSize = 1},
@@ -87,4 +87,12 @@ return function(_, _, constants)
         [constants.unknown_item] = {stackSize = 1}
         -- NOTE [JM] add more block aliases for vanilla ores, etc. here!
     }
+
+    local item_info_meta = {
+        __index = function(t, prop)
+            local raw = rawget(t, prop)
+            return raw or  {stackSize = 64}
+        end
+    }
+    setmetatable(constants.item_info, item_info_meta)
 end

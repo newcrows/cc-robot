@@ -323,6 +323,8 @@ return function(robot, meta, constants)
                 print("no space for " .. name .. " (please clear)")
             end
         end
+
+        meta.sync()
     end)
     robot.onEquipmentWarningCleared(function()
         print("---- " .. EQUIPMENT_WARNING .. "_cleared ----")
