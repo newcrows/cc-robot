@@ -146,4 +146,5 @@ end
 -- which just means it should set the position of robot depending on GPS
 -- (and optional compass) before starting/resuming the task
 -- other flags might make sense, but I don't need any others yet
+-- the task opts must contain a field "flags" so the task can know which flags it was started with
 return task
