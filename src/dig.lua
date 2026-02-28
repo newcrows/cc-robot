@@ -89,4 +89,4 @@ offloadItems()
 digCuboid(width, height, length)
 
 -- go back to start when finished
-robot.moveTo(0, 0, 0)
+robot.moveTo(0, 0, 0, "north")
