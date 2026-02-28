@@ -52,7 +52,7 @@ end
 
 -- dig impl
 local function digRectangle(width, length)
-    local turnFuncs = {robot.turnLeft, robot.turnRight}
+    local turnFuncs = { robot.turnLeft, robot.turnRight }
 
     for w = 1, width - 1 do
         local turn = turnFuncs[(w % 2) + 1]
@@ -72,7 +72,7 @@ local function digCuboid(width, height, length)
 end
 
 -- parse args
-local args = {...}
+local args = { ... }
 local width = tonumber(args[1])
 local height = tonumber(args[2])
 local length = tonumber(args[3])
@@ -87,3 +87,6 @@ robot.onPathWarning(clearPath)
 -- empty inventory and dig cuboid
 offloadItems()
 digCuboid(width, height, length)
+
+-- go back to start when finished
+robot.moveTo(0, 0, 0)
