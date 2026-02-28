@@ -72,7 +72,7 @@ local width = tonumber(args[1])
 local height = tonumber(args[2])
 local length = tonumber(args[3])
 
--- reserve a stack of coal as fuel (will auto-fuel on any found coal)
+-- reserve a stack of coal as fuel (will auto-fuel on any coal found)
 robot.setFuel("minecraft:coal")
 
 -- handle events
