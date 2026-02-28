@@ -20,7 +20,7 @@ local function offloadItems()
     robot.moveTo(cx, cy, cz, cFacing)
 end
 
--- helper to clear the path on the way back to the chest
+-- helper to clear the path on the way from / to the chest
 local function clearPath(e)
     local digFuncs = {
         front = pickaxe.native.dig,
