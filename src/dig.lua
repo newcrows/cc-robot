@@ -66,7 +66,7 @@ local function digCuboid(width, height, length)
     -- TODO [JM] implement
 end
 
--- local parse args
+-- parse args
 local args = {...}
 local width = tonumber(args[1])
 local height = tonumber(args[2])
