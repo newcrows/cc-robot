@@ -78,7 +78,7 @@ return function(_, _, constants)
     constants.fallback_inventory_name = "items"
     constants.unknown_item = "ccrobot:unknown_item"
     constants.item_info = {
-        ["minecraft:air"] = {stackSize = 1},
+        ["minecraft:air"] = {stackSize = 0},
         ["minecraft:stone"] = {dropName = "minecraft:cobblestone", stackSize = 64},
         ["minecraft:diamond_pickaxe"] = {stackSize = 1},
         ["minecraft:diamond_axe"] = {stackSize = 1},
