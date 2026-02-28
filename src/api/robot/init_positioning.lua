@@ -178,7 +178,7 @@ return function(robot, meta, constants)
     end
 
     local function getStackSize(itemName)
-        local block = ITEM_INFO[itemName]
+        local block = rawget(ITEM_INFO, itemName)
 
         if block then
             return block.stackSize

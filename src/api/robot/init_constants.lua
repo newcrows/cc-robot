@@ -91,7 +91,7 @@ return function(_, _, constants)
     local item_info_meta = {
         __index = function(t, prop)
             local raw = rawget(t, prop)
-            return raw or  {stackSize = 64}
+            return raw or  {stackSize = constants.default_stack_size}
         end
     }
     setmetatable(constants.item_info, item_info_meta)
