@@ -49,7 +49,7 @@ local function digLine(length)
     pickaxe.digDown()
 end
 
-local function digArea(width, length)
+local function digRectangle(width, length)
     local turnFuncs = {robot.turnLeft, robot.turnRight}
 
     for w = 1, width - 1 do
