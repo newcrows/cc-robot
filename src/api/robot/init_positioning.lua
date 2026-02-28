@@ -2,7 +2,6 @@ return function(robot, meta, constants)
     local DELTAS = constants.deltas
     local FACING_INDEX = constants.facing_index
     local FACINGS = constants.facings
-    local SIDE_INDEX = constants.side_index
     local SIDES = constants.sides
     local OPPOSITE_SIDES = constants.opposite_sides
     local OPPOSITE_FACINGS = constants.opposite_facings
