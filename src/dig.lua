@@ -40,7 +40,7 @@ end
 
 -- dig impl
 local function digLine(length)
-    for l = 1, length - 1 do
+    for _ = 1, length - 1 do
         pickaxe.digUp()
         pickaxe.digDown()
         robot.forward(pickaxe.dig)
